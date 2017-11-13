@@ -1,0 +1,194 @@
+2016-11-17 21:09:51 [ThreadId 7] ERROR phoityne - [deleteBreakPointOnGHCi] invalid delete break point. BreakPointData {nameBreakPointData = "Lib", filePathBreakPointData = "/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/src/Lib.hs", lineNoBreakPointData = 6, breakNoBreakPointData = Nothing, conditionBreakPointData = Nothing}
+2016-11-17 21:10:07 [ThreadId 7] ERROR phoityne - [deleteBreakPointOnGHCi] invalid delete break point. BreakPointData {nameBreakPointData = "Main", filePathBreakPointData = "/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/app/Main.hs", lineNoBreakPointData = 6, breakNoBreakPointData = Nothing, conditionBreakPointData = Nothing}
+2016-11-17 21:13:52 [ThreadId 12] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/src/Phoityne/Example/Math.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:13:52 [ThreadId 12] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/src/Phoityne/Example/Math.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:16:28 [ThreadId 13] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/src/Phoityne/Example/Math.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:16:28 [ThreadId 13] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/src/Phoityne/Example/Math.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:18:12 [ThreadId 14] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/src/Phoityne/Example/Math.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:18:12 [ThreadId 14] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/src/Phoityne/Example/Math.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:18:59 [ThreadId 15] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/app/Main.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:18:59 [ThreadId 15] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/app/Main.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:22:22 [ThreadId 16] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:22:22 [ThreadId 16] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:24:39 [ThreadId 17] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/SpecHelper.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:24:39 [ThreadId 17] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/SpecHelper.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:29:07 [ThreadId 18] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/SpecHelper.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:29:07 [ThreadId 18] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/SpecHelper.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:29:18 [ThreadId 19] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/SpecHelper.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:29:18 [ThreadId 19] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/SpecHelper.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:36:37 [ThreadId 20] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Spec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:36:37 [ThreadId 20] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Spec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:44:10 [ThreadId 21] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:44:10 [ThreadId 21] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:47:37 [ThreadId 22] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:47:37 [ThreadId 22] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:49:15 [ThreadId 23] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:49:15 [ThreadId 23] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:50:06 [ThreadId 24] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:50:06 [ThreadId 24] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:50:08 [ThreadId 25] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2016-11-17 21:50:08 [ThreadId 25] ERROR phoityne - load file fail.[/Users/dogwith1eye/Desktop/Haskell/GettingStarted/MyProject/test/Phoityne/Example/MathSpec.hs] <file descriptor: 41>: hPutChar: resource vanished (Broken pipe)
+2017-11-04 15:05:35 [ThreadId 7] ERROR phoityne - "error: lexical error in string/character literal at end of input"
+2017-11-04 15:07:23 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216*\8217"
+2017-11-04 15:07:24 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: len \8226 Perhaps you meant \8216lex\8217 (imported from Prelude)"
+2017-11-04 15:08:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: val"
+2017-11-12 14:55:29 [ThreadId 7] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/Spec.hs] file load error. '/Users/tienho/Desktop/MyProject/test/Spec.hs'
+2017-11-12 14:55:52 [ThreadId 7] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/Spec.hs] file load error. '/Users/tienho/Desktop/MyProject/test/Spec.hs'
+2017-11-12 14:56:35 [ThreadId 12] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 14:56:35 [ThreadId 12] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:03:50 [ThreadId 7] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/Spec.hs] file load error. '/Users/tienho/Desktop/MyProject/test/Spec.hs'
+2017-11-12 15:03:56 [ThreadId 7] ERROR phoityne - [deleteBreakPointOnGHCi] invalid delete break point. BreakPointData {nameBreakPointData = "EvalSpec", filePathBreakPointData = "/Users/tienho/Desktop/MyProject/test/EvalSpec.hs", lineNoBreakPointData = 10, breakNoBreakPointData = Nothing, conditionBreakPointData = Nothing}
+2017-11-12 15:04:21 [ThreadId 7] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/Spec.hs] file load error. '/Users/tienho/Desktop/MyProject/test/Spec.hs'
+2017-11-12 15:06:36 [ThreadId 12] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:36 [ThreadId 12] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:36 [ThreadId 13] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:36 [ThreadId 13] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:37 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:37 [ThreadId 13] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:37 [ThreadId 13] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:37 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:44 [ThreadId 15] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:44 [ThreadId 15] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:44 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:06:44 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/SpecHelper.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 15:27:06 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 15:27:28 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-12 15:27:37 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-12 15:57:38 [ThreadId 7] ERROR phoityne - "error: parse error (possibly incorrect indentation or mismatched brackets)"
+2017-11-12 15:57:55 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-12 15:58:01 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 15:58:13 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: Term"
+2017-11-12 16:31:03 [ThreadId 7] ERROR phoityne - "error: \8226 Data constructor not in scope: Maybe \8226 Perhaps you meant variable \8216maybe\8217 (imported from Data.Maybe)"
+2017-11-12 16:31:09 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: c"
+2017-11-12 16:31:56 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: Term"
+2017-11-12 16:39:16 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216then\8217"
+2017-11-12 16:39:37 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: Term"
+2017-11-12 16:39:37 [ThreadId 7] ERROR phoityne - "error: parse error (possibly incorrect indentation or mismatched brackets)"
+2017-11-12 16:41:10 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: repeatedly"
+2017-11-12 16:45:08 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: Term"
+2017-11-12 16:45:16 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:46:53 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216::\8217"
+2017-11-12 16:47:14 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-12 16:47:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:47:37 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:47:41 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:47:41 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:47:47 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:47:47 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:48:34 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:48:34 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:48:34 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:48:39 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:48:39 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:48:39 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:48:39 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:10 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:49:10 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:10 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:49:10 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:10 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:18 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:39 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:49:39 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:39 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:49:39 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:39 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:49:44 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:49:44 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:49:52 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:49:52 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:50:05 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:50:07 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:50:14 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-12 16:50:15 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216else\8217"
+2017-11-12 16:50:27 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:50:29 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:50:52 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:50:54 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:51:02 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:52:53 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:52:59 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:53:02 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:53:15 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:53:25 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:53:27 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:53:46 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:54:09 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:54:18 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:54:25 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216then\8217"
+2017-11-12 16:54:47 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:54:55 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:55:18 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant one of these: \8216Ghci44.t2\8217 (imported from Ghci44), \8216t2\8217 (<no location info>)"
+2017-11-12 16:55:50 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-12 16:55:51 [ThreadId 7] ERROR phoityne - "error: \8226 Data constructor not in scope: Maybe \8226 Perhaps you meant variable \8216maybe\8217 (imported from Data.Maybe)"
+2017-11-12 16:56:20 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: Term"
+2017-11-12 16:56:25 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant one of these: \8216Ghci44.t2\8217 (imported from Ghci44), \8216t2\8217 (<no location info>)"
+2017-11-12 16:56:27 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant one of these: \8216Ghci44.t2\8217 (imported from Ghci44), \8216t2\8217 (<no location info>)"
+2017-11-12 16:57:26 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: nft \8226 Perhaps you meant one of these: \8216not\8217 (imported from Prelude), \8216nf\8217 (line 48)"
+2017-11-12 16:57:27 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: nft \8226 Perhaps you meant one of these: \8216not\8217 (imported from Prelude), \8216nf\8217 (line 48)"
+2017-11-12 16:57:28 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: v2 \8226 Perhaps you meant \8216t2\8217 (<no location info>)"
+2017-11-12 16:57:51 [ThreadId 12] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 16:58:26 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:58:26 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:26 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:26 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:58:26 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:27 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:27 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:27 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:27 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:58:27 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:58:29 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:58:29 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:29 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:29 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:58:29 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:30 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:30 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:30 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:30 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:58:30 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:58:33 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:58:33 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:58:33 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:58:33 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t1 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:58:33 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t2 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:58:33 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t2 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:58:37 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:58:53 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:59:03 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: Term"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: v2"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: s"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t1"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: t2"
+2017-11-12 16:59:07 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: nft \8226 Perhaps you meant one of these: \8216not\8217 (imported from Prelude), \8216nf\8217 (line 48)"
+2017-11-12 16:59:44 [ThreadId 13] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 17:00:50 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 17:03:02 [ThreadId 15] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 17:05:48 [ThreadId 16] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 17:06:03 [ThreadId 17] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-12 17:06:54 [ThreadId 18] ERROR phoityne - load file fail.[/Users/tienho/Desktop/MyProject/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
