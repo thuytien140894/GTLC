@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Eval, Parser, Pretty, Syntax
+  exposed-modules:     Eval, Parser, Lexer, Pretty, Syntax
   build-depends:       base >= 4.7 && < 5
                      , mtl >= 2.2 && < 3.0
                      , filepath >= 1.3 && < 1.5

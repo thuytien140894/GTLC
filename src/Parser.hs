@@ -1,102 +1,75 @@
 module Parser (
-  -- parseExpr
+  parseExpr
 ) where
 
-import Syntax
+  import Syntax
+  import Lexer
+  
+  import Text.Parsec
+  import Text.Parsec.String (Parser)
 
-import Text.Parsec
-import Text.Parsec.String (Parser)
-import Text.Parsec.Language (emptyDef)
+  -- -- if/then/else
+  -- conditional :: Parser Expr
+  -- conditional = do
+  --   reserved "if"
+  --   cond <- expr
+  --   reservedOp "then"
+  --   true <- expr
+  --   reserved "else"
+  --   false <- expr
+  --   return (If cond true false)
 
-import qualified Text.Parsec.Expr as Ex
-import qualified Text.Parsec.Token as Tok
+  -- abstraction
+  lambda :: Parser Term
+  lambda = do 
+    reserved "\\"
+    recordVariable identifier 
+    reserved "."
+    body <- expr
+    return (Lambda body)
 
-import Data.Functor.Identity
+  -- variable
+  var :: Parser Term
+  var = do
+    variable <- identifier
+    return (Var 0)
 
--- langDef :: Tok.LanguageDef ()
--- langDef = Tok.LanguageDef
---   { Tok.commentStart    = "{-"
---   , Tok.commentEnd      = "-}"
---   , Tok.commentLine     = "--"
---   , Tok.nestedComments  = True
---   , Tok.identStart      = letter
---   , Tok.identLetter     = alphaNum <|> oneOf "_'"
---   , Tok.opStart         = oneOf ":!#$%&*+./<=>?@\\^|-~"
---   , Tok.opLetter        = oneOf ":!#$%&*+./<=>?@\\^|-~"
---   , Tok.reservedNames   = []
---   , Tok.reservedOpNames = []
---   , Tok.caseSensitive   = True
---   }
+  -- Constants
+  true, false :: Parser Term
+  true  = reserved "true"  >> return Tr
+  false = reserved "false" >> return Fl
+  -- zero  = reservedOp "0"   >> return Zero
 
--- lexer :: Tok.TokenParser ()
--- lexer = Tok.makeTokenParser langDef
+  -- application
+  apply :: Term -> Term -> Term
+  apply t1 t2 = case t1 of 
+    Undefined    -> t2        -- t2 is the first term 
+    _            -> App t1 t2
 
--- -- parses p enclosed in parenthesis, returning the value of p
--- parens :: Parser a -> Parser a
--- parens = Tok.parens lexer
+  -- recursively apply terms from the left
+  applyFromLeft :: [Term] -> Term
+  applyFromLeft = foldl apply Undefined
 
--- reserved :: String -> Parser ()
--- reserved = Tok.reserved lexer
+  -- apply two terms that are separated by a space
+  app :: Parser Term
+  app = do
+    terms <- sepBy1 expr' whiteSpace 
+    return (applyFromLeft terms)
 
--- -- parses zero or more occurrences of p separated by semi. Returns a list of values returned by p
--- semiSep :: Parser a -> Parser [a]
--- semiSep = Tok.semiSep lexer
+  expr :: Parser Term
+  expr = app 
 
--- reservedOp :: String -> Parser ()
--- reservedOp = Tok.reservedOp lexer
+  expr' :: Parser Term
+  expr' = true
+      <|> false
+      <|> var
+      <|> lambda
+      <|> parens expr'
 
--- prefixOp :: String -> (a -> a) -> Ex.Operator String () Identity a
--- prefixOp s f = Ex.Prefix (reservedOp s >> return f)
+  -- remove the initial whitespace, line comments, and block comments 
+  -- the parser only removes white spaces after the tokens
+  removeWhiteSpace :: Parser Term
+  removeWhiteSpace = whiteSpace >> expr
 
-
--- -- Prefix operators
--- table :: Ex.OperatorTable String () Identity Expr
--- table = [
---     [
---       prefixOp "succ" Succ
---     , prefixOp "pred" Pred
---     , prefixOp "iszero" IsZero
---     ]
---   ]
-
-
--- -- if/then/else
--- ifthen :: Parser Expr
--- ifthen = do
---   reserved "if"
---   cond <- expr
---   reservedOp "then"
---   tr <- expr
---   reserved "else"
---   fl <- expr
---   return (If cond tr fl)
-
--- -- Constants
--- true, false, zero :: Parser Expr
--- true  = reserved "true"  >> return Tr
--- false = reserved "false" >> return Fl
--- zero  = reservedOp "0"   >> return Zero
-
--- expr :: Parser Expr
--- expr = Ex.buildExpressionParser table factor
-
--- factor :: Parser Expr
--- factor =
---       true
---   <|> false
---   <|> zero
---   <|> ifthen
---   <|> parens expr
-
--- contents :: Parser a -> Parser a
--- contents p = do
---   Tok.whiteSpace lexer
---   r <- p
---   eof
---   return r
-
--- toplevel :: Parser [Expr]
--- toplevel = semiSep expr
-
--- parseExpr :: String -> Either ParseError Expr
--- parseExpr s = parse (contents expr) "<stdin>" s
+  parseExpr :: String -> Either ParseError Term
+  parseExpr s = parse removeWhiteSpace "" s

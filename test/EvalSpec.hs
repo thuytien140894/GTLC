@@ -28,5 +28,10 @@ spec =
         eval (App (App (Lambda (Lambda (App (Var 1) (Var 0)))) (Lambda (Var 0))) (Lambda (Var 1))) `shouldBe` 
         Just (Lambda (Var 1))
 
+    context "parsing" $
+      it "should be true" $
+        parseExpr "(\\ x . \\ y . x y) true false" `shouldBe` 
+        Right (App (App (Lambda (Lambda (App (Var 0) (Var 0)))) Tr) Fl)
+
 main :: IO ()
 main = hspec spec
