@@ -4,40 +4,32 @@ module Parser (
 
   import Syntax
   import Lexer
-  
+
+  import Data.Maybe
+  import Data.List
   import Text.Parsec
   import Text.Parsec.String (Parser)
-
-  -- -- if/then/else
-  -- conditional :: Parser Expr
-  -- conditional = do
-  --   reserved "if"
-  --   cond <- expr
-  --   reservedOp "then"
-  --   true <- expr
-  --   reserved "else"
-  --   false <- expr
-  --   return (If cond true false)
 
   -- abstraction
   lambda :: Parser Term
   lambda = do 
     reserved "\\"
-    recordVariable identifier 
+    arg <- identifier 
     reserved "."
     body <- expr
-    return (Lambda body)
+    let ctx = arg : getContext body
+    return (fixBinding (Lambda body ctx) ctx) 
 
   -- variable
   var :: Parser Term
   var = do
-    variable <- identifier
-    return (Var 0)
+    id <- identifier
+    return (Var 0 id)
 
   -- Constants
   true, false :: Parser Term
-  true  = reserved "true"  >> return Tr
-  false = reserved "false" >> return Fl
+  true  = reserved "true"  >> return Tru
+  false = reserved "false" >> return Fls
   -- zero  = reservedOp "0"   >> return Zero
 
   -- application
@@ -56,9 +48,11 @@ module Parser (
     terms <- sepBy1 expr' whiteSpace 
     return (applyFromLeft terms)
 
+  -- parse an application which consists a sequence of terms
   expr :: Parser Term
   expr = app 
 
+  -- parse individual terms
   expr' :: Parser Term
   expr' = true
       <|> false
@@ -71,5 +65,18 @@ module Parser (
   removeWhiteSpace :: Parser Term
   removeWhiteSpace = whiteSpace >> expr
 
+  -- parse a string
   parseExpr :: String -> Either ParseError Term
-  parseExpr s = parse removeWhiteSpace "" s
+  parseExpr = parse removeWhiteSpace "" 
+
+  -- correct the bruijn index for each variable
+  -- this function is called when parsing a Lambda term 
+  fixBinding :: Term -> [String] -> Term
+  fixBinding t globalCtx = case t of
+    Lambda t1 localCtx   -> Lambda (fixBinding t1 globalCtx) localCtx
+    App t1 t2            -> App (fixBinding t1 globalCtx) (fixBinding t2 globalCtx)
+    Var x id             -> Var (getBruijnIndex id globalCtx) id
+
+  -- get the bruijn index for a variable with a given identifier and its binding context
+  getBruijnIndex :: String -> [String] -> Int
+  getBruijnIndex id ctx = fromMaybe (-1) (elemIndex id (reverse ctx))

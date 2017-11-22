@@ -33,28 +33,28 @@ module Lexer where
   lexer :: Tok.TokenParser ()
   lexer = Tok.makeTokenParser langDef
   
-  -- parses p enclosed in parenthesis, returning the value of p
+  -- parse p enclosed in parenthesis, returning the value of p
   parens :: Parser a -> Parser a
   parens = Tok.parens lexer
   
-  -- parses a reserved name
+  -- parse a reserved name
   reserved :: String -> Parser ()
   reserved = Tok.reserved lexer
   
-  -- parses an identifier
+  -- parse an identifier
   identifier :: Parser String
   identifier = Tok.identifier lexer
   
-  -- parses a white space
+  -- parse a white space
   whiteSpace :: Parser ()
   whiteSpace = Tok.whiteSpace lexer
   
-  -- parses zero or more occurrences of p separated by semi
+  -- parse zero or more occurrences of p separated by semi
   -- returns a list of values returned by p
   semiSep :: Parser a -> Parser [a]
   semiSep = Tok.semiSep lexer
   
-  -- parses an operator
+  -- parse an operator
   reservedOp :: String -> Parser ()
   reservedOp = Tok.reservedOp lexer
   
@@ -70,6 +70,3 @@ module Lexer where
       -- , prefixOp "iszero" IsZero
       ]
     ]
-
-  recordVariable :: Parser String -> Parser String
-  recordVariable a = a
