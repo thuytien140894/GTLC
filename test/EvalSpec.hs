@@ -30,7 +30,8 @@ spec =
 
     context "parsing" $ 
       it "should be true" $ 
-        parseExpr "\\ x . \\ y . x y" `shouldBe` Right (Lambda (Lambda (App (Var 1 "x") (Var 0 "y")) ["y"]) ["x","y"])
+        parseExpr "x (y z) h" `shouldBe` 
+        Right (App (Lambda (Lambda (App (Var 1 "x") (Var 0 "y")) ["y"]) ["x","y"]) (Lambda (Var 0 "x") ["x"]))
 
 main :: IO ()
 main = hspec spec

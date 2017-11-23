@@ -58,7 +58,7 @@ module Parser (
       <|> false
       <|> var
       <|> lambda
-      <|> parens expr'
+      <|> parens expr
 
   -- remove the initial whitespace, line comments, and block comments 
   -- the parser only removes white spaces after the tokens
