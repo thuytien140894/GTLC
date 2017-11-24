@@ -17,7 +17,7 @@ module Pretty (
     Succ t          -> PP.text "succ" <+> PP.parens (output t)
     Pred Zero       -> PP.text "pred" <+> output Zero
     Pred t          -> PP.text "pred" <+> PP.parens (output t)
-    Lambda t ctx    -> PP.text "\\" 
+    Lambda _ t ctx  -> PP.text "\\" 
                       <+> PP.text (head ctx) 
                       <+> PP.text "."
                       <+> output t

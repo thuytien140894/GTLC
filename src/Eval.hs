@@ -4,16 +4,15 @@ module Eval where
     
     import Data.Maybe
     import Data.Functor
-    import Data.Typeable
     
     -- determine if a term is a value
     isVal :: Term -> Bool
     isVal t = case t of 
-      Tru                 -> True
-      Fls                 -> True
-      t' | isNumeric t'   -> True
-      Lambda _ _          -> True
-      _                   -> False
+      Tru                   -> True
+      Fls                   -> True
+      t' | isNumeric t'     -> True
+      Lambda _ _ _          -> True
+      _                     -> False
     
     -- determine if a term is a numeric value
     isNumeric :: Term -> Bool
@@ -28,14 +27,14 @@ module Eval where
       Fls              -> t
       If _ _ _         -> t
       Var k id         -> if k < c then Var k id else Var (k + d) id
-      Lambda t1 ctx    -> Lambda (shift (c + 1) d t1) ctx 
+      Lambda ty t1 ctx -> Lambda ty (shift (c + 1) d t1) ctx 
       App t1 t2        -> App (shift c d t1) (shift c d t2)
       
     -- perform substitution given a variable with bruijn index j, a body s, and a term t
     subs :: Int -> Term -> Term -> Term 
     subs j s t = case t of 
       Var k id         -> if k == j then s else Var k id
-      Lambda t1 ctx    -> Lambda (subs (j + 1) (shift 0 1 s) t1) ctx
+      Lambda ty t1 ctx -> Lambda ty (subs (j + 1) (shift 0 1 s) t1) ctx
       App t1 t2        -> App (subs j s t1) (subs j s t2)
     
     -- perform substitution from the beginning
@@ -60,7 +59,7 @@ module Eval where
       If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> eval' t1 -- (E-IF)
 
       -- Application
-      App (Lambda t1 _) v2 | isVal v2     -> Just (subsFromTop v2 t1) -- (E-APPABS)
+      App (Lambda _ t1 _) v2 | isVal v2   -> Just (subsFromTop v2 t1) -- (E-APPABS)
       App t1 t2                           -> (`App` t2) <$> eval' t1 -- (E-APP1)
       App v1 t2 | isVal v1                -> App v1 <$> eval' t2 -- (E-APP2)
 

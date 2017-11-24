@@ -5,7 +5,6 @@ module Lexer where
   import Text.Parsec
   import Text.Parsec.String (Parser)
   import Text.Parsec.Language (emptyDef)
-  import qualified Text.Parsec.Expr as Ex
   import qualified Text.Parsec.Token as Tok
   
   -- language definition
@@ -27,7 +26,9 @@ module Lexer where
                             , "succ"
                             , "pred"
                             , "iszero"
-                            , "zero" ]
+                            , "zero"
+                            , "Bool"
+                            , "Nat" ]
     , Tok.reservedOpNames = [ "succ"
                             , "pred"
                             , "iszero" ]

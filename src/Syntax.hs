@@ -1,7 +1,8 @@
 module Syntax where
 
+    import Types
+
     import Text.Parsec
-    import Text.Parsec.String (Parser)
     
     -- declaring a new data type
     -- the new values of the type are called constructors
@@ -16,14 +17,14 @@ module Syntax where
       | Succ Term
       | Pred Term
       | IsZero Term
-      | Lambda Term [String] -- abstraction
+      | Lambda Type Term [String] -- abstraction
       | App Term Term -- application
       deriving (Eq, Show) -- make the data type an instance of these built-in classes
 
     -- retrieve the binding context of an abstraction
     getContext :: Term -> [String]
     getContext t = case t of
-      Lambda _ ctx -> ctx
-      _            -> []
+      Lambda _ _ ctx -> ctx
+      _              -> []
 
 -- the basic types in Haskell are Bool, Char, Int, String, Int, Integer, Float

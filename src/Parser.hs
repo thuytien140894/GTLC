@@ -4,6 +4,7 @@ module Parser (
 
   import Syntax
   import Lexer
+  import Types
 
   import Data.Maybe
   import Data.List
@@ -11,6 +12,15 @@ module Parser (
   import Text.Parsec.String (Parser)
   import qualified Text.Parsec.Expr as Ex
   import Data.Functor.Identity
+
+  -- Types
+  boolean, nat :: Parser Type
+  boolean = reserved "Bool" >> return Bool
+  nat = reserved "Nat" >> return Nat
+
+  -- parse types
+  types :: Parser Type
+  types = boolean <|> nat
 
   -- if statement
   conditional :: Parser Term
@@ -28,10 +38,12 @@ module Parser (
   lambda = do 
     reserved "\\"
     arg <- identifier 
+    reserved ":"
+    ty <- types
     reserved "."
     body <- expr
     let ctx = arg : getContext body
-    return $ fixBinding (Lambda body ctx) ctx
+    return $ fixBinding (Lambda ty body ctx) ctx
 
   -- variable
   var :: Parser Term
@@ -77,11 +89,11 @@ module Parser (
 
   -- parse an arithmetic expression such succ, pred, and iszero
   arith :: Parser Term
-  arith = Ex.buildExpressionParser prefixTable nat
+  arith = Ex.buildExpressionParser prefixTable num
 
   -- restrict arithmetic expressions to only accept numeric values
-  nat :: Parser Term
-  nat = zero
+  num :: Parser Term
+  num = zero
       <|> parens arith
 
   -- parse individual terms
@@ -108,10 +120,10 @@ module Parser (
   -- this function is called when parsing a Lambda term 
   fixBinding :: Term -> [String] -> Term
   fixBinding t globalCtx = case t of
-    Lambda t1 localCtx   -> Lambda (fixBinding t1 globalCtx) localCtx
-    App t1 t2            -> App (fixBinding t1 globalCtx) (fixBinding t2 globalCtx)
-    Var x id             -> Var (getBruijnIndex id globalCtx) id
-    _                    -> t
+    Lambda ty t1 localCtx -> Lambda ty (fixBinding t1 globalCtx) localCtx
+    App t1 t2             -> App (fixBinding t1 globalCtx) (fixBinding t2 globalCtx)
+    Var x id              -> Var (getBruijnIndex id globalCtx) id
+    _                     -> t
 
   -- get the bruijn index for a variable with a given identifier and its binding context
   getBruijnIndex :: String -> [String] -> Int

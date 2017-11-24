@@ -5,17 +5,20 @@ import Syntax
 import Parser
 import Eval
 import Pretty
+import Types
 
 spec :: Spec
 spec = 
   describe "STLC" $ do
     context "evaluation" $
       it "should be true" $
-        eval (App (Lambda (Var 0 "x") ["x"]) (Lambda (Var 0 "y") ["y"])) `shouldBe` Just (Lambda (Var 0 "y") ["y"])
+        eval (App (Lambda Nat (Var 0 "x") ["x"]) (Lambda Nat (Var 0 "y") ["y"])) `shouldBe` 
+        Just (Lambda Nat (Var 0 "y") ["y"])
 
     context "evaluation" $
       it "should be true" $
-        eval (If (IsZero Zero) (Lambda (Var 0 "x") ["x"]) (Var 0 "y")) `shouldBe` Just (Lambda (Var 0 "x") ["x"])
+        eval (If (IsZero Zero) (Lambda Nat (Var 0 "x") ["x"]) (Var 0 "y")) `shouldBe` 
+        Just (Lambda Nat (Var 0 "x") ["x"])
     
     context "evaluation" $
       it "should be true" $
@@ -23,8 +26,8 @@ spec =
 
     context "parsing" $ 
       it "should be true" $ 
-        parseExpr "iszero (pred (succ 0))" `shouldBe` 
-        Right (IsZero (Pred (Succ Zero)))
+        parseExpr "\\ x : Nat . x" `shouldBe` 
+        Right (Lambda Nat (Var 0 "x") ["x"])
 
     context "printing" $ 
       it "should be true" $ 
