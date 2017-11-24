@@ -1,7 +1,10 @@
 module EvalSpec where
 
-import SpecHelper
+import Test.Hspec
 import Syntax
+import Parser
+import Eval
+import Pretty
 
 spec :: Spec
 spec = 
@@ -22,6 +25,10 @@ spec =
       it "should be true" $ 
         parseExpr "iszero (pred (succ 0))" `shouldBe` 
         Right (IsZero (Pred (Succ Zero)))
+
+    context "printing" $ 
+      it "should be true" $ 
+        printPretty (Succ (Succ Zero)) `shouldBe` "succ (succ 0)"
 
 main :: IO ()
 main = hspec spec

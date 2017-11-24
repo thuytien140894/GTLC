@@ -1,5 +1,5 @@
 module Pretty (
-    -- ppexpr
+    printPretty
   ) where
   
   import Syntax
@@ -7,24 +7,21 @@ module Pretty (
   import Text.PrettyPrint (Doc, (<>), (<+>))
   import qualified Text.PrettyPrint as PP
   
-  -- parensIf ::  Bool -> Doc -> Doc
-  -- parensIf True = PP.parens
-  -- parensIf False = id
+  output :: Term -> Doc
+  output t = case t of 
+    Zero            -> PP.text "0"
+    Tru             -> PP.text "true"
+    Fls             -> PP.text "false"
+    Var _ varName   -> PP.text varName
+    Succ Zero       -> PP.text "succ" <+> output Zero
+    Succ t          -> PP.text "succ" <+> PP.parens (output t)
+    Pred Zero       -> PP.text "pred" <+> output Zero
+    Pred t          -> PP.text "pred" <+> PP.parens (output t)
+    Lambda t ctx    -> PP.text "\\" 
+                      <+> PP.text (head ctx) 
+                      <+> PP.text "."
+                      <+> output t
+    App t1 t2       -> PP.parens (output t1) <+> PP.parens (output t2)
   
-  -- class Pretty p where
-  --   ppr :: Int -> p -> Doc
-  
-  -- instance Pretty Expr where
-  --   ppr _ Zero = PP.text "0"
-  --   ppr _ Tr = PP.text "true"
-  --   ppr _ Fl = PP.text "false"
-  --   ppr p (Succ a) = (parensIf (p > 0) $ PP.text "succ" <+> ppr (p+1) a)
-  --   ppr p (Pred a) = (parensIf (p > 0) $ PP.text "succ" <+> ppr (p+1) a)
-  --   ppr p (IsZero a) = (parensIf (p > 0) $ PP.text "iszero" <+> ppr (p+1) a)
-  --   ppr p (If a b c) =
-  --         PP.text "if"   <+> ppr p a
-  --     <+> PP.text "then" <+> ppr p b
-  --     <+> PP.text "else" <+> ppr p c
-  
-  -- ppexpr :: Expr -> String
-  -- ppexpr = PP.render . ppr 0
+  printPretty :: Term -> String
+  printPretty = PP.render . output
