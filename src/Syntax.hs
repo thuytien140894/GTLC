@@ -8,7 +8,7 @@ module Syntax where
     -- the new values of the type are called constructors
     -- values with arguments are called constructor functions, which are themselves fully evaluated
     data Term 
-      = Undefined -- "empty" term when applying to a single term
+      = Undefined -- "empty" term
       | Zero
       | Tru
       | Fls

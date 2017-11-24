@@ -1,7 +1,7 @@
 module Types where
 
     data Type 
-      = Unit
+      = Void -- "empty" type
       | Bool 
       | Nat
       | Arr Type Type  

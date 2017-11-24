@@ -26,16 +26,17 @@ module Parser (
     outType <- types
     return $ Arr inType outType
 
-  -- application
+  -- arrow type
   arrow :: Type -> Type -> Type
   arrow t1 t2 = case t1 of 
-    Unit         -> t2        -- t2 is the first term 
+    Void         -> t2        -- t2 is the first term 
     _            -> Arr t1 t2
 
-  -- recursively apply terms from the left
+  -- recursively "arrow" types from the left
   arrowFromLeft :: [Type] -> Type
-  arrowFromLeft = foldl arrow Unit
+  arrowFromLeft = foldl arrow Void
   
+  -- parse a function type which consists of a sequence of types separated by "->"
   types :: Parser Type
   types = do
     list <- sepBy1 types' arrowSep
