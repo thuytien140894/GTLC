@@ -21,7 +21,7 @@ module Parser (
     tr <- expr
     reserved "else"
     fl <- expr
-    return (If cond tr fl)
+    return $ If cond tr fl
 
   -- abstraction
   lambda :: Parser Term
@@ -31,13 +31,13 @@ module Parser (
     reserved "."
     body <- expr
     let ctx = arg : getContext body
-    return (fixBinding (Lambda body ctx) ctx) 
+    return $ fixBinding (Lambda body ctx) ctx
 
   -- variable
   var :: Parser Term
   var = do
     id <- identifier
-    return (Var 0 id)
+    return $ Var 0 id
 
   -- Constants
   true, false :: Parser Term
@@ -59,7 +59,7 @@ module Parser (
   app :: Parser Term
   app = do
     terms <- sepBy1 expr' whiteSpace 
-    return (applyFromLeft terms)
+    return $ applyFromLeft terms
 
   -- parse an application which consists a sequence of terms
   expr :: Parser Term
@@ -76,13 +76,13 @@ module Parser (
     ]
 
   -- parse an arithmetic expression such succ, pred, and iszero
-  arithExpr :: Parser Term
-  arithExpr = Ex.buildExpressionParser prefixTable natExpr
+  arith :: Parser Term
+  arith = Ex.buildExpressionParser prefixTable nat
 
   -- restrict arithmetic expressions to only accept numeric values
-  natExpr :: Parser Term
-  natExpr = zero
-      <|> parens arithExpr
+  nat :: Parser Term
+  nat = zero
+      <|> parens arith
 
   -- parse individual terms
   expr' :: Parser Term
@@ -92,7 +92,7 @@ module Parser (
       <|> var
       <|> lambda
       <|> conditional
-      <|> arithExpr
+      <|> arith
       <|> parens expr -- parse 'application' inside parenthesis
 
   -- remove the initial whitespace, line comments, and block comments 

@@ -50,9 +50,9 @@ module Eval where
       Pred (Succ nv) | isNumeric nv       -> Just nv -- (E-PREDSUCC)
       IsZero Zero                         -> Just Tru -- (E-ISZEROZERO)
       IsZero (Succ nv) | isNumeric nv     -> Just Fls -- (E-ISZEROSUCC)
-      IsZero t1 | not (isNumeric t1)      -> (\t1' -> IsZero t1') <$> eval' t1 -- (E-ISZERO)
-      Succ t1                             -> (\t1' -> Succ t1') <$> eval' t1 -- (E-SUCC)
-      Pred t1                             -> (\t1' -> Pred t1') <$> eval' t1 -- (E-PRED)
+      IsZero t1 | not (isNumeric t1)      -> IsZero <$> eval' t1 -- (E-ISZERO)
+      Succ t1                             -> Succ <$> eval' t1 -- (E-SUCC)
+      Pred t1                             -> Pred <$> eval' t1 -- (E-PRED)
 
       -- Conditional
       If Tru t2 t3                        -> Just t2 -- (E-IFTRUE)
@@ -61,8 +61,8 @@ module Eval where
 
       -- Application
       App (Lambda t1 _) v2 | isVal v2     -> Just (subsFromTop v2 t1) -- (E-APPABS)
-      App t1 t2                           -> (\t1' -> App t1' t2) <$> eval' t1 -- (E-APP1)
-      App v1 t2 | isVal v1                -> (\t2' -> App v1 t2') <$> eval' t2 -- (E-APP2)
+      App t1 t2                           -> (`App` t2) <$> eval' t1 -- (E-APP1)
+      App v1 t2 | isVal v1                -> App v1 <$> eval' t2 -- (E-APP2)
 
       -- No rules applied
       _                                   -> Nothing

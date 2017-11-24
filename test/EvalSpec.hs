@@ -12,7 +12,7 @@ spec =
 
     context "evaluation" $
       it "should be true" $
-        eval (If Tru (Lambda (Var 0 "x") ["x"]) (Var 0 "y")) `shouldBe` Just (Lambda (Var 0 "x") ["x"])
+        eval (If (IsZero Zero) (Lambda (Var 0 "x") ["x"]) (Var 0 "y")) `shouldBe` Just (Lambda (Var 0 "x") ["x"])
     
     context "evaluation" $
       it "should be true" $
