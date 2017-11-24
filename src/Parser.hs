@@ -9,6 +9,19 @@ module Parser (
   import Data.List
   import Text.Parsec
   import Text.Parsec.String (Parser)
+  import qualified Text.Parsec.Expr as Ex
+  import Data.Functor.Identity
+
+  -- if statement
+  conditional :: Parser Term
+  conditional = do
+    reserved "if"
+    cond <- expr
+    reserved "then"
+    tr <- expr
+    reserved "else"
+    fl <- expr
+    return (If cond tr fl)
 
   -- abstraction
   lambda :: Parser Term
@@ -30,7 +43,7 @@ module Parser (
   true, false :: Parser Term
   true  = reserved "true"  >> return Tru
   false = reserved "false" >> return Fls
-  -- zero  = reservedOp "0"   >> return Zero
+  zero  = reservedOp "0"   >> return Zero
 
   -- application
   apply :: Term -> Term -> Term
@@ -51,14 +64,36 @@ module Parser (
   -- parse an application which consists a sequence of terms
   expr :: Parser Term
   expr = app 
+  
+  -- Prefix operators
+  prefixTable :: Ex.OperatorTable String () Identity Term
+  prefixTable = [
+      [
+        Ex.Prefix (reserved "succ"   >> return Succ)
+      , Ex.Prefix (reserved "pred"   >> return Pred)
+      , Ex.Prefix (reserved "iszero" >> return IsZero)
+      ]
+    ]
+
+  -- parse an arithmetic expression such succ, pred, and iszero
+  arithExpr :: Parser Term
+  arithExpr = Ex.buildExpressionParser prefixTable natExpr
+
+  -- restrict arithmetic expressions to only accept numeric values
+  natExpr :: Parser Term
+  natExpr = zero
+      <|> parens arithExpr
 
   -- parse individual terms
   expr' :: Parser Term
   expr' = true
       <|> false
+      <|> zero
       <|> var
       <|> lambda
-      <|> parens expr
+      <|> conditional
+      <|> arithExpr
+      <|> parens expr -- parse 'application' inside parenthesis
 
   -- remove the initial whitespace, line comments, and block comments 
   -- the parser only removes white spaces after the tokens
@@ -76,6 +111,7 @@ module Parser (
     Lambda t1 localCtx   -> Lambda (fixBinding t1 globalCtx) localCtx
     App t1 t2            -> App (fixBinding t1 globalCtx) (fixBinding t2 globalCtx)
     Var x id             -> Var (getBruijnIndex id globalCtx) id
+    _                    -> t
 
   -- get the bruijn index for a variable with a given identifier and its binding context
   getBruijnIndex :: String -> [String] -> Int

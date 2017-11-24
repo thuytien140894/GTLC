@@ -8,10 +8,14 @@ module Syntax where
     -- values with arguments are called constructor functions, which are themselves fully evaluated
     data Term 
       = Undefined -- "empty" term when applying to a single term
+      | Zero
       | Tru
       | Fls
       | Var Int String
-      -- | If Term Term Term
+      | If Term Term Term
+      | Succ Term
+      | Pred Term
+      | IsZero Term
       | Lambda Term [String] -- abstraction
       | App Term Term -- application
       deriving (Eq, Show) -- make the data type an instance of these built-in classes

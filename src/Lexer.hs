@@ -5,11 +5,8 @@ module Lexer where
   import Text.Parsec
   import Text.Parsec.String (Parser)
   import Text.Parsec.Language (emptyDef)
-  
   import qualified Text.Parsec.Expr as Ex
   import qualified Text.Parsec.Token as Tok
-  
-  import Data.Functor.Identity
   
   -- language definition
   langDef :: Tok.LanguageDef ()
@@ -20,12 +17,20 @@ module Lexer where
     , Tok.nestedComments  = False
     , Tok.identStart      = letter 
     , Tok.identLetter     = alphaNum 
+    , Tok.opStart         = oneOf ":!#$%&*+./<=>?@\\^|-~"
+    , Tok.opLetter        = oneOf ":!#$%&*+./<=>?@\\^|-~"
     , Tok.reservedNames   = [ "true"
                             , "false"
                             , "if"
                             , "then"
-                            , "else"]
-    , Tok.reservedOpNames = []
+                            , "else"
+                            , "succ"
+                            , "pred"
+                            , "iszero"
+                            , "zero" ]
+    , Tok.reservedOpNames = [ "succ"
+                            , "pred"
+                            , "iszero" ]
     , Tok.caseSensitive   = True
     }
   
@@ -57,16 +62,3 @@ module Lexer where
   -- parse an operator
   reservedOp :: String -> Parser ()
   reservedOp = Tok.reservedOp lexer
-  
-  prefixOp :: String -> (a -> a) -> Ex.Operator String () Identity a
-  prefixOp s f = Ex.Prefix (reservedOp s >> return f)
-  
-  -- Prefix operators
-  table :: Ex.OperatorTable String () Identity Term
-  table = [
-      [
-      --   prefixOp "succ" Succ
-      -- , prefixOp "pred" Pred
-      -- , prefixOp "iszero" IsZero
-      ]
-    ]

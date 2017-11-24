@@ -1670,3 +1670,27 @@
 2017-11-22 22:04:37 [ThreadId 13] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Parser.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
 2017-11-22 22:29:50 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Parser.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
 2017-11-22 22:29:50 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Parser.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:03:08 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: variable"
+2017-11-23 14:04:58 [ThreadId 15] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:05:20 [ThreadId 16] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:05:56 [ThreadId 17] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Parser.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:07:07 [ThreadId 18] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Parser.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:07:22 [ThreadId 19] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:07:40 [ThreadId 20] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:07:59 [ThreadId 21] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:08:50 [ThreadId 22] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:08:51 [ThreadId 23] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:09:14 [ThreadId 24] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:09:17 [ThreadId 25] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:09:34 [ThreadId 26] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:09:37 [ThreadId 27] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-23 14:10:47 [ThreadId 7] ERROR phoityne - "error: lexical error in string/character literal at end of input"
+2017-11-23 14:10:48 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: such \8226 Perhaps you meant \8216succ\8217 (imported from Prelude)"
+2017-11-23 14:11:25 [ThreadId 7] ERROR phoityne - "error: Not in scope: data constructor \8216Ex.OperatorTable\8217 No module named \8216Ex\8217 is imported."
+2017-11-23 14:32:24 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: expression"
+2017-11-23 14:33:33 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: terms"
+2017-11-23 14:34:17 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: arithmetic"
+2017-11-23 16:33:45 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-23 16:34:00 [ThreadId 7] ERROR phoityne - "error: \8226 Data constructor not in scope: Maybe \8226 Perhaps you meant variable \8216maybe\8217 (imported from Data.Maybe)"
+2017-11-23 16:34:55 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: ISZEROSUCC"
+2017-11-23 16:35:15 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: ISZEROSUCC"

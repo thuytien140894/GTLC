@@ -9,15 +9,24 @@ module Eval where
     -- determine if a term is a value
     isVal :: Term -> Bool
     isVal t = case t of 
-      Tru           -> True
-      Fls           -> True
-      Lambda _ _    -> True
-      _             -> False
+      Tru                 -> True
+      Fls                 -> True
+      t' | isNumeric t'   -> True
+      Lambda _ _          -> True
+      _                   -> False
     
+    -- determine if a term is a numeric value
+    isNumeric :: Term -> Bool
+    isNumeric t = case t of 
+      Zero                   -> True
+      Succ t'                -> isNumeric t'
+      _                      -> False
+
     shift :: Int -> Int -> Term -> Term
     shift c d t = case t of 
       Tru              -> t
       Fls              -> t
+      If _ _ _         -> t
       Var k id         -> if k < c then Var k id else Var (k + d) id
       Lambda t1 ctx    -> Lambda (shift (c + 1) d t1) ctx 
       App t1 t2        -> App (shift c d t1) (shift c d t2)
@@ -36,9 +45,26 @@ module Eval where
     -- small-step evaluation
     eval' :: Term -> Maybe Term
     eval' t = case t of
+      -- Arithmetic
+      Pred Zero                           -> Just Zero -- (E-PREDZERO)
+      Pred (Succ nv) | isNumeric nv       -> Just nv -- (E-PREDSUCC)
+      IsZero Zero                         -> Just Tru -- (E-ISZEROZERO)
+      IsZero (Succ nv) | isNumeric nv     -> Just Fls -- (E-ISZEROSUCC)
+      IsZero t1 | not (isNumeric t1)      -> (\t1' -> IsZero t1') <$> eval' t1 -- (E-ISZERO)
+      Succ t1                             -> (\t1' -> Succ t1') <$> eval' t1 -- (E-SUCC)
+      Pred t1                             -> (\t1' -> Pred t1') <$> eval' t1 -- (E-PRED)
+
+      -- Conditional
+      If Tru t2 t3                        -> Just t2 -- (E-IFTRUE)
+      If Fls t2 t3                        -> Just t3 -- (E-IFFALSE)
+      If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> eval' t1 -- (E-IF)
+
+      -- Application
       App (Lambda t1 _) v2 | isVal v2     -> Just (subsFromTop v2 t1) -- (E-APPABS)
       App t1 t2                           -> (\t1' -> App t1' t2) <$> eval' t1 -- (E-APP1)
       App v1 t2 | isVal v1                -> (\t2' -> App v1 t2') <$> eval' t2 -- (E-APP2)
+
+      -- No rules applied
       _                                   -> Nothing
 
     -- big-step evaluation
