@@ -26,8 +26,8 @@ spec =
 
     context "parsing" $ 
       it "should be true" $ 
-        parseExpr "\\ x : Nat . x" `shouldBe` 
-        Right (Lambda Nat (Var 0 "x") ["x"])
+        parseExpr "\\ x : Nat->Nat->(Nat->Nat) . x" `shouldBe` 
+        Right (Lambda (Arr (Arr Nat Nat) (Arr Nat Nat)) (Var 0 "x") ["x"])
 
     context "printing" $ 
       it "should be true" $ 

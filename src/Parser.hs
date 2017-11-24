@@ -13,14 +13,39 @@ module Parser (
   import qualified Text.Parsec.Expr as Ex
   import Data.Functor.Identity
 
-  -- Types
+  -- Primitive types
   boolean, nat :: Parser Type
   boolean = reserved "Bool" >> return Bool
   nat = reserved "Nat" >> return Nat
 
-  -- parse types
+  -- Function 
+  function :: Parser Type
+  function = do
+    inType <- types
+    reserved "->"
+    outType <- types
+    return $ Arr inType outType
+
+  -- application
+  arrow :: Type -> Type -> Type
+  arrow t1 t2 = case t1 of 
+    Unit         -> t2        -- t2 is the first term 
+    _            -> Arr t1 t2
+
+  -- recursively apply terms from the left
+  arrowFromLeft :: [Type] -> Type
+  arrowFromLeft = foldl arrow Unit
+  
   types :: Parser Type
-  types = boolean <|> nat
+  types = do
+    list <- sepBy1 types' arrowSep
+    return $ arrowFromLeft list
+
+  -- parse types
+  types' :: Parser Type
+  types' = boolean 
+        <|> nat
+        <|> parens types
 
   -- if statement
   conditional :: Parser Term

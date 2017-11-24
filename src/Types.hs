@@ -1,7 +1,8 @@
 module Types where
 
     data Type 
-      = Bool 
+      = Unit
+      | Bool 
       | Nat
-      | Type Type  
+      | Arr Type Type  
       deriving (Eq, Show)

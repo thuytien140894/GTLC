@@ -51,14 +51,13 @@ module Lexer where
   identifier :: Parser String
   identifier = Tok.identifier lexer
   
+  -- parse an arrow
+  arrowSep :: Parser String
+  arrowSep = string "->"
+
   -- parse a white space
   whiteSpace :: Parser ()
   whiteSpace = Tok.whiteSpace lexer
-  
-  -- parse zero or more occurrences of p separated by semi
-  -- returns a list of values returned by p
-  semiSep :: Parser a -> Parser [a]
-  semiSep = Tok.semiSep lexer
   
   -- parse an operator
   reservedOp :: String -> Parser ()

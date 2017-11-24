@@ -1694,3 +1694,4 @@
 2017-11-23 16:34:00 [ThreadId 7] ERROR phoityne - "error: \8226 Data constructor not in scope: Maybe \8226 Perhaps you meant variable \8216maybe\8217 (imported from Data.Maybe)"
 2017-11-23 16:34:55 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: ISZEROSUCC"
 2017-11-23 16:35:15 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: ISZEROSUCC"
+2017-11-23 23:53:05 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216::\8217"
