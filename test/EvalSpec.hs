@@ -33,5 +33,10 @@ spec =
       it "should be true" $ 
         printPretty (Succ (Succ Zero)) `shouldBe` "succ (succ 0)"
 
+    context "binding indices" $ 
+      it "should be true" $ 
+        parseExpr "\\ z : Nat . \\ x : Nat . x z y" `shouldBe` 
+        Right (Lambda Nat (Lambda Nat (App (App (Var 0 "x") (Var 1 "z")) (Var 2 "y")) ["x"]) ["z","x"])
+
 main :: IO ()
 main = hspec spec

@@ -13,12 +13,12 @@ module Parser (
   import qualified Text.Parsec.Expr as Ex
   import Data.Functor.Identity
 
-  -- Primitive types
+  -- Base types
   boolean, nat :: Parser Type
   boolean = reserved "Bool" >> return Bool
   nat = reserved "Nat" >> return Nat
 
-  -- Function 
+  -- Function type
   function :: Parser Type
   function = do
     inType <- types
@@ -26,7 +26,7 @@ module Parser (
     outType <- types
     return $ Arr inType outType
 
-  -- arrow type
+  -- "arrow" two types
   arrow :: Type -> Type -> Type
   arrow t1 t2 = case t1 of 
     Void         -> t2        -- t2 is the first term 
@@ -68,14 +68,15 @@ module Parser (
     ty <- types
     reserved "."
     body <- expr
-    let ctx = arg : getContext body
-    return $ fixBinding (Lambda ty body ctx) ctx
+    let boundVars = arg : getBindingContext body
+    let freeVars = findFreeVar body boundVars 
+    return $ fixBinding (Lambda ty body boundVars) boundVars freeVars
 
   -- variable
   var :: Parser Term
   var = do
     id <- identifier
-    return $ Var 0 id
+    return $ Var (-1) id
 
   -- Constants
   true, false :: Parser Term
@@ -144,13 +145,31 @@ module Parser (
 
   -- correct the bruijn index for each variable
   -- this function is called when parsing a Lambda term 
-  fixBinding :: Term -> [String] -> Term
-  fixBinding t globalCtx = case t of
-    Lambda ty t1 localCtx -> Lambda ty (fixBinding t1 globalCtx) localCtx
-    App t1 t2             -> App (fixBinding t1 globalCtx) (fixBinding t2 globalCtx)
-    Var x id              -> Var (getBruijnIndex id globalCtx) id
+  fixBinding :: Term -> [String] -> [String] -> Term
+  fixBinding t boundVars freeVars = case t of
+    Lambda ty t1 localBound -> Lambda ty (fixBinding t1 boundVars freeVars) localBound
+    App t1 t2             -> App (fixBinding t1 boundVars freeVars) (fixBinding t2 boundVars freeVars)
+    Var _ id              -> Var (getBruijnIndex id boundVars freeVars) id
     _                     -> t
 
   -- get the bruijn index for a variable with a given identifier and its binding context
-  getBruijnIndex :: String -> [String] -> Int
-  getBruijnIndex id ctx = fromMaybe (-1) (elemIndex id (reverse ctx))
+  getBruijnIndex :: String -> [String] -> [String] -> Int
+  getBruijnIndex id boundVars freeVars 
+    | isNothing boundIndex = fromJust freeIndex + length boundVars
+    | otherwise            = fromJust boundIndex
+    where boundIndex = elemIndex id (reverse boundVars)
+          freeIndex = elemIndex id (reverse freeVars)
+
+  -- find free variables
+  findFreeVar :: Term -> [String] -> [String]
+  findFreeVar t boundVars = case t of
+    Lambda _ t1 _        -> findFreeVar t1 boundVars
+    App t1 t2            -> findFreeVar t1 boundVars ++ findFreeVar t2 boundVars
+    Var _ id             -> if id `isElem` boundVars then [] else [id]
+    _                    -> []
+      
+  -- check if an element is in a list
+  isElem :: String -> [String] -> Bool
+  isElem x list = case list of 
+    []             -> False
+    y : ys         -> if x == y then True else isElem x ys
