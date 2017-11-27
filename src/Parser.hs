@@ -124,14 +124,14 @@ module Parser (
 
     -- parse individual terms
     expr' :: Parser Term
-    expr' = true
+    expr' = parens expr -- parse 'application' inside parenthesis
+        <|> true
         <|> false
         <|> zero
         <|> var
         <|> lambda
         <|> conditional
         <|> arith
-        <|> parens expr -- parse 'application' inside parenthesis
 
     -- remove the initial whitespace, line comments, and block comments 
     -- the parser only removes white spaces after the tokens

@@ -12,7 +12,7 @@ spec =
   describe "STLC" $ do
     context "evaluation" $
       it "should be true" $
-        eval (App (Lambda Nat (Var 0 "x") ["x"]) (Lambda Nat (Var 0 "y") ["y"])) `shouldBe` 
+        eval (App (Lambda (Arr Nat Nat) (Var 0 "x") ["x"]) (Lambda Nat (Var 0 "y") ["y"])) `shouldBe` 
         Just (Lambda Nat (Var 0 "y") ["y"])
 
     context "evaluation" $
@@ -26,17 +26,17 @@ spec =
 
     context "parsing" $ 
       it "should be true" $ 
-        parseExpr "\\ x : Nat->Nat->(Nat->Nat) . x" `shouldBe` 
-        Right (Lambda (Arr (Arr Nat Nat) (Arr Nat Nat)) (Var 0 "x") ["x"])
+        parseExpr "if succ (succ 0) then true else false" `shouldBe` 
+        Right (If (Succ (Succ Zero)) Tru Fls)
 
     context "printing" $ 
       it "should be true" $ 
-        printPretty (Succ (Succ Zero)) `shouldBe` "succ (succ 0)"
+        printPretty (Lambda Nat (Var 0 "y") ["y"]) `shouldBe` "succ (succ 0)"
 
     context "binding indices" $ 
       it "should be true" $ 
-        parseExpr "\\ z : Nat . \\ x : Nat . x z y" `shouldBe` 
-        Right (Lambda Nat (Lambda Nat (App (App (Var 0 "x") (Var 1 "z")) (Var 2 "y")) ["x"]) ["z","x"])
+        parseExpr "(\\ x : Nat->Nat . x) (\\ y : Nat . y)" `shouldBe` 
+        Right (App (Lambda (Arr Nat Nat) (Var 0 "x") ["x"]) (Lambda Nat (Var 0 "y") ["y"]))
 
 main :: IO ()
 main = hspec spec
