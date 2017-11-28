@@ -17,5 +17,5 @@ cabal.sandbox.config
 *.eventlog
 .stack-work/
 .DS_Store
-.vscode
+.vscode/
 cabal.project.local

@@ -12,8 +12,8 @@ spec =
   describe "STLC" $ do
     context "evaluation" $
       it "should be true" $
-        eval (App (Lambda (Arr Nat Nat) (Var 0 "x") ["x"]) (Lambda Nat (Var 0 "y") ["y"])) `shouldBe` 
-        Just (Lambda Nat (Var 0 "y") ["y"])
+        eval (App (Lambda (Arr Nat Nat) (App (Var 0 "x") (Succ Zero)) ["x"]) (Lambda Nat (Var 0 "y") ["y"])) `shouldBe` 
+        Just (Succ Zero)
 
     context "evaluation" $
       it "should be true" $
@@ -31,12 +31,12 @@ spec =
 
     context "printing" $ 
       it "should be true" $ 
-        printPretty (Lambda Nat (Var 0 "y") ["y"]) `shouldBe` "succ (succ 0)"
+        printPretty (Lambda (Arr Nat Nat) (Var 0 "y") ["y"]) `shouldBe` "\\ y : Nat->Nat . y"
 
     context "binding indices" $ 
       it "should be true" $ 
-        parseExpr "(\\ x : Nat->Nat . x) (\\ y : Nat . y)" `shouldBe` 
-        Right (App (Lambda (Arr Nat Nat) (Var 0 "x") ["x"]) (Lambda Nat (Var 0 "y") ["y"]))
+        parseExpr "(\\ x : Nat->Nat . x z) (\\ y : Nat . y)" `shouldBe` 
+        Right (App (Lambda (Arr Nat Nat) (App (Var 0 "x") (Var 1 "z")) ["x"]) (Lambda Nat (Var 0 "y") ["y"]))
 
 main :: IO ()
 main = hspec spec

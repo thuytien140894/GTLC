@@ -1732,3 +1732,26 @@
 2017-11-24 16:28:48 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: freeIndex"
 2017-11-24 16:28:53 [ThreadId 7] ERROR phoityne - "error: \8226 Data constructor not in scope: String \8226 Perhaps you meant variable \8216string\8217 (imported from Text.Parsec)"
 2017-11-24 16:28:55 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: given"
+2017-11-27 14:52:38 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: individual"
+2017-11-27 16:02:08 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-27 16:02:09 [ThreadId 7] ERROR phoityne - "error: \8226 Variable not in scope: t2 \8226 Perhaps you meant \8216t\8217 (<no location info>)"
+2017-11-27 16:02:47 [ThreadId 7] ERROR phoityne - "error: Data constructor not in scope: Term"
+2017-11-27 16:03:05 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216->\8217"
+2017-11-27 16:04:46 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216then\8217"
+2017-11-27 16:04:55 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: d"
+2017-11-27 16:07:49 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: evaluation"
+2017-11-27 16:07:58 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: perform"
+2017-11-27 16:08:10 [ThreadId 7] ERROR phoityne - "error: Variable not in scope: substitution"
+2017-11-27 16:09:16 [ThreadId 7] ERROR phoityne - "error: parse error on input \8216import\8217"
+2017-11-27 16:09:30 [ThreadId 7] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/Spec.hs] file load error. '/Users/tienho/Desktop/STLC/test/Spec.hs'
+2017-11-27 16:09:57 [ThreadId 12] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/test/EvalSpec.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:11:04 [ThreadId 13] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:11:06 [ThreadId 14] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:12:33 [ThreadId 15] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:14:17 [ThreadId 16] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:17:13 [ThreadId 17] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:17:18 [ThreadId 18] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:17:51 [ThreadId 19] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:17:56 [ThreadId 20] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:19:28 [ThreadId 21] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Eval.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
+2017-11-27 16:20:02 [ThreadId 22] ERROR phoityne - load file fail.[/Users/tienho/Desktop/STLC/src/Pretty.hs] <file descriptor: 38>: hPutChar: resource vanished (Broken pipe)
