@@ -74,5 +74,5 @@ module Eval where
     -- evaluate a term
     eval :: Term -> Maybe Term
     eval t = case nf t of
-      nft | isVal nft -> Just nft
+      res | isVal res -> Just res
           | otherwise -> Nothing -- term is "stuck"

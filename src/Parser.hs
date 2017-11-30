@@ -5,7 +5,7 @@ module Parser (
     import Syntax
     import Lexer
     import Types
-    import Utils 
+    import ParseHelper 
 
     import Text.Parsec
     import Text.Parsec.String (Parser)
@@ -67,9 +67,10 @@ module Parser (
       ty <- types
       reserved "."
       body <- expr
-      let boundVars = arg : getBindingContext body
-      let freeVars = findFreeVar body boundVars 
-      return $ fixBinding (Lambda ty body boundVars) boundVars freeVars
+      let boundVars = (arg, ty) : getBoundVar body
+      let freeVars = getFreeVar body boundVars 
+      let t = updateTypingEnv (Lambda ty body boundVars) boundVars
+      return $ fixBinding t boundVars freeVars
 
     -- variable
     var :: Parser Term

@@ -15,6 +15,6 @@ module Syntax where
     | Succ Term
     | Pred Term
     | IsZero Term
-    | Lambda Type Term [String] -- abstraction
+    | Lambda Type Term [(String, Type)] -- abstraction
     | App Term Term -- application
     deriving (Eq, Show) -- make the data type an instance of these built-in classes
