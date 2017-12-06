@@ -21,7 +21,6 @@ library
                      , Syntax
                      , Types
                      , TypeChecker
-                     , Utils
                      , ParseHelper
   build-depends:       base >= 4.7 && < 5
                      , mtl >= 2.2 && < 3.0

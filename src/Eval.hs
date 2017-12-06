@@ -23,7 +23,7 @@ module Eval where
 
     shift :: Int -> Int -> Term -> Term
     shift c d t = case t of 
-      Var k id         -> if k < c then Var k id else Var (k + d) id
+      Var k ty id      -> if k < c then t else Var (k + d) ty id
       Lambda ty t1 ctx -> Lambda ty (shift (c + 1) d t1) ctx 
       App t1 t2        -> App (shift c d t1) (shift c d t2)
       _                -> t -- t is a constant
@@ -31,7 +31,7 @@ module Eval where
     -- perform substitution given a variable with bruijn index j, a body s, and a term t
     subs :: Int -> Term -> Term -> Term 
     subs j s t = case t of 
-      Var k id         -> if k == j then s else Var k id
+      Var k ty id      -> if k == j then s else t
       Lambda ty t1 ctx -> Lambda ty (subs (j + 1) (shift 0 1 s) t1) ctx
       App t1 t2        -> App (subs j s t1) (subs j s t2)
       _                -> t -- t is a constant
@@ -59,8 +59,8 @@ module Eval where
 
       -- Application
       App (Lambda _ t1 _) v2 | isVal v2   -> Just (subsFromTop v2 t1)             -- (E-APPABS)
-      App t1 t2                           -> (`App` t2) <$> eval' t1              -- (E-APP1)
       App v1 t2 | isVal v1                -> App v1 <$> eval' t2                  -- (E-APP2)
+      App t1 t2                           -> (`App` t2) <$> eval' t1              -- (E-APP1)
 
       -- No rules applied
       _                                   -> Nothing                              -- "Stuck"

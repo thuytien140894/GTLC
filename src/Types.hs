@@ -1,7 +1,7 @@
 module Types where
 
     data Type 
-      = Void -- "empty" type
+      = TUnit -- trivial type
       | Bool 
       | Nat
       | Arr Type Type  

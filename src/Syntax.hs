@@ -6,15 +6,15 @@ module Syntax where
   -- the new values of the type are called constructors
   -- values with arguments are called constructor functions, which are themselves fully evaluated
   data Term 
-    = Undefined -- "empty" term
+    = Unit -- trivial term
     | Zero
     | Tru
     | Fls
-    | Var Int String
+    | Var Int Type String
     | If Term Term Term
     | Succ Term
     | Pred Term
     | IsZero Term
-    | Lambda Type Term [(String, Type)] -- abstraction
+    | Lambda Type Term [String] -- abstraction
     | App Term Term -- application
     deriving (Eq, Show) -- make the data type an instance of these built-in classes

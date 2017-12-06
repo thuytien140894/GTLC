@@ -28,12 +28,12 @@ module Parser (
     -- "arrow" two types
     arrow :: Type -> Type -> Type
     arrow t1 t2 = case t1 of 
-      Void         -> t2        -- t2 is the first term 
+      TUnit         -> t2        -- t2 is the first term 
       _            -> Arr t1 t2
 
     -- recursively "arrow" types from the left
     arrowFromLeft :: [Type] -> Type
-    arrowFromLeft = foldl arrow Void
+    arrowFromLeft = foldl arrow TUnit
 
     -- parse a function type which consists of a sequence of types separated by "->"
     types :: Parser Type
@@ -67,16 +67,16 @@ module Parser (
       ty <- types
       reserved "."
       body <- expr
-      let boundVars = (arg, ty) : getBoundVar body
+      let boundVars = arg : getBoundVar body
       let freeVars = getFreeVar body boundVars 
-      let t = updateTypingEnv (Lambda ty body boundVars) boundVars
-      return $ fixBinding t boundVars freeVars
+      let t = fixBinding (Lambda ty body boundVars) boundVars freeVars
+      return $ updateVarType t arg ty
 
     -- variable
     var :: Parser Term
     var = do
       id <- identifier
-      return $ Var (-1) id
+      return $ Var (-1) TUnit id
 
     -- Constants
     true, false :: Parser Term
@@ -87,12 +87,12 @@ module Parser (
     -- application
     apply :: Term -> Term -> Term
     apply t1 t2 = case t1 of 
-      Undefined    -> t2        -- t2 is the first term 
+      Unit         -> t2        -- t2 is the first term 
       _            -> App t1 t2
 
     -- recursively apply terms from the left
     applyFromLeft :: [Term] -> Term
-    applyFromLeft = foldl apply Undefined
+    applyFromLeft = foldl apply Unit
 
     -- apply two terms that are separated by a space
     app :: Parser Term

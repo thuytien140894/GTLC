@@ -15,21 +15,18 @@ module Pretty (
       Bool         -> "Bool"
       Arr ty1 ty2  -> typeName ty1 ++ "->" ++ typeName ty2
 
-    extractBoundArg :: (String, Type) -> String
-    extractBoundArg (id, ty) = id
-
     output :: Term -> Doc
     output t = case t of 
       Zero             -> PP.text "0"
       Tru              -> PP.text "true"
       Fls              -> PP.text "false"
-      Var _ varName    -> PP.text varName
+      Var _ _ varName  -> PP.text varName
       Succ Zero        -> PP.text "succ" <+> output Zero
       Succ t           -> PP.text "succ" <+> PP.parens (output t)
       Pred Zero        -> PP.text "pred" <+> output Zero
       Pred t           -> PP.text "pred" <+> PP.parens (output t)
       Lambda ty t ctx  -> PP.text "\\" 
-                        <+> PP.text (extractBoundArg (head ctx)) 
+                        <+> PP.text (head ctx)
                         <+> PP.text ":"
                         <+> PP.text (typeName ty)
                         <+> PP.text "."
