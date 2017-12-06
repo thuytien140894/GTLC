@@ -15,10 +15,10 @@ module Main where
                            Right _  -> case evaluate validExpr of 
                                         Just res -> putStrLn $ printPretty res
                                         Nothing  -> putStrLn "Cannot evaluate"
-                           Left err -> putStrLn err
-      Left err        -> print err
-                           
+                           Left err -> putStrLn $ printPretty err
+      Left err        -> print err                       
 
+    -- main method to read in user input
     main :: IO ()
     main = runInputT defaultSettings loop
       where
@@ -26,5 +26,5 @@ module Main where
       loop = do
         input <- getInputLine "> "
         case input of
-          Nothing      -> outputStrLn "Goodbye."
+          Just "exit"  -> return ()
           Just validIn -> liftIO (interpret validIn) >> loop

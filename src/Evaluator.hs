@@ -11,7 +11,7 @@ module Evaluator where
       Tru                   -> True
       Fls                   -> True
       t' | isNumeric t'     -> True
-      Lambda _ _ _          -> True
+      Lambda {}             -> True
       _                     -> False
     
     -- determine if a term is a numeric value

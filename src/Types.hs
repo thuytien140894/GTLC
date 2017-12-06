@@ -4,5 +4,5 @@ module Types where
       = TUnit -- trivial type
       | Bool 
       | Nat
-      | Arr Type Type  
+      | Arr {argTy :: Type, retTy :: Type}  
       deriving (Eq, Show)

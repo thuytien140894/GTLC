@@ -6,6 +6,7 @@ import Parser
 import Evaluator
 import Prettier
 import Types
+import TypeErrors
 import TypeChecker
 
 spec :: Spec
@@ -31,8 +32,12 @@ spec =
 
     context "printing" $ 
       it "should be true" $ 
+        printPretty (Difference Tru Zero) `shouldBe` "true and 0 do not have the same type."
+
+    context "printing" $ 
+      it "should be true" $ 
         printPretty (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (Var 1 TUnit "z")) ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"])) 
-        `shouldBe` "(\\ x : Nat->Nat . (x) (z)) (\\ y : Nat . y)"
+        `shouldBe` "(\\ x : Nat->Nat . x z) (\\ y : Nat . y)"
 
     context "binding indices" $ 
       it "should be true" $ 
@@ -72,12 +77,12 @@ spec =
     context "type checking" $ 
       it "should be true" $ 
         typeOf (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Bool (Var 0 Bool "y") ["y"])) `shouldBe` 
-        Left "Lambda Bool (Var 0 Bool \"y\") [\"y\"] does not have the type of Arr Nat Nat"
+        Left (Mismatch (Lambda Bool (Var 0 Bool "y") ["y"]) (Arr Nat Nat))
 
     context "type checking" $ 
       it "should be true" $ 
         typeOf (If Tru Tru Zero) `shouldBe` 
-        Left "true and 0 do not have the same type."
+        Left (Difference Tru Zero)
 
 main :: IO ()
 main = hspec spec

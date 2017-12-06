@@ -20,6 +20,7 @@ library
                      , Prettier
                      , Syntax
                      , Types
+                     , TypeErrors
                      , TypeChecker
                      , ParseHelper
   build-depends:       base >= 4.7 && < 5
