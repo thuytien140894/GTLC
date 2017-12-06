@@ -3,7 +3,7 @@ module EvalSpec where
 import Test.Hspec
 import Syntax
 import Parser
-import Eval
+import Evaluator
 import Pretty
 import Types
 import TypeChecker
@@ -57,17 +57,22 @@ spec =
     context "type checking" $ 
       it "should be true" $ 
         typeOf (Lambda Nat (Lambda Nat (IsZero Zero) ["y"]) ["x","y"]) `shouldBe` 
-        Just (Arr Nat (Arr Nat Bool))
+        Right (Arr Nat (Arr Nat Bool))
 
     context "type checking" $ 
       it "should be true" $ 
         typeOf (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) `shouldBe` 
-        Just (Arr (Arr Nat Nat) (Arr Nat Nat))
+        Right (Arr (Arr Nat Nat) (Arr Nat Nat))
 
     context "type checking" $ 
       it "should be true" $ 
         typeOf (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"])) `shouldBe` 
-        Just (Arr Nat Nat)
+        Right (Arr Nat Nat)
+
+    context "type checking" $ 
+      it "should be true" $ 
+        typeOf (If Zero Tru Fls) `shouldBe` 
+        Left "Zero is not of type Bool."
 
 main :: IO ()
 main = hspec spec

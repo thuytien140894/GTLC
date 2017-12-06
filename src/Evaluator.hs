@@ -1,4 +1,4 @@
-module Eval where
+module Evaluator where
     -- define shifting and substitution here
     import Syntax
     

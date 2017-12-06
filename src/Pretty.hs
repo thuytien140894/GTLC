@@ -31,7 +31,7 @@ module Pretty (
                         <+> PP.text (typeName ty)
                         <+> PP.text "."
                         <+> output t
-      App t1 t2       -> PP.parens (output t1) <+> PP.parens (output t2)
+      App t1 t2        -> PP.parens (output t1) <+> PP.parens (output t2)
 
     printPretty :: Term -> String
     printPretty = PP.render . output
