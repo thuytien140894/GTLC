@@ -41,38 +41,38 @@ module Evaluator where
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
 
     -- small-step evaluation
-    eval' :: Term -> Maybe Term
-    eval' t = case t of
+    evaluate' :: Term -> Maybe Term
+    evaluate' t = case t of
       -- Arithmetic
-      Pred Zero                           -> Just Zero                            -- (E-PREDZERO)
-      Pred (Succ nv) | isNumeric nv       -> Just nv                              -- (E-PREDSUCC)
-      IsZero Zero                         -> Just Tru                             -- (E-ISZEROZERO)
-      IsZero (Succ nv) | isNumeric nv     -> Just Fls                             -- (E-ISZEROSUCC)
-      IsZero t1 | not (isNumeric t1)      -> IsZero <$> eval' t1                  -- (E-ISZERO)
-      Succ t1                             -> Succ <$> eval' t1                    -- (E-SUCC)
-      Pred t1                             -> Pred <$> eval' t1                    -- (E-PRED)
+      Pred Zero                           -> Just Zero                                -- (E-PREDZERO)
+      Pred (Succ nv) | isNumeric nv       -> Just nv                                  -- (E-PREDSUCC)
+      IsZero Zero                         -> Just Tru                                 -- (E-ISZEROZERO)
+      IsZero (Succ nv) | isNumeric nv     -> Just Fls                                 -- (E-ISZEROSUCC)
+      IsZero t1 | not (isNumeric t1)      -> IsZero <$> evaluate' t1                  -- (E-ISZERO)
+      Succ t1                             -> Succ <$> evaluate' t1                    -- (E-SUCC)
+      Pred t1                             -> Pred <$> evaluate' t1                    -- (E-PRED)
 
       -- Conditional
-      If Tru t2 t3                        -> Just t2                              -- (E-IFTRUE)
-      If Fls t2 t3                        -> Just t3                              -- (E-IFFALSE)
-      If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> eval' t1  -- (E-IF)
+      If Tru t2 t3                        -> Just t2                                  -- (E-IFTRUE)
+      If Fls t2 t3                        -> Just t3                                  -- (E-IFFALSE)
+      If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> evaluate' t1  -- (E-IF)
 
       -- Application
-      App (Lambda _ t1 _) v2 | isVal v2   -> Just (subsFromTop v2 t1)             -- (E-APPABS)
-      App v1 t2 | isVal v1                -> App v1 <$> eval' t2                  -- (E-APP2)
-      App t1 t2                           -> (`App` t2) <$> eval' t1              -- (E-APP1)
+      App (Lambda _ t1 _) v2 | isVal v2   -> Just (subsFromTop v2 t1)                 -- (E-APPABS)
+      App v1 t2 | isVal v1                -> App v1 <$> evaluate' t2                  -- (E-APP2)
+      App t1 t2                           -> (`App` t2) <$> evaluate' t1              -- (E-APP1)
 
       -- No rules applied
-      _                                   -> Nothing                              -- "Stuck"
+      _                                   -> Nothing                                  -- "Stuck"
 
     -- big-step evaluation
-    -- (apply eval' repeatedly until a value is reached or we're left with an expression
+    -- (apply evaluate' repeatedly until a value is reached or we're left with an expression
     -- that cannot be evaluated further)
-    nf :: Term -> Term
-    nf x = fromMaybe x (nf <$> eval' x)
+    evaluateToValue :: Term -> Term
+    evaluateToValue x = fromMaybe x (evaluateToValue <$> evaluate' x)
     
     -- evaluate a term
-    eval :: Term -> Maybe Term
-    eval t = case nf t of
+    evaluate :: Term -> Maybe Term
+    evaluate t = case evaluateToValue t of
       res | isVal res -> Just res
           | otherwise -> Nothing -- term is "stuck"

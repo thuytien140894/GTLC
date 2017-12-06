@@ -1,27 +1,30 @@
 module Main where
     
-    import Eval
+    import Evaluator
+    import TypeChecker
     import Parser
-    import Pretty
+    import Prettier
     
     import Control.Monad.Trans
     import System.Console.Haskeline
     
-    -- process :: String -> IO ()
-    -- process line = do
-    --   let res = parseExpr line
-    --   case res of
-    --     Left err -> print err
-    --     Right ex -> case eval ex of
-    --       Nothing -> putStrLn "Cannot evaluate"
-    --       Just result -> putStrLn $ ppexpr result
-    
+    -- interpret each line input, either printing out the result or error
+    interpret :: String -> IO ()
+    interpret line = case parseExpr line of 
+      Right validExpr -> case typeOf validExpr of 
+                           Right _  -> case evaluate validExpr of 
+                                        Just res -> putStrLn $ printPretty res
+                                        Nothing  -> putStrLn "Cannot evaluate"
+                           Left err -> putStrLn err
+      Left err        -> print err
+                           
+
     main :: IO ()
-    main = putStrLn "Hello"
-    -- main = runInputT defaultSettings loop
-    --   where
-    --   loop = do
-    --     minput <- getInputLine "Arith> "
-    --     case minput of
-    --       Nothing -> outputStrLn "Goodbye."
-    --       Just input -> (liftIO $ process input) >> loop
+    main = runInputT defaultSettings loop
+      where
+      loop :: InputT IO ()
+      loop = do
+        input <- getInputLine "> "
+        case input of
+          Nothing      -> outputStrLn "Goodbye."
+          Just validIn -> liftIO (interpret validIn) >> loop

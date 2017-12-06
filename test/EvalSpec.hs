@@ -4,7 +4,7 @@ import Test.Hspec
 import Syntax
 import Parser
 import Evaluator
-import Pretty
+import Prettier
 import Types
 import TypeChecker
 
@@ -13,12 +13,12 @@ spec =
   describe "STLC" $ do
     context "evaluation" $
       it "should be true" $
-        eval (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (Succ Zero)) ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"])) `shouldBe` 
+        evaluate (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (Succ Zero)) ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"])) `shouldBe` 
         Just (Succ Zero)
     
     context "evaluation" $
       it "should be true" $
-        eval (IsZero (Pred (Succ Zero))) `shouldBe` Just (Tru)
+        evaluate (IsZero (Pred (Succ Zero))) `shouldBe` Just (Tru)
 
     context "parsing" $ 
       it "should be true" $ 
@@ -71,8 +71,13 @@ spec =
 
     context "type checking" $ 
       it "should be true" $ 
-        typeOf (If Zero Tru Fls) `shouldBe` 
-        Left "Zero is not of type Bool."
+        typeOf (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Bool (Var 0 Bool "y") ["y"])) `shouldBe` 
+        Left "Lambda Bool (Var 0 Bool \"y\") [\"y\"] does not have the type of Arr Nat Nat"
+
+    context "type checking" $ 
+      it "should be true" $ 
+        typeOf (If Tru Tru Zero) `shouldBe` 
+        Left "true and 0 do not have the same type."
 
 main :: IO ()
 main = hspec spec

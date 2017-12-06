@@ -2,6 +2,7 @@ module TypeChecker where
 
     import Syntax
     import Types
+    import Prettier
 
     import Data.Maybe
 
@@ -16,29 +17,28 @@ module TypeChecker where
                             ty <- typeOf t' 
                             case ty of  
                               Nat -> Right Nat
-                              _   -> Left (show t' ++ " is not of type Nat.")
+                              _   -> Left (printPretty t' ++ " is not of type Nat.")
 
         Pred t'         -> do                                            -- (T-PRED)
                             ty <- typeOf t' 
                             case ty of
                               Nat -> Right Nat
-                              _   -> Left (show t' ++ " is not of type Nat.")
+                              _   -> Left (printPretty t' ++ " is not of type Nat.")
 
         IsZero t'       -> do                                            -- (T-ISZERO)
                             ty <- typeOf t' 
                             case ty of 
                               Nat  -> Right Bool
-                              _    -> Left (show t' ++ " is not of type Nat.")
+                              _    -> Left (printPretty t' ++ " is not of type Nat.")
 
         If t1 t2 t3     -> do                                            -- (T-IF)
                             cond <- typeOf t1 
                             fst  <- typeOf t2 
                             snd  <- typeOf t3 
                             case cond of 
-                              Bool -> case fst of  
-                                        snd -> Right fst 
-                                        _   -> Left (show t2 ++ " and " ++ show t3 ++ " do not have the same type.") 
-                              _    -> Left (show t1 ++ " is not of type Bool.")
+                              Bool | fst == snd -> Right fst 
+                                   | otherwise  -> Left (printPretty t2 ++ " and " ++ printPretty t3 ++ " do not have the same type.") 
+                              _    -> Left (printPretty t1 ++ " is not of type Bool.")
                             
         Var _ ty id     -> case ty of                                    -- (T-VAR)
                              TUnit -> Left "id has no bound type."   
@@ -46,12 +46,12 @@ module TypeChecker where
 
         Lambda ty t' _  -> Arr ty <$> typeOf t'                          -- (T-ABS)
 
-        App t1 t2       -> do                                            -- (T-APP)
-                            Arr argTy retTy <- typeOf t1 
-                            paramTy <- typeOf t2 
-                            case argTy of
-                              paramTy -> Right retTy
-                              _       -> Left (show t2 ++ "does not match the type of the function argument.") 
+        App t1 t2       -> do 
+                            funcTy  <- typeOf t1   
+                            paramTy <- typeOf t2                                         -- (T-APP)
+                            case funcTy of 
+                              Arr argTy retTy | argTy == paramTy -> Right retTy
+                                              | otherwise        -> Left (show t2 ++ " does not have the type of " ++ show argTy)
 
         _               -> Left "Ill-typed"                              -- "Ill-typed"
          

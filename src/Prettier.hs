@@ -1,4 +1,4 @@
-module Pretty (
+module Prettier (
     printPretty
   ) where
   

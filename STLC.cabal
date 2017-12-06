@@ -17,7 +17,7 @@ library
   exposed-modules:     Evaluator
                      , Parser
                      , Lexer
-                     , Pretty
+                     , Prettier
                      , Syntax
                      , Types
                      , TypeChecker
