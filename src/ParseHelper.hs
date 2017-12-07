@@ -4,7 +4,7 @@ module ParseHelper where
     import Types
 
     import Data.Maybe
-    import Data.List
+    import Data.List 
 
     -- correct the bruijn index for each variable
     -- this function is called when parsing a Lambda term 
@@ -50,3 +50,9 @@ module ParseHelper where
     isElem x list = case list of 
       []            -> False
       y : ys        -> if x == y then True else isElem x ys
+
+    -- merge all the entries into one record
+    merge :: [Term] -> [(String, Term)]
+    merge ls = case ls of 
+      []               -> []
+      Rec entry : ys   -> entry ++ merge ys    

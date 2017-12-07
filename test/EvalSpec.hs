@@ -51,12 +51,12 @@ spec =
 
     context "binding indices" $ 
       it "should be true" $ 
-        parseExpr "(\\ x : Nat . \\ y : Nat . iszero 0)" `shouldBe` 
+        parseExpr "(\\x: Nat. \\ y : Nat . iszero 0)" `shouldBe` 
         Right (Lambda Nat (Lambda Nat (IsZero Zero) ["y"]) ["x","y"])
 
     context "binding indices" $ 
       it "should be true" $ 
-        parseExpr "(\\ x : Nat->Nat . x) (\\ y : Nat . y)" `shouldBe` 
+        parseExpr "(\\x : Nat->Nat . x) (\\y : Nat . y)" `shouldBe` 
         Right (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"]))
 
     context "type checking" $ 
@@ -91,6 +91,10 @@ spec =
     context "evaluating record projection" $ 
       it "should be true" $ 
         evaluate (Proj (Rec [("x", If Tru (IsZero Zero) Fls)]) "x") `shouldBe` Just Tru
+
+    context "parsing record" $ 
+      it "should be true" $ 
+        parseExpr "{x  =true, y=false}" `shouldBe` Right (Rec [("x",Tru),("y",Fls)])
 
 main :: IO ()
 main = hspec spec

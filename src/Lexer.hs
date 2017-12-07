@@ -43,6 +43,30 @@ module Lexer where
     parens :: Parser a -> Parser a
     parens = Tok.parens lexer
 
+    -- parse p enclosed in braces, returning the value of p
+    braces :: Parser a -> Parser a 
+    braces = Tok.braces lexer
+
+    -- parse comma
+    comma :: Parser String
+    comma = Tok.comma lexer
+    
+    -- parse a lambda symbol
+    lamb :: Parser String
+    lamb = string "\\"
+
+    -- parse colon
+    colon :: Parser String
+    colon = Tok.colon lexer
+    
+    -- parse dot
+    dot :: Parser String
+    dot = Tok.dot lexer
+
+    -- parse equal sign
+    equal :: Parser String
+    equal = string "="
+
     -- parse a reserved name
     reserved :: String -> Parser ()
     reserved = Tok.reserved lexer

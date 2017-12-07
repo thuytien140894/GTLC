@@ -43,9 +43,9 @@ module Parser (
 
     -- parse types
     types' :: Parser Type
-    types' = boolean 
+    types' = parens types 
+          <|> boolean
           <|> nat
-          <|> parens types
 
     -- if statement
     conditional :: Parser Term
@@ -61,16 +61,33 @@ module Parser (
     -- abstraction
     lambda :: Parser Term
     lambda = do 
-      reserved "\\"
+      lamb >> whiteSpace
       arg <- identifier 
-      reserved ":"
+      colon >> whiteSpace
       ty <- types
-      reserved "."
+      dot >> whiteSpace
       body <- expr
       let boundVars = arg : getBoundVar body
       let freeVars = getFreeVar body boundVars 
       let t = fixBinding (Lambda ty body boundVars) boundVars freeVars
       return $ updateVarType t arg ty
+
+    record :: Parser Term 
+    record = braces record'
+
+    -- parse a record of many entries
+    record' :: Parser Term
+    record' = do
+      list <- sepBy1 entry comma
+      return $ Rec (merge list)
+
+    -- parse one entry of a record
+    entry :: Parser Term
+    entry = do
+      label <- identifier 
+      equal >> whiteSpace -- parse any spaces after the equal sign
+      field <- expr
+      return $ Rec [(label, field)]
 
     -- variable
     var :: Parser Term
@@ -133,11 +150,12 @@ module Parser (
         <|> lambda
         <|> conditional
         <|> arith
+        <|> record
 
     -- remove the initial whitespace, line comments, and block comments 
     -- the parser only removes white spaces after the tokens
     removeWhiteSpace :: Parser Term
-    removeWhiteSpace = whiteSpace >> expr
+    removeWhiteSpace = whiteSpace >> expr 
 
     -- parse a string
     parseExpr :: String -> Either ParseError Term
