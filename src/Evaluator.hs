@@ -5,6 +5,13 @@ module Evaluator where
     import Data.Maybe
     import Data.Functor
     
+    -- determine if a list contains all values
+    areAllVal :: [(String, Term)] -> Bool
+    areAllVal ls = case ls of 
+      []                        -> True
+      (l1, t1) : ys | isVal t1  -> areAllVal ys
+                    | otherwise -> False
+
     -- determine if a term is a value
     isVal :: Term -> Bool
     isVal t = case t of 
@@ -12,6 +19,7 @@ module Evaluator where
       Fls                   -> True
       t' | isNumeric t'     -> True
       Lambda {}             -> True
+      Rec ls                -> areAllVal ls
       _                     -> False
     
     -- determine if a term is a numeric value
@@ -40,6 +48,26 @@ module Evaluator where
     subsFromTop :: Term -> Term -> Term
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
 
+    -- get the value for the specified value
+    getVal :: [(String, Term)] -> String -> Term
+    getVal ls l = case ls of 
+      []                        -> Unit -- cannot be found
+      (l1, t1) : ys | l1 == l   -> t1
+                    | otherwise -> getVal ys l
+
+    -- evaluate a record 
+    evalRecord :: Term -> Maybe Term 
+    evalRecord (Rec ls) = case ls of 
+      []                          -> Just $ Rec []
+      (l1, v1) : ys | isVal v1    -> (`addEntry` (l1, v1)) <$> evalRecord (Rec ys)
+                    | otherwise   -> case evaluate' v1 of 
+                                       Just res     -> (`addEntry` (l1, res)) <$> evalRecord (Rec ys)
+                                       Nothing      -> Nothing
+
+    -- add new entry to the record
+    addEntry :: Term -> (String, Term) -> Term
+    addEntry (Rec ls) newElem = Rec (newElem : ls)
+
     -- small-step evaluation
     evaluate' :: Term -> Maybe Term
     evaluate' t = case t of
@@ -58,10 +86,15 @@ module Evaluator where
       If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> evaluate' t1  -- (E-IF)
 
       -- Application
-      App (Lambda _ t1 _) v2 | isVal v2   -> Just (subsFromTop v2 t1)                 -- (E-APPABS)
+      App (Lambda _ t1 _) v2 | isVal v2   -> Just $ subsFromTop v2 t1                 -- (E-APPABS)
       App v1 t2 | isVal v1                -> App v1 <$> evaluate' t2                  -- (E-APP2)
       App t1 t2                           -> (`App` t2) <$> evaluate' t1              -- (E-APP1)
 
+      -- Records
+      Proj (Rec ls) l | isVal (Rec ls)    -> Just $ getVal ls l                       -- (E-PROJRCD)
+      Proj (Rec ls) l                     -> (`Proj` l) <$> evaluate' (Rec ls)        -- (E-PROJ)
+      Rec ls | not (isVal (Rec ls))       -> evalRecord t                             -- (E-RCD)
+                      
       -- No rules applied
       _                                   -> Nothing                                  -- "Stuck"
 

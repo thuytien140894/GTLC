@@ -84,5 +84,13 @@ spec =
         typeOf (If Tru Tru Zero) `shouldBe` 
         Left (Difference Tru Zero)
 
+    context "evaluating records" $ 
+      it "should be true" $ 
+        evaluate (Rec [("x", If Tru (IsZero Zero) Fls)]) `shouldBe` Just (Rec [("x",Tru)])
+
+    context "evaluating record projection" $ 
+      it "should be true" $ 
+        evaluate (Proj (Rec [("x", If Tru (IsZero Zero) Fls)]) "x") `shouldBe` Just Tru
+
 main :: IO ()
 main = hspec spec

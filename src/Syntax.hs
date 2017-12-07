@@ -15,6 +15,8 @@ module Syntax where
     | Succ Term
     | Pred Term
     | IsZero Term
+    | Rec [(String, Term)]
+    | Proj Term String
     | Lambda {varTy :: Type, body :: Term, boundVars :: [String]} -- abstraction
     | App Term Term -- application
     deriving (Eq, Show) -- make the data type an instance of these built-in classes
