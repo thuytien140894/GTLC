@@ -1,11 +1,29 @@
-module TypeChecker where
+module TypeChecker (
+  typeOf
+  ) where
 
     import Syntax
     import Types
     import TypeErrors
-    import Prettier
 
-    import Data.Maybe
+    -- find the type for a record
+    rcdTypeOf :: Term -> Either TypeError Type
+    rcdTypeOf (Rec ls) = case ls of 
+      []              -> Right $ TRec []
+      (l1, t1) : ys   -> case typeOf t1 of 
+                           Right ty   -> (`addType` (l1, ty)) <$> rcdTypeOf (Rec ys) 
+                           Left err   -> Left err
+
+    -- add new entry to the record
+    addType :: Type -> (String, Type) -> Type
+    addType (TRec ls) newType = TRec (newType : ls)
+
+    -- get the type for the specified label
+    getType :: Type -> String -> Either TypeError Type
+    getType (TRec ls) l = case ls of 
+      []                        -> Left $ NotFound l 
+      (l1, ty) : ys | l1 == l   -> Right ty
+                    | otherwise -> getType (TRec ys) l
 
     -- find the type for a term 
     typeOf :: Term -> Either TypeError Type
@@ -40,6 +58,12 @@ module TypeChecker where
                               Bool | fst == snd -> Right fst 
                                    | otherwise  -> Left $ Difference t2 t3
                               _    -> Left $ Mismatch t1 Bool
+                            
+        Rec ls          -> rcdTypeOf t                                   -- (T-RCD)
+
+        Proj (Rec ls) l -> case typeOf (Rec ls) of                       -- (T-PROJ)
+                             Right ty -> getType ty l
+                             Left err -> Left err
                             
         Var _ ty id     -> case ty of                                    -- (T-VAR)
                              TUnit -> Left $ NotBound t   

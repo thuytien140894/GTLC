@@ -1,5 +1,7 @@
-module Evaluator where
-    -- define shifting and substitution here
+module Evaluator ( 
+  evaluate
+  ) where
+
     import Syntax
     
     import Data.Maybe
@@ -29,6 +31,9 @@ module Evaluator where
       Succ t'                -> isNumeric t'
       _                      -> False
 
+    -- renumber the indices of free variables in a term
+    -- maintain the "cutoff" parameter c that controls which variables should be shifted
+    -- i.e. variables with indices less than c are bound and therefore should stay the same
     shift :: Int -> Int -> Term -> Term
     shift c d t = case t of 
       Var k ty id      -> if k < c then t else Var (k + d) ty id
@@ -48,12 +53,12 @@ module Evaluator where
     subsFromTop :: Term -> Term -> Term
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
 
-    -- get the value for the specified value
-    getVal :: [(String, Term)] -> String -> Term
-    getVal ls l = case ls of 
-      []                        -> Unit -- cannot be found
-      (l1, t1) : ys | l1 == l   -> t1
-                    | otherwise -> getVal ys l
+    -- get the value for the specified label
+    getVal :: Term -> String -> Maybe Term
+    getVal (Rec ls) l = case ls of 
+      []                        -> Nothing 
+      (l1, t1) : ys | l1 == l   -> Just t1
+                    | otherwise -> getVal (Rec ys) l
 
     -- evaluate a record 
     evalRecord :: Term -> Maybe Term 
@@ -91,7 +96,7 @@ module Evaluator where
       App t1 t2                           -> (`App` t2) <$> evaluate' t1              -- (E-APP1)
 
       -- Records
-      Proj (Rec ls) l | isVal (Rec ls)    -> Just $ getVal ls l                       -- (E-PROJRCD)
+      Proj (Rec ls) l | isVal (Rec ls)    -> getVal (Rec ls) l                        -- (E-PROJRCD)
       Proj (Rec ls) l                     -> (`Proj` l) <$> evaluate' (Rec ls)        -- (E-PROJ)
       Rec ls | not (isVal (Rec ls))       -> evalRecord t                             -- (E-RCD)
                       

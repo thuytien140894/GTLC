@@ -93,7 +93,7 @@ module Parser (
     var :: Parser Term
     var = do
       id <- identifier
-      return $ Var (-1) TUnit id
+      return $ Var (-1) TUnit id -- the variable is first parsed as free
 
     -- Constants
     true, false :: Parser Term
