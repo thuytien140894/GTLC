@@ -26,7 +26,13 @@ module Prettier (
         Succ Zero        -> PP.text "succ" <+> output Zero
         Succ t           -> PP.text "succ" <+> PP.parens (output t)
         Pred Zero        -> PP.text "pred" <+> output Zero
-        Pred t           -> PP.text "pred" <+> PP.parens (output t)
+        Pred t           -> PP.text "pred" <+> PP.parens (output t) 
+        If t1 t2 t3      -> PP.text "if" 
+                          <+> output t1  
+                          <+> PP.text "then"
+                          <+> output t2
+                          <+> PP.text "else"
+                          <+> output t3
         Lambda ty t ctx  -> PP.text "\\" 
                           <+> PP.text (head ctx)
                           <+> PP.text ":"
@@ -35,7 +41,7 @@ module Prettier (
                           <+> output t
         App t1 t2        -> case t1 of 
                               Var {} -> output t1 <+> sndTerm
-                              _         -> PP.parens (output t1) <+> sndTerm
+                              _      -> PP.parens (output t1) <+> sndTerm
                               where sndTerm = case t2 of 
                                                 Var {} -> output t2
                                                 _         -> PP.parens (output t2)

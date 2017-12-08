@@ -8,6 +8,7 @@ module TypeErrors where
       | Difference Term Term
       | Mismatch Term Type
       | NotFunction Term
+      | NotRecord Term
       | NotFound String 
       | IllTyped
       deriving (Eq, Show)

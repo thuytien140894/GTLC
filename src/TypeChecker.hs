@@ -55,14 +55,16 @@ module TypeChecker (
                           snd  <- typeOf t3 
                           case cond of 
                             Bool | fst == snd -> Right fst 
-                                  | otherwise  -> Left $ Difference t2 t3
+                                 | otherwise  -> Left $ Difference t2 t3
                             _    -> Left $ Mismatch t1 Bool
                           
       Rec ls          -> rcdTypeOf t                                   -- (T-RCD)
 
-      Proj (Rec ls) l -> case typeOf (Rec ls) of                       -- (T-PROJ)
-                            Right ty -> getType ty l
-                            Left err -> Left err
+      Proj t l        -> case t of                                     -- (T-PROJ)
+                           Rec ls -> case typeOf (Rec ls) of                       
+                                       Right ty -> getType ty l
+                                       Left err -> Left err
+                           _      -> Left $ NotRecord t
                           
       Var _ ty id     -> case ty of                                    -- (T-VAR)
                             TUnit -> Left $ NotBound t   
