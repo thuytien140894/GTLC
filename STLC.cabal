@@ -22,6 +22,7 @@ library
                      , Types
                      , TypeErrors
                      , TypeChecker
+                     , Subtype
                      , ParseHelper
   build-depends:       base >= 4.7 && < 5
                      , mtl >= 2.2 && < 3.0

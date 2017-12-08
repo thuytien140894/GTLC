@@ -8,11 +8,11 @@ module Evaluator (
     import Data.Functor
     
     -- determine if a list contains all values
-    areAllVal :: [(String, Term)] -> Bool
-    areAllVal ls = case ls of 
-      []                        -> True
-      (l1, t1) : ys | isVal t1  -> areAllVal ys
-                    | otherwise -> False
+    areAllVal :: [Entry] -> Bool
+    areAllVal []            = True
+    areAllVal ((l1, t1) : ys)  
+      | isVal t1            = areAllVal ys
+      | otherwise           = False
 
     -- determine if a term is a value
     isVal :: Term -> Bool
@@ -53,24 +53,31 @@ module Evaluator (
     subsFromTop :: Term -> Term -> Term
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
 
-    -- get the value for the specified label
+    -- get the value for the specified field
     getVal :: Term -> String -> Maybe Term
-    getVal (Rec ls) l = case ls of 
-      []                        -> Nothing 
-      (l1, t1) : ys | l1 == l   -> Just t1
-                    | otherwise -> getVal (Rec ys) l
+    getVal (Rec []) _               = Nothing
+    getVal (Rec ((l1, t1) : ys)) l 
+      | l1 == l                     = Just t1
+      | otherwise                   = getVal (Rec ys) l
+
+    -- check whether a record contain the field
+    hasField :: Term -> String -> Bool
+    hasField (Rec []) _             = False
+    hasField (Rec ((l1, t1) : ys)) l 
+       | l1 == l                    = True
+       | otherwise                  = hasField (Rec ys) l
 
     -- evaluate a record 
     evalRecord :: Term -> Maybe Term 
-    evalRecord (Rec ls) = case ls of 
-      []                          -> Just $ Rec []
-      (l1, v1) : ys | isVal v1    -> (`addEntry` (l1, v1)) <$> evalRecord (Rec ys)
-                    | otherwise   -> case evaluate' v1 of 
-                                       Just res     -> (`addEntry` (l1, res)) <$> evalRecord (Rec ys)
-                                       Nothing      -> Nothing
+    evalRecord (Rec [])               = Just $ Rec []
+    evalRecord (Rec ((l1, v1) : ys)) 
+      | isVal v1                      = (`addEntry` (l1, v1)) <$> evalRecord (Rec ys)
+      | otherwise                     = case evaluate' v1 of 
+                                          Just res     -> (`addEntry` (l1, res)) <$> evalRecord (Rec ys)
+                                          Nothing      -> Nothing
 
     -- add new entry to the record
-    addEntry :: Term -> (String, Term) -> Term
+    addEntry :: Term -> Entry -> Term
     addEntry (Rec ls) newElem = Rec (newElem : ls)
 
     -- small-step evaluation

@@ -82,12 +82,12 @@ module Parser (
       return $ Rec (concat list)
 
     -- parse one entry of a record
-    entry :: Parser [(String, Term)]
+    entry :: Parser [Entry]
     entry = do
-      label <- identifier 
+      field <- identifier 
       equal >> whiteSpace -- parse any spaces after the equal sign
-      field <- expr
-      return [(label, field)]
+      value <- expr
+      return [(field, value)]
 
     -- variable
     var :: Parser Term

@@ -5,5 +5,8 @@ module Types where
       | Bool 
       | Nat
       | Arr {argTy :: Type, retTy :: Type} 
-      | TRec [(String, Type)] 
+      | TRec [TEntry] 
+      | Top 
       deriving (Eq, Show)
+
+    type TEntry = (String, Type)

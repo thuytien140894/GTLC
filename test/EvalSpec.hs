@@ -8,6 +8,7 @@ import Prettier
 import Types
 import TypeErrors
 import TypeChecker
+import Subtype
 
 spec :: Spec
 spec = 
@@ -103,6 +104,36 @@ spec =
     context "typechecking record projection" $ 
       it "should be true" $ 
         typeOf (Proj (Rec [("x", If Tru (IsZero Zero) Fls), ("y", Succ Zero)]) "x") `shouldBe` Right Bool
+
+    context "subtyping records" $ 
+      it "should be true" $ 
+        isSubtype (TRec [("x", TRec [("c",Nat),("b",Nat)]),("y",Nat)]) (TRec [("x", TRec [("a",Nat)])]) 
+        `shouldBe` False
+
+    context "sort record fields" $ 
+      it "should be true" $ 
+        sortFields [("b",Nat),("a",Nat)]
+        `shouldBe` [("a",Nat),("b",Nat)]
+
+    context "subtyping records" $ 
+      it "should be true" $ 
+        isSubtype (TRec [("x", Nat), ("a", Bool), ("b", Bool)]) (TRec [("x", Nat), ("y", Nat)]) 
+        `shouldBe` False
+
+    context "subtyping records" $ 
+      it "should be true" $ 
+        isSubtype (TRec [("a", Bool), ("y", Nat), ("x", Nat)]) (TRec [("x", Nat), ("y", Nat)]) 
+        `shouldBe` True
+
+    context "subtyping records" $ 
+      it "should be true" $ 
+        isSubtype (TRec [("z", Bool)]) (TRec [("z", Bool)])
+        `shouldBe` True 
+               
+    context "subtyping records" $ 
+      it "should be true" $ 
+        isSubtype (Arr (TRec [("y",Nat)]) (TRec [("z", Bool)])) (Arr (TRec [("x",Nat),("y",Nat)]) (TRec [("z", Bool)]))
+        `shouldBe` True
 
 main :: IO ()
 main = hspec spec

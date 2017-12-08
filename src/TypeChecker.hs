@@ -8,22 +8,21 @@ module TypeChecker (
 
     -- find the type for a record
     rcdTypeOf :: Term -> Either TypeError Type
-    rcdTypeOf (Rec ls) = case ls of 
-      []              -> Right $ TRec []
-      (l1, t1) : ys   -> case typeOf t1 of 
-                           Right ty   -> (`addType` (l1, ty)) <$> rcdTypeOf (Rec ys) 
-                           Left err   -> Left err
+    rcdTypeOf (Rec [])              = Right $ TRec []
+    rcdTypeOf (Rec ((l1, t1) : ys))   = case typeOf t1 of 
+      Right ty   -> (`addType` (l1, ty)) <$> rcdTypeOf (Rec ys) 
+      Left err   -> Left err
 
     -- add new entry to the record
     addType :: Type -> (String, Type) -> Type
     addType (TRec ls) newType = TRec (newType : ls)
 
-    -- get the type for the specified label
+    -- get the type for the specified field
     getType :: Type -> String -> Either TypeError Type
-    getType (TRec ls) l = case ls of 
-      []                        -> Left $ NotFound l 
-      (l1, ty) : ys | l1 == l   -> Right ty
-                    | otherwise -> getType (TRec ys) l
+    getType (TRec []) l             = Left $ NotFound l 
+    getType (TRec ((l1, ty) : ys)) l 
+       | l1 == l                    = Right ty
+       | otherwise                  = getType (TRec ys) l
 
     -- find the type for a term 
     typeOf :: Term -> Either TypeError Type

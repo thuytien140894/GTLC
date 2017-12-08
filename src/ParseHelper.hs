@@ -4,7 +4,7 @@ module ParseHelper where
     import Types
 
     import Data.Maybe
-    import Data.List 
+    import Data.List (elemIndex)
 
     -- correct the bruijn index for each variable
     -- this function is called when parsing a Lambda term 
