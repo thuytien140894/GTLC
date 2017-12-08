@@ -135,5 +135,10 @@ spec =
         isSubtype (Arr (TRec [("y",Nat)]) (TRec [("z", Bool)])) (Arr (TRec [("x",Nat),("y",Nat)]) (TRec [("z", Bool)]))
         `shouldBe` True
 
+    context "parsing record type" $ 
+      it "should be true" $ 
+        parseExpr "\\x: {a:Nat,b:{c:Bool}} . x"
+        `shouldBe` Right (Lambda {varTy = TRec [("a",Nat),("b",TRec [("c",Bool)])], body = Var {index = 0, ty = TRec [("a",Nat),("b",TRec [("c",Bool)])], name = "x"}, boundVars = ["x"]})
+
 main :: IO ()
 main = hspec spec

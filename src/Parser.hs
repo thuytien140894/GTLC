@@ -17,19 +17,29 @@ module Parser (
     boolean = reserved "Bool" >> return Bool
     nat = reserved "Nat" >> return Nat
 
-    -- Function type
-    function :: Parser Type
-    function = do
-      inType <- types
-      reserved "->"
-      outType <- types
-      return $ Arr inType outType
+    -- Record type
+    recordTy :: Parser Type
+    recordTy = braces recordTy'
+
+    -- parse a record of many entries
+    recordTy' :: Parser Type
+    recordTy' = do
+      list <- sepBy1 entryTy comma
+      return $ TRec (concat list)
+
+    -- parse one entry of a record
+    entryTy :: Parser [TEntry]
+    entryTy = do
+      field <- identifier 
+      colon >> whiteSpace -- parse any spaces after the equal sign
+      ty <- types
+      return [(field, ty)]
 
     -- "arrow" two types
     arrow :: Type -> Type -> Type
     arrow t1 t2 = case t1 of 
       TUnit         -> t2        -- t2 is the first term 
-      _            -> Arr t1 t2
+      _             -> Arr t1 t2
 
     -- recursively "arrow" types from the left
     arrowFromLeft :: [Type] -> Type
@@ -46,6 +56,7 @@ module Parser (
     types' = parens types 
           <|> boolean
           <|> nat
+          <|> recordTy
 
     -- if statement
     conditional :: Parser Term
