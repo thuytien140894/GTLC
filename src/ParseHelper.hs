@@ -44,3 +44,21 @@ module ParseHelper where
       App t1 t2            -> getFreeVar t1 boundVars ++ getFreeVar t2 boundVars
       Var _ _ id           -> if id `elem` boundVars then [] else [id]
       _                    -> []  
+
+    -- application
+    apply :: Term -> Term -> Term
+    apply Unit t2 = t2
+    apply t1 t2   = App t1 t2
+
+    -- recursively apply terms from the left
+    applyFromLeft :: [Term] -> Term
+    applyFromLeft = foldl apply Unit
+
+    -- "arrow" two types
+    arrow :: Type -> Type -> Type
+    arrow TUnit t2 = t2
+    arrow t1 t2    = Arr t1 t2
+
+    -- recursively "arrow" types from the left
+    arrowFromLeft :: [Type] -> Type
+    arrowFromLeft = foldl arrow TUnit

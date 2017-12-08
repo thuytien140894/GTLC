@@ -6,57 +6,12 @@ module Parser (
     import Lexer
     import Types
     import ParseHelper 
+    import TypeParser
 
     import Text.Parsec
     import Text.Parsec.String (Parser)
     import qualified Text.Parsec.Expr as Ex
     import Data.Functor.Identity
-
-    -- Base types
-    boolean, nat :: Parser Type
-    boolean = reserved "Bool" >> return Bool
-    nat = reserved "Nat" >> return Nat
-
-    -- Record type
-    recordTy :: Parser Type
-    recordTy = braces recordTy'
-
-    -- parse a record of many entries
-    recordTy' :: Parser Type
-    recordTy' = do
-      list <- sepBy1 entryTy comma
-      return $ TRec (concat list)
-
-    -- parse one entry of a record
-    entryTy :: Parser [TEntry]
-    entryTy = do
-      field <- identifier 
-      colon >> whiteSpace -- parse any spaces after the equal sign
-      ty <- types
-      return [(field, ty)]
-
-    -- "arrow" two types
-    arrow :: Type -> Type -> Type
-    arrow t1 t2 = case t1 of 
-      TUnit         -> t2        -- t2 is the first term 
-      _             -> Arr t1 t2
-
-    -- recursively "arrow" types from the left
-    arrowFromLeft :: [Type] -> Type
-    arrowFromLeft = foldl arrow TUnit
-
-    -- parse a function type which consists of a sequence of types separated by "->"
-    types :: Parser Type
-    types = do
-      list <- sepBy1 types' arrowSep
-      return $ arrowFromLeft list
-
-    -- parse types
-    types' :: Parser Type
-    types' = parens types 
-          <|> boolean
-          <|> nat
-          <|> recordTy
 
     -- if statement
     conditional :: Parser Term
@@ -111,16 +66,6 @@ module Parser (
     true  = reserved "true"  >> return Tru
     false = reserved "false" >> return Fls
     zero  = reservedOp "0"   >> return Zero
-
-    -- application
-    apply :: Term -> Term -> Term
-    apply t1 t2 = case t1 of 
-      Unit         -> t2        -- t2 is the first term 
-      _            -> App t1 t2
-
-    -- recursively apply terms from the left
-    applyFromLeft :: [Term] -> Term
-    applyFromLeft = foldl apply Unit
 
     -- apply two terms that are separated by a space
     app :: Parser Term
