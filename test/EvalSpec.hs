@@ -40,6 +40,11 @@ spec =
         printPretty (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (Var 1 TUnit "z")) ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"])) 
         `shouldBe` "(\\ x : Nat->Nat . x z) (\\ y : Nat . y)"
 
+    context "printing terms with records" $ 
+      it "should be true" $ 
+        printPretty (App (Lambda (TRec [("a",Nat),("b",TRec [("c",Bool)])]) (Var 0 (TRec [("a",Nat),("b",TRec[("c",Bool)])]) "x") ["x"]) (Rec [("a",Succ Zero),("b",Rec [("c",Tru),("d",Zero)]),("e",Fls)])) 
+        `shouldBe` "(\\ x : {a:Nat, b:{c:Bool}} . x) {a=succ 0, b={c=true, d=0}, e=false}"
+
     context "parsing application" $ 
       it "should be true" $ 
         parseExpr "(\\ x : Nat->Nat . x z) (\\ y : Nat . y)" `shouldBe` 
