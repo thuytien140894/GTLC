@@ -79,15 +79,15 @@ module Parser (
     record' :: Parser Term
     record' = do
       list <- sepBy1 entry comma
-      return $ Rec (merge list)
+      return $ Rec (concat list)
 
     -- parse one entry of a record
-    entry :: Parser Term
+    entry :: Parser [(String, Term)]
     entry = do
       label <- identifier 
       equal >> whiteSpace -- parse any spaces after the equal sign
       field <- expr
-      return $ Rec [(label, field)]
+      return [(label, field)]
 
     -- variable
     var :: Parser Term

@@ -42,17 +42,5 @@ module ParseHelper where
     getFreeVar t boundVars = case t of
       Lambda _ t1 _        -> getFreeVar t1 boundVars
       App t1 t2            -> getFreeVar t1 boundVars ++ getFreeVar t2 boundVars
-      Var _ _ id           -> if id `isElem` boundVars then [] else [id]
-      _                    -> []
-
-    -- check if an element is in a list
-    isElem :: String -> [String] -> Bool
-    isElem x list = case list of 
-      []            -> False
-      y : ys        -> if x == y then True else isElem x ys
-
-    -- merge all the entries into one record
-    merge :: [Term] -> [(String, Term)]
-    merge ls = case ls of 
-      []               -> []
-      Rec entry : ys   -> entry ++ merge ys    
+      Var _ _ id           -> if id `elem` boundVars then [] else [id]
+      _                    -> []  
