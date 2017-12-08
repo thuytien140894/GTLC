@@ -1,4 +1,6 @@
-module Subtype where 
+module Subtype (
+  isSubtype, sortFields
+  ) where 
 
     import Types
 

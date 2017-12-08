@@ -75,6 +75,11 @@ spec =
         typeOf (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"])) `shouldBe` 
         Right (Arr Nat Nat)
 
+    context "typechecking application with subtyping" $ 
+      it "should be true" $ 
+        typeOf (App (Lambda (TRec [("a",Nat),("b",TRec [("c",Bool)])]) (Var 0 (TRec [("a",Nat),("b",TRec[("c",Bool)])]) "x") ["x"]) (Rec [("a",Succ Zero),("b",Rec [("c",Tru),("d",Zero)]),("e",Fls)])) `shouldBe` 
+        Right (TRec [("a",Nat),("b",TRec [("c",Bool)])])
+
     context "actual type is not of param type" $ 
       it "should be true" $ 
         typeOf (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Bool (Var 0 Bool "y") ["y"])) `shouldBe` 
@@ -138,7 +143,12 @@ spec =
     context "parsing record type" $ 
       it "should be true" $ 
         parseExpr "\\x: {a:Nat,b:{c:Bool}} . x"
-        `shouldBe` Right (Lambda {varTy = TRec [("a",Nat),("b",TRec [("c",Bool)])], body = Var {index = 0, ty = TRec [("a",Nat),("b",TRec [("c",Bool)])], name = "x"}, boundVars = ["x"]})
+        `shouldBe` Right (Lambda (TRec [("a",Nat),("b",TRec [("c",Bool)])]) (Var 0 (TRec [("a",Nat),("b",TRec [("c",Bool)])]) "x") ["x"])
+
+    context "parsing record type" $ 
+      it "should be true" $ 
+        parseExpr "(\\x: {a:Nat,b:{c:Bool}} . x) {a=succ 0, b={c=true,d=0}, e=false}"
+        `shouldBe` Right (App (Lambda (TRec [("a",Nat),("b",TRec [("c",Bool)])]) (Var 0 (TRec [("a",Nat),("b",TRec[("c",Bool)])]) "x") ["x"]) (Rec [("a",Succ Zero),("b",Rec [("c",Tru),("d",Zero)]),("e",Fls)]))
 
 main :: IO ()
 main = hspec spec

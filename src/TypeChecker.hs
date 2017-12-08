@@ -5,6 +5,7 @@ module TypeChecker (
     import Syntax
     import Types
     import TypeErrors
+    import Subtype
 
     -- find the type for a record
     rcdTypeOf :: Term -> Either TypeError Type
@@ -76,9 +77,9 @@ module TypeChecker (
                           funcTy  <- typeOf t1   
                           paramTy <- typeOf t2                         
                           case funcTy of 
-                            Arr argTy retTy | argTy == paramTy -> Right retTy
-                                            | otherwise        -> Left $ Mismatch t2 argTy
-                            _                                  -> Left $ NotFunction t1
+                            Arr argTy retTy | paramTy `isSubtype` argTy -> Right retTy
+                                            | otherwise                 -> Left $ Mismatch t2 argTy
+                            _                                           -> Left $ NotFunction t1
 
       _               -> Left IllTyped                                 -- "Ill-typed"
          
