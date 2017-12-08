@@ -36,19 +36,19 @@ module TypeChecker (
                           ty <- typeOf t' 
                           case ty of  
                             Nat -> Right Nat
-                            _   -> Left $ Mismatch t' Nat
+                            _   -> Left $ NotNat ty
 
       Pred t'         -> do                                            -- (T-PRED)
                           ty <- typeOf t' 
                           case ty of
                             Nat -> Right Nat
-                            _   -> Left $ Mismatch t' Nat
+                            _   -> Left $ NotNat ty
 
       IsZero t'       -> do                                            -- (T-ISZERO)
                           ty <- typeOf t' 
                           case ty of 
                             Nat  -> Right Bool
-                            _    -> Left $ Mismatch t' Bool
+                            _    -> Left $ NotBool t ty
 
       If t1 t2 t3     -> do                                            -- (T-IF)
                           cond <- typeOf t1 
@@ -56,8 +56,8 @@ module TypeChecker (
                           snd  <- typeOf t3 
                           case cond of 
                             Bool | fst == snd -> Right fst 
-                                 | otherwise  -> Left $ Difference t2 t3
-                            _    -> Left $ Mismatch t1 Bool
+                                 | otherwise  -> Left $ Difference fst snd
+                            _    -> Left $ NotBool t cond
                           
       Rec ls          -> rcdTypeOf t                                   -- (T-RCD)
 
@@ -78,7 +78,7 @@ module TypeChecker (
                           paramTy <- typeOf t2                         
                           case funcTy of 
                             Arr argTy retTy | paramTy `isSubtype` argTy -> Right retTy
-                                            | otherwise                 -> Left $ Mismatch t2 argTy
+                                            | otherwise                 -> Left $ Mismatch paramTy argTy
                             _                                           -> Left $ NotFunction t1
 
       _               -> Left IllTyped                                 -- "Ill-typed"

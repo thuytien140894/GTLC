@@ -6,7 +6,7 @@ module Prettier (
     import Types
     import TypeErrors
 
-    import Text.PrettyPrint (Doc, (<>), (<+>))
+    import Text.PrettyPrint (Doc, (<>), (<+>), ($$))
     import qualified Text.PrettyPrint as PP
 
     -- format the list of entries in a record
@@ -78,15 +78,24 @@ module Prettier (
     -- pretty printing for type error
     instance Pretty TypeError where 
       output e = case e of 
-        NotBound t          -> output t <+> PP.text "does not have a bound type."
-        Difference t1 t2    -> output t1 
-                              <+> PP.text "and"
-                              <+> output t2 
-                              <+> PP.text "do not have the same type."
-        Mismatch t ty       -> output t 
-                              <+> PP.text "does not have the expected type"
-                              <+> output ty
-        NotFunction t       -> output t <+> PP.text "is not of type function." 
-        NotRecord t         -> output t <+> PP.text "is not of type record"
-        NotFound l          -> PP.text "Non-existent label"
-        IllTyped            -> PP.text "Ill-Typed"
+        NotBound t                    -> PP.text "Variable not bound:" <+> output t
+        NotBool t ty                  -> message <+> output ty
+                                         where message = case t of  
+                                                           If {} -> PP.text "Conditional expects boolean condition, but got:"
+                                                           _     -> PP.text "Boolean expression is expected, but got:"
+        NotNat ty                     -> PP.text "Numeric expression is expected, but got:"
+                                         <+> output ty
+        Difference ty1 ty2            -> PP.text "Type difference for conditional branches:" 
+                                         <+> output ty1 
+                                         <+> PP.text "vs" 
+                                         <+> output ty2 
+        Mismatch actualTy expectedTy  -> PP.text "Type mismatch for function argument" 
+                                         $$ PP.nest 4 (PP.text "got:" <+> output actualTy)
+                                         $$ PP.nest 4 (PP.text "but expected:" <+> output expectedTy)
+        NotFunction t                 -> PP.text "Couldn't apply to non-function expression:" 
+                                         <+> output t
+        NotRecord t                   -> PP.text "Couldn't perform projection on non-record expression:" 
+                                         <+> output t
+        NotFound l                    -> PP.text "Non-existent label on record:" 
+                                         <+> PP.text l
+        IllTyped                      -> PP.text "Ill-Typed"

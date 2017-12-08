@@ -33,7 +33,11 @@ spec =
 
     context "printing type error" $ 
       it "should be true" $ 
-        printPretty (Difference Tru Zero) `shouldBe` "true and 0 do not have the same type."
+        printPretty (Mismatch Bool Nat) `shouldBe` "Type mismatch for function argument\n    got: Bool\n    but expected: Nat"
+
+    context "printing type error" $ 
+      it "should be true" $ 
+        printPretty (NotRecord Tru) `shouldBe` "Couldn't perform projection on non-record expression: true"
 
     context "printing type" $ 
       it "should be true" $ 
@@ -88,12 +92,12 @@ spec =
     context "actual type is not of param type" $ 
       it "should be true" $ 
         typeOf (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Bool (Var 0 Bool "y") ["y"])) `shouldBe` 
-        Left (Mismatch (Lambda Bool (Var 0 Bool "y") ["y"]) (Arr Nat Nat))
+        Left (Mismatch (Arr Bool Bool) (Arr Nat Nat))
 
     context "two arms of the conditional do not have the same type" $ 
       it "should be true" $ 
         typeOf (If Tru Tru Zero) `shouldBe` 
-        Left (Difference Tru Zero)
+        Left (Difference Bool Nat)
 
     context "evaluating records" $ 
       it "should be true" $ 

@@ -5,7 +5,7 @@ module Types where
       | Top
       | Bool 
       | Nat
-      | Arr {argTy :: Type, retTy :: Type} 
+      | Arr Type Type
       | TRec [TEntry]  
       deriving (Eq, Show)
 

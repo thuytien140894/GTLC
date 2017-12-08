@@ -5,8 +5,10 @@ module TypeErrors where
     
     data TypeError 
       = NotBound Term -- free variable
-      | Difference Term Term
-      | Mismatch Term Type
+      | Difference Type Type
+      | Mismatch Type Type
+      | NotBool Term Type
+      | NotNat Type
       | NotFunction Term
       | NotRecord Term
       | NotFound String 
