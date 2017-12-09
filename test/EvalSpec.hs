@@ -56,7 +56,7 @@ spec =
 
     context "parsing lambda" $ 
       it "should be true" $ 
-        parseExpr "(\\ x : Nat . \\ y : Nat . x y)" `shouldBe` 
+        parseExpr "(\\ x : Nat.\\ y : Nat . x y)" `shouldBe` 
         Right (Lambda Nat (Lambda Nat (App (Var 1 Nat "x") (Var 0 Nat "y")) ["y"]) ["x","y"])
 
     context "parsing lambda expression" $ 
@@ -110,6 +110,10 @@ spec =
     context "parsing record" $ 
       it "should be true" $ 
         parseExpr "{x  =true, y=false}" `shouldBe` Right (Rec [("x",Tru),("y",Fls)])
+
+    context "parsing projection" $ 
+      it "should be true" $ 
+        parseExpr "{x  =true, y=false}.x" `shouldBe` Right (Proj (Rec [("x",Tru),("y",Fls)]) "x")
 
     context "typechecking records" $ 
       it "should be true" $ 

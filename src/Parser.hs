@@ -55,6 +55,14 @@ module Parser (
       value <- expr
       return [(field, value)]
 
+    -- parse projection
+    projection :: Parser Term
+    projection = do
+      t <- record
+      dot 
+      label <- identifier
+      return $ Proj t label
+
     -- variable
     var :: Parser Term
     var = do
@@ -63,9 +71,9 @@ module Parser (
 
     -- Constants
     true, false :: Parser Term
-    true  = reserved "true"  >> return Tru
+    true  = reserved "true" >> return Tru
     false = reserved "false" >> return Fls
-    zero  = reservedOp "0"   >> return Zero
+    zero  = reserved "0" >> return Zero
 
     -- apply two terms that are separated by a space
     app :: Parser Term
@@ -106,6 +114,7 @@ module Parser (
         <|> lambda
         <|> conditional
         <|> arith
+        <|> try projection -- "look ahead" and see if an expression is a projection, if not, then move on
         <|> record
 
     -- remove the initial whitespace, line comments, and block comments 
