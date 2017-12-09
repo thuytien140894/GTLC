@@ -73,7 +73,7 @@ module Lexer where
 
     -- parse an identifier
     identifier :: Parser String
-    identifier = Tok.identifier lexer
+    identifier = Tok.identifier lexer 
 
     -- parse an arrow
     arrowSep :: Parser String

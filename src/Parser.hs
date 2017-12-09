@@ -38,10 +38,11 @@ module Parser (
       let t = fixBinding (Lambda ty body boundVars) boundVars freeVars
       return $ updateVarType t arg ty
 
+    -- parse a record
     record :: Parser Term 
     record = braces record'
 
-    -- parse a record of many entries
+    -- concaternate all the entries into a record
     record' :: Parser Term
     record' = do
       list <- sepBy1 entry comma
@@ -59,7 +60,7 @@ module Parser (
     projection :: Parser Term
     projection = do
       t <- record
-      dot 
+      dot
       label <- identifier
       return $ Proj t label
 
@@ -67,13 +68,14 @@ module Parser (
     var :: Parser Term
     var = do
       id <- identifier
+      notProjection
       return $ Var (-1) TUnit id -- the variable is first parsed as free
 
     -- Constants
     true, false :: Parser Term
-    true  = reserved "true" >> return Tru
-    false = reserved "false" >> return Fls
-    zero  = reserved "0" >> return Zero
+    true  = reserved "true" >> notProjection >> return Tru
+    false = reserved "false" >> notProjection >> return Fls
+    zero  = reserved "0" >> notProjection >> return Zero
 
     -- apply two terms that are separated by a space
     app :: Parser Term
@@ -103,10 +105,20 @@ module Parser (
     num :: Parser Term
     num = zero
         <|> parens arith
+        <?> "Nat" -- error message
+
+    -- parse term enclosed in parenthesis
+    parenExpr :: Parser Term
+    parenExpr = do 
+      t <- parens expr
+      notProjection
+      return t
+
+    -- isProjection = lookAhead $ manyTill anyChar dot
 
     -- parse individual terms
     expr' :: Parser Term
-    expr' = parens expr -- parse 'application' inside parenthesis
+    expr' = parenExpr
         <|> true
         <|> false
         <|> zero
@@ -121,6 +133,10 @@ module Parser (
     -- the parser only removes white spaces after the tokens
     removeWhiteSpace :: Parser Term
     removeWhiteSpace = whiteSpace >> expr 
+
+    -- make sure a non-record term should not be followed by '.'
+    notProjection :: Parser ()
+    notProjection = notFollowedBy dot
 
     -- parse a string
     parseExpr :: String -> Either ParseError Term

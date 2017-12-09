@@ -24,8 +24,8 @@ spec =
 
     context "parsing conditional and arithmetics" $ 
       it "should be true" $ 
-        parseExpr "if succ (succ 0) then true else false" `shouldBe` 
-        Right (If (Succ (Succ Zero)) Tru Fls)
+        parseExpr "true" `shouldBe` 
+        Right (Tru)
 
     context "printing lambda expression" $ 
       it "should be true" $ 
