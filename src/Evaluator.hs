@@ -17,6 +17,7 @@ module Evaluator (
     -- determine if a term is a value
     isVal :: Term -> Bool
     isVal t = case t of 
+      Unit                  -> True
       Tru                   -> True
       Fls                   -> True
       t' | isNumeric t'     -> True

@@ -113,9 +113,7 @@ module Parser (
       t <- parens expr
       notProjection
       return t
-
-    -- isProjection = lookAhead $ manyTill anyChar dot
-
+      
     -- parse individual terms
     expr' :: Parser Term
     expr' = parenExpr

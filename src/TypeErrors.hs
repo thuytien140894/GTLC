@@ -7,7 +7,7 @@ module TypeErrors where
       = NotBound Term -- free variable
       | Difference Type Type
       | Mismatch Type Type
-      | NotBool Term Type
+      | NotBool Type
       | NotNat Type
       | NotFunction Term
       | NotRecord Term

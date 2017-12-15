@@ -79,10 +79,8 @@ module Prettier (
     instance Pretty TypeError where 
       output e = case e of 
         NotBound t                    -> PP.text "Variable not bound:" <+> output t
-        NotBool t ty                  -> message <+> output ty
-                                         where message = case t of  
-                                                           If {} -> PP.text "Conditional expects boolean condition, but got:"
-                                                           _     -> PP.text "Boolean expression is expected, but got:"
+        NotBool ty                    -> PP.text "Conditional expects boolean condition, but got:"
+                                         <+> output ty
         NotNat ty                     -> PP.text "Numeric expression is expected, but got:"
                                          <+> output ty
         Difference ty1 ty2            -> PP.text "Type difference for conditional branches:" 
