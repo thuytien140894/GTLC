@@ -2,7 +2,7 @@ module TypeParser where
 
     import Lexer
     import Types
-    import ParseHelper (arrowFromLeft)
+    import ParseHelper (arrowFromRight)
 
     import Text.Parsec
     import Text.Parsec.String (Parser)
@@ -34,7 +34,7 @@ module TypeParser where
     types :: Parser Type
     types = do
         list <- sepBy1 types' arrowSep
-        return $ arrowFromLeft list
+        return $ arrowFromRight list
 
     -- parse types
     types' :: Parser Type
