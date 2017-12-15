@@ -9,11 +9,11 @@ sure that Haskell and the Stack build tool are installed on the system.
     
    For Unix operating systems, run one of these commands:  
 
-         curl -sSL https://get.haskellstack.org/ | sh  
+        curl -sSL https://get.haskellstack.org/ | sh  
          
    or   
    
-        `wget -qO- https://get.haskellstack.org/ | sh`  
+        wget -qO- https://get.haskellstack.org/ | sh  
 
    If [homebrew](https://brew.sh/) is available, run:
    
@@ -30,10 +30,10 @@ sure that Haskell and the Stack build tool are installed on the system.
 
 **3. How to exit the program**
 
-    Type "exit" in the console
+        Type "exit" in the console
 
 **4. How to run tests on the program**
 
    Run the command:  
    
-           stack test
+        stack test
