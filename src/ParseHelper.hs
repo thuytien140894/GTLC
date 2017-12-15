@@ -56,9 +56,9 @@ module ParseHelper where
 
     -- "arrow" two types
     arrow :: Type -> Type -> Type
-    arrow TUnit t2 = t2
+    arrow t2 TUnit = t2
     arrow t1 t2    = Arr t1 t2
 
-    -- recursively "arrow" types from the left
+    -- recursively "arrow" types from the right
     arrowFromLeft :: [Type] -> Type
-    arrowFromLeft = foldl arrow TUnit
+    arrowFromLeft = foldr arrow TUnit

@@ -23,6 +23,11 @@ module ParserSpec where
             parseExpr "(\\ x : Nat.\\ y : Nat . x y)" `shouldBe` 
             Right (Lambda Nat (Lambda Nat (App (Var 1 Nat "x") (Var 0 Nat "y")) ["y"]) ["x","y"])
 
+        context "\\ x : Nat->Nat->Nat.\\ y : Nat . x y" $ 
+          it "should be \"Lambda (Arr Nat (Arr Nat Nat)) (Lambda Nat (App (Var 1 Nat x) (Var 0 Nat y)) [y]) [x,y]\"" $ 
+            parseExpr "(\\ x : Nat->Nat->Nat.\\ y : Nat . x y)" `shouldBe` 
+            Right (Lambda (Arr Nat (Arr Nat Nat)) (Lambda Nat (App (Var 1 Nat "x") (Var 0 Nat "y")) ["y"]) ["x","y"])
+
         context "\\x: Nat. \\ y : Nat . iszero 0" $ 
           it "should be \"Lambda Nat (Lambda Nat (IsZero Zero) [y]) [x,y]\"" $ 
             parseExpr "(\\x: Nat. \\ y : Nat . iszero 0)" `shouldBe` 
