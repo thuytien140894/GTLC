@@ -38,11 +38,32 @@ module TypeCheckerSpec where
             typeOf (Proj (Rec [("x", If Tru (IsZero Zero) Fls), ("y", Succ Zero)]) "x") `shouldBe` Right Bool
 
         context "(\\x:Nat->Nat. x) (\\y:Bool. y)" $ 
-            it "should be Mismatch (Bool->Bool) (Nat->Nat)" $ 
+          it "should be Mismatch (Bool->Bool) (Nat->Nat)" $ 
               typeOf (App (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) (Lambda Bool (Var 0 Bool "y") ["y"])) `shouldBe` 
               Left (Mismatch (Arr Bool Bool) (Arr Nat Nat))
   
         context "if true else true then 0" $ 
-            it "should be Difference Bool Nat" $ 
-              typeOf (If Tru Tru Zero) `shouldBe` 
-              Left (Difference Bool Nat)
+          it "should be Difference Bool Nat" $ 
+            typeOf (If Tru Tru Zero) `shouldBe` 
+            Left (Difference Bool Nat)
+
+        context "(\\x:Nat->Nat. x (succ 0)) (\\y:Nat. y)" $ 
+          it "should be Nat" $ 
+            typeOf (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (Succ Zero)) ["x"]) (Lambda Nat (Var 0 Nat "y") ["y"])) `shouldBe` 
+            Right Nat
+
+        context "\\x:Top. x" $ 
+          it "should be Top->Top" $ 
+            typeOf (Lambda Top (Var 0 Top "x")  ["x"]) `shouldBe` 
+            Right (Arr Top Top)
+
+        context "(\\x:Top. x) (\\x:Top. x)" $ 
+          it "should be Top" $ 
+            typeOf (App (Lambda Top (Var 0 Top "x") ["x"]) (Lambda Top (Var 0 Top "x") ["x"])) `shouldBe` 
+            Right Top
+
+        context "(\\x:Nat. x) (\\x:Nat. x)" $ 
+          it "should be Mismatch (Nat->Nat) Nat" $ 
+            typeOf (App (Lambda Nat (Var 0 Nat "x") ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])) `shouldBe` 
+            Left (Mismatch (Arr Nat Nat) Nat)
+        

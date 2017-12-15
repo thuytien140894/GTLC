@@ -21,10 +21,10 @@ module EvaluatorSpec where
           it "should be true" $
             evaluate (IsZero (Pred (Succ Zero))) `shouldBe` Just (Tru)
 
-        context "{x:if true then (iszero 0) else false}" $ 
-          it "should be {x:true}" $ 
+        context "{x=if true then (iszero 0) else false}" $ 
+          it "should be {x=true}" $ 
             evaluate (Rec [("x", If Tru (IsZero Zero) Fls)]) `shouldBe` Just (Rec [("x",Tru)])
 
-        context "{x:if true then (iszero 0) else false}.x" $ 
+        context "{x=if true then (iszero 0) else false}.x" $ 
           it "should be true" $ 
             evaluate (Proj (Rec [("x", If Tru (IsZero Zero) Fls)]) "x") `shouldBe` Just Tru

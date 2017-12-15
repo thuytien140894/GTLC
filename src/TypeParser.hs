@@ -8,9 +8,10 @@ module TypeParser where
     import Text.Parsec.String (Parser)
     
     -- Base types
-    boolean, nat :: Parser Type
+    boolean, nat, top :: Parser Type
     boolean = reserved "Bool" >> return Bool
     nat = reserved "Nat" >> return Nat
+    top = reserved "Top" >> return Top
  
     -- Record type
     recordTy :: Parser Type
@@ -41,5 +42,6 @@ module TypeParser where
     types' = parens types 
         <|> boolean
         <|> nat
+        <|> top
         <|> recordTy
 

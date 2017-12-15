@@ -15,7 +15,7 @@ module Prettier (
     outputRcdEntries ((l1, t1) : ys)  = PP.text l1 <> PP.equals <> output t1 <> optionalComma
                                         where optionalComma = case ys of 
                                                                 []    -> PP.empty
-                                                                _     -> PP.comma <+> outputRcdEntries ys
+                                                                _     -> PP.comma <> outputRcdEntries ys
     
     -- format the list of entry types in a record                                                           
     outputRcdTypes :: [(String, Type)] -> Doc
@@ -23,7 +23,7 @@ module Prettier (
     outputRcdTypes ((l1, ty1) : ys)   = PP.text l1 <> PP.colon <> output ty1 <> optionalComma
                                         where optionalComma = case ys of 
                                                                 []    -> PP.empty
-                                                                _     -> PP.comma <+> outputRcdTypes ys
+                                                                _     -> PP.comma <> outputRcdTypes ys
                                                                 
     -- type class for pretty printing
     class Pretty a where 

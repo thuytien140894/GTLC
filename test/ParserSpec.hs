@@ -41,6 +41,10 @@ module ParserSpec where
         context "{x=true,y=false}" $ 
           it "should be \"Rec [(x,Tru),(y,Fls)]\"" $ 
             parseExpr "{x  =true, y=false}" `shouldBe` Right (Rec [("x",Tru),("y",Fls)])
+
+        context "(\\x:Top. x) (\\x:Top. x)" $ 
+          it "should be \"Right (App (Lambda Top (Var 0 Top x) [x]) (Lambda Top (Var 0 Top x) [x]))\"" $ 
+            parseExpr "(\\x:Top. x) (\\x:Top. x)" `shouldBe` Right (App (Lambda Top (Var 0 Top "x") ["x"]) (Lambda Top (Var 0 Top "x") ["x"]))
   
         context "{x=true,y=false}.x" $ 
           it "should be \"Proj (Rec [(x,Tru),(y,Fls)]) x\"" $ 
