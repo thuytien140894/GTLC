@@ -4,7 +4,7 @@ module TypeErrors where
     import Types
     
     data TypeError 
-      = NotBound Term -- free variable
+      = NotBound Term 
       | Difference Type Type
       | Mismatch Type Type
       | NotBool Type

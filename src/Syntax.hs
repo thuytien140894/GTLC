@@ -3,7 +3,7 @@ module Syntax where
   import Types
   
   data Term 
-    = Unit                                                        -- trivial term
+    = Unit                                                        -- identity term 
     | Zero                                                        -- 0
     | Tru                                                         -- true
     | Fls                                                         -- false

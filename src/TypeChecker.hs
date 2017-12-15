@@ -82,7 +82,7 @@ module TypeChecker (
                                                   | otherwise                 -> Left $ Mismatch argTy paramTy
                                 _                                             -> Left $ NotFunction t1
 
-      _                   -> Left IllTyped                                    -- "Ill-typed"
+      _                   -> Left IllTyped                                 -- "Ill-typed"
          
     
         
