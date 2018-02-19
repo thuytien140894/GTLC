@@ -2,6 +2,7 @@ module Types where
 
     data Type 
       = TUnit                                 -- identity type
+      | Dyn                                   -- dynamic type
       | Top                                   -- Top
       | Bool                                  -- boolean
       | Nat                                   -- natural number

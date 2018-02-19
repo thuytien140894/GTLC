@@ -11,7 +11,12 @@ module ParserSpec where
         context "true" $ 
             it "should be \"Tru\"" $ 
               parseExpr "true" `shouldBe` 
-              Right (Tru)
+              Right Tru
+
+        context "\\x. x" $ 
+            it "should be \"Lambda Dyn x [x]\""$ 
+              parseExpr "\\x . x" `shouldBe` 
+              Right (Lambda Dyn (Var 0 Dyn "x") ["x"])
 
         context "(\\ x : Nat->Nat . x z) (\\ y : Nat . y)" $ 
           it "should be \"App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) x) (Var 1 TUnit z)) [x]) (Lambda Nat (Var 0 Nat y) [y])\"" $ 
@@ -25,7 +30,7 @@ module ParserSpec where
 
         context "\\ x : Nat->Nat->Nat.\\ y : Nat . x y" $ 
           it "should be \"Lambda (Arr Nat (Arr Nat Nat)) (Lambda Nat (App (Var 1 Nat x) (Var 0 Nat y)) [y]) [x,y]\"" $ 
-            parseExpr "(\\ x : Nat->Nat->Nat.\\ y : Nat . x y)" `shouldBe` 
+            parseExpr "(\\ x :Nat->Nat->Nat.\\ y : Nat .x y)" `shouldBe` 
             Right (Lambda (Arr Nat (Arr Nat Nat)) (Lambda Nat (App (Var 1 Nat "x") (Var 0 Nat "y")) ["y"]) ["x","y"])
 
         context "\\x: Nat. \\ y : Nat . iszero 0" $ 

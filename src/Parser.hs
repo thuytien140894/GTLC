@@ -26,12 +26,11 @@ module Parser (
 
     -- abstraction
     lambda :: Parser Term
-    lambda = do 
+    lambda = do
       lamb >> whiteSpace
-      arg <- identifier 
-      colon >> whiteSpace
-      ty <- types
-      dot >> whiteSpace
+      arg <- identifier
+      ty <- option Dyn (try colon >> types) -- if there is type specified, parse it; else return Dyn
+      dot 
       body <- expr
       let boundVars = arg : getBoundVar body
       let freeVars = getFreeVar body boundVars 
@@ -52,7 +51,7 @@ module Parser (
     entry :: Parser [Entry]
     entry = do
       field <- identifier 
-      equal >> whiteSpace -- parse any spaces after the equal sign
+      equal >> whiteSpace
       value <- expr
       return [(field, value)]
 
@@ -132,7 +131,7 @@ module Parser (
     removeWhiteSpace :: Parser Term
     removeWhiteSpace = whiteSpace >> expr 
 
-    -- make sure a non-record term should not be followed by '.'
+    -- make sure a non-projection term should not be followed by '.'
     notProjection :: Parser ()
     notProjection = notFollowedBy dot
 
