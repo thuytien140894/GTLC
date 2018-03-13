@@ -5,8 +5,6 @@ module Coercion where
 
   -- coercion type system
   coerce :: Type -> Type -> Coercion
-  coerce ty1 ty2 | ty1 == ty2    = Iden ty1                           -- (C-ID)
-                 | otherwise     = Fail ty1 ty2                       -- (C-FAIL)
   coerce ty Dyn                  = case ty of                     
     Arr _ _     -> coerce ty (Arr Dyn Dyn)                            -- (C-FUN!)
     _           -> Inject ty                                          -- (C-B!)
@@ -14,6 +12,8 @@ module Coercion where
     Arr _ _     -> coerce (Arr Dyn Dyn) ty                            -- (C-FUN?)
     _           -> Project ty                                         -- (C-B?)
   coerce (Arr s1 s2) (Arr t1 t2) = Func (coerce t1 s1) (coerce s2 t2) -- (C-FUN)
+  coerce ty1 ty2 | ty1 == ty2    = Iden ty1                           -- (C-ID)
+                 | otherwise     = Fail ty1 ty2                       -- (C-FAIL)
 
   -- reduction rules
   combine :: Coercion -> Coercion -> Coercion
