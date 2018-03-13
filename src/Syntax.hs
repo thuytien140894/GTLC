@@ -16,6 +16,16 @@ module Syntax where
     | Proj Term String                                            -- projection
     | Lambda {varTy :: Type, body :: Term, boundVars :: [String]} -- abstraction
     | App Term Term                                               -- application
+    | Cast Coercion Term
     deriving (Eq, Show) 
 
-  type Entry = (String, Term)                                     
+  type Entry = (String, Term)    
+  
+  data Coercion 
+    = Iden Type
+    | Project Type
+    | Inject Type
+    | Func Coercion Coercion
+    | Seq Coercion Coercion
+    | Fail Type Type
+    deriving (Eq, Show)

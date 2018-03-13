@@ -25,6 +25,22 @@ module TypeChecker (
       | l1 == l                    = Right ty
       | otherwise                  = getType (TRec ys) l
 
+    -- consistency rules
+    isConsistent :: Type -> Type -> Bool
+    isConsistent Dyn _                               = True
+    isConsistent _ Dyn                               = True
+    isConsistent ty1 ty2 | ty1 == ty2                = True
+    isConsistent (Arr param1 ret1) (Arr param2 ret2) 
+      | isConsistent param2 param1 &&
+        isConsistent ret1 ret2                       = True
+      | otherwise                                    = False
+    isConsistent _ _                                 = False
+
+    -- two types are compatible if either they are subtypes of one another or 
+    -- consistent
+    isCompatible :: Type -> Type -> Bool
+    isCompatible ty1 ty2 = isSubtype ty1 ty2 || isConsistent ty1 ty2
+    
     -- find the type for a term 
     typeOf :: Term -> Either TypeError Type
     typeOf t = case t of 
@@ -74,13 +90,13 @@ module TypeChecker (
 
       Lambda ty t' _      -> Arr ty <$> typeOf t'                          -- (T-ABS)                       
 
-      App t1 t2           -> do                                            -- (T-APP) + (T-SUB)
+      App t1 t2           -> do                                            -- (T-APP1) + (T-SUB)
                               funcTy  <- typeOf t1   
-                              argTy <- typeOf t2                         
+                              argTy   <- typeOf t2                         
                               case funcTy of 
-                                Arr paramTy retTy | argTy `isSubtype` paramTy -> Right retTy
-                                                  | otherwise                 -> Left $ Mismatch argTy paramTy
-                                _                                             -> Left $ NotFunction t1
+                                Arr paramTy retTy | argTy `isCompatible` paramTy -> Right retTy
+                                                  | otherwise                    -> Left $ Mismatch argTy paramTy
+                                _                                                -> Left $ NotFunction t1
 
       _                   -> Left IllTyped                                 -- "Ill-typed"
          

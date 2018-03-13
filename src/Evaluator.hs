@@ -22,6 +22,7 @@ module Evaluator (
       Fls                   -> True
       t' | isNumeric t'     -> True
       Lambda {}             -> True
+      Cast _ t | isVal t    -> True
       Rec ls                -> areAllVal ls
       _                     -> False
     
