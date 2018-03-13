@@ -19,7 +19,7 @@ module EvaluatorSpec where
         
         context "iszero (pred (succ 0))" $
           it "should be true" $
-            evaluate (IsZero (Pred (Succ Zero))) `shouldBe` Just (Tru)
+            evaluate (IsZero (Pred (Succ Zero))) `shouldBe` Just Tru
 
         context "{x=if true then (iszero 0) else false}" $ 
           it "should be {x=true}" $ 
