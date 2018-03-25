@@ -17,8 +17,8 @@ module Coercion where
 
   -- reduction rules
   combine :: Coercion -> Coercion -> Coercion
-  combine (Iden _) c                       = c
-  combine c (Iden _)                       = c
+  combine (Iden _) c                           = c
+  combine c (Iden _)                           = c
   combine (Fail ty1 ty2) _                     = Fail ty1 ty2 
   combine _ (Fail ty1 ty2)                     = Fail ty1 ty2
   combine (Inject ty1) (Project ty2) 
@@ -27,7 +27,7 @@ module Coercion where
   combine (Func c1 c2) (Func d1 d2)            = Func (combine d1 c1) (combine c2 d2)
   combine c1 c2                                = Seq c1 c2
 
--- find the source and target type of a coercion
+  -- find the source and target type of a coercion
   getTypes :: Coercion -> (Type, Type) 
   getTypes (Iden ty)       = (ty, ty)
   getTypes (Project ty)    = (Dyn, ty)
