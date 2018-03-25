@@ -6,6 +6,7 @@ module TypeChecker (
     import Types
     import TypeErrors
     import Subtype
+    import Coercion
 
     -- find the type for a record
     rcdTypeOf :: Term -> Either TypeError Type
@@ -73,7 +74,7 @@ module TypeChecker (
                               snd  <- typeOf t3 
                               case cond of 
                                 Bool | fst == snd -> Right fst 
-                                    | otherwise  -> Left $ Difference fst snd
+                                     | otherwise  -> Left $ Difference fst snd
                                 _    -> Left $ NotBool cond
                           
       Rec ls              -> rcdTypeOf t                                   -- (T-RCD)
@@ -97,6 +98,13 @@ module TypeChecker (
                                 Arr paramTy retTy | argTy `isCompatible` paramTy -> Right retTy
                                                   | otherwise                    -> Left $ Mismatch argTy paramTy
                                 _                                                -> Left $ NotFunction t1
+
+      Cast c t            -> do                                             -- (T-CAST)
+                              let (ty1, ty2) = getTypes c
+                              ty <- typeOf t
+                              case ty of 
+                                s | s == ty1   -> Right ty2
+                                  | otherwise  -> Left $ IllegalCast ty ty1
 
       _                   -> Left IllTyped                                 -- "Ill-typed"
          

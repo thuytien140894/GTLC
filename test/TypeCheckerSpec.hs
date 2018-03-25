@@ -66,4 +66,17 @@ module TypeCheckerSpec where
           it "should be Mismatch (Nat->Nat) Nat" $ 
             typeOf (App (Lambda Nat (Var 0 Nat "x") ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])) `shouldBe` 
             Left (Mismatch (Arr Nat Nat) Nat)
+
+        context "<Bool!> True" $ 
+          it "should be Dynamic" $ 
+            typeOf (Cast (Inject Bool) Tru) `shouldBe` Right Dyn
+
+        context "<Bool?->Nat!> \\x:Bool. 0" $ 
+          it "should be Bool->Nat" $ 
+              typeOf (Cast (Func (Project Bool) (Inject Nat)) (Lambda Bool Zero ["x"])) `shouldBe`
+              Right (Arr Dyn Dyn)
         
+        context "<Nat!> False" $ 
+          it "should be IllegalCast Bool Nat" $ 
+              typeOf (Cast (Inject Nat) Fls) `shouldBe`
+              Left (IllegalCast Bool Nat)

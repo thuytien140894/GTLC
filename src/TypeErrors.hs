@@ -11,6 +11,7 @@ module TypeErrors where
       | NotNat Type
       | NotFunction Term
       | NotRecord Term
-      | NotFound String 
+      | NotFound String
+      | IllegalCast Type Type
       | IllTyped
       deriving (Eq, Show)
