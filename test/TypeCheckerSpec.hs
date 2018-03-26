@@ -14,6 +14,11 @@ module TypeCheckerSpec where
             typeOf (Lambda Nat (Lambda Nat (IsZero Zero) ["y"]) ["x","y"]) `shouldBe` 
             Right (Arr Nat (Arr Nat Bool))
 
+        context "(\\x:Nat->Nat. (x 0)) (\\x:Nat. (succ x))" $ 
+          it "should be Nat" $ 
+            typeOf (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Lambda Nat (Succ (Var 0 Nat "x")) ["x"])) `shouldBe` 
+            Right Nat
+
         context "\\x:Nat->Nat. x" $ 
           it "should be (Nat->Nat)->(Nat->Nat)" $ 
             typeOf (Lambda (Arr Nat Nat) (Var 0 (Arr Nat Nat) "x") ["x"]) `shouldBe` 
@@ -66,6 +71,11 @@ module TypeCheckerSpec where
           it "should be Mismatch (Nat->Nat) Nat" $ 
             typeOf (App (Lambda Nat (Var 0 Nat "x") ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])) `shouldBe` 
             Left (Mismatch (Arr Nat Nat) Nat)
+
+        context "succ false" $ 
+          it "should be NotNat" $ 
+              typeOf (Succ Fls) `shouldBe`
+              Left (NotNat Bool)
 
         context "<Bool!> True" $ 
           it "should be Dynamic" $ 

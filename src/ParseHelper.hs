@@ -11,7 +11,10 @@ module ParseHelper where
     fixBinding :: Term -> [String] -> [String] -> Term
     fixBinding t boundVars freeVars = case t of
       Var _ ty id             -> Var (getBruijnIndex id boundVars freeVars) ty id
-      Lambda ty t1 localBound -> Lambda ty (fixBinding t1 boundVars freeVars) localBound
+      Succ t'                 -> Succ (fixBinding t' boundVars freeVars)
+      Pred t'                 -> Pred (fixBinding t' boundVars freeVars)
+      IsZero t'               -> IsZero (fixBinding t' boundVars freeVars)
+      Lambda ty t' localBound -> Lambda ty (fixBinding t' boundVars freeVars) localBound
       App t1 t2               -> App (fixBinding t1 boundVars freeVars) (fixBinding t2 boundVars freeVars)
       _                       -> t
 
@@ -19,6 +22,9 @@ module ParseHelper where
     updateVarType :: Term -> String -> Type -> Term
     updateVarType t varName ty = case t of 
       Var k _ id            -> if id == varName then Var k ty id else t
+      Succ t'               -> Succ (updateVarType t' varName ty)
+      Pred t'               -> Pred (updateVarType t' varName ty)
+      IsZero t'             -> IsZero (updateVarType t' varName ty)
       Lambda ty t' ctx      -> Lambda ty (updateVarType t' varName ty) ctx 
       App t1 t2             -> App (updateVarType t1 varName ty) (updateVarType t2 varName ty)
       _                     -> t

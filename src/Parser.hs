@@ -97,14 +97,8 @@ module Parser (
       ]
 
     -- parse an arithmetic expression such succ, pred, and iszero
-    arith :: Parser Term
-    arith = Ex.buildExpressionParser prefixTable num
-
-    -- restrict arithmetic expressions to only accept numeric values
-    num :: Parser Term
-    num = zero
-        <|> parens arith
-        <?> "Nat" -- error message
+    expr' :: Parser Term
+    expr' = Ex.buildExpressionParser prefixTable expr''
 
     -- parse term enclosed in parenthesis
     parenExpr :: Parser Term
@@ -114,15 +108,14 @@ module Parser (
       return t
       
     -- parse individual terms
-    expr' :: Parser Term
-    expr' = parenExpr
+    expr'' :: Parser Term
+    expr'' = parenExpr
         <|> true
         <|> false
         <|> zero
         <|> var
         <|> lambda
         <|> conditional
-        <|> arith
         <|> try projection -- "look ahead" and see if an expression is a projection, if not, then move on
         <|> record
 

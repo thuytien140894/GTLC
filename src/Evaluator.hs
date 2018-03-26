@@ -49,7 +49,10 @@ module Evaluator (
     shift :: Int -> Int -> Term -> Term
     shift c d t = case t of 
       Var k ty id      -> if k < c then t else Var (k + d) ty id
-      Lambda ty t1 ctx -> Lambda ty (shift (c + 1) d t1) ctx 
+      Succ t'          -> Succ (shift c d t')
+      Pred t'          -> Pred (shift c d t')
+      IsZero t'        -> IsZero (shift c d t')
+      Lambda ty t' ctx -> Lambda ty (shift (c + 1) d t') ctx 
       App t1 t2        -> App (shift c d t1) (shift c d t2)
       _                -> t -- t is a constant
       
@@ -57,7 +60,10 @@ module Evaluator (
     subs :: Int -> Term -> Term -> Term 
     subs j s t = case t of 
       Var k ty id      -> if k == j then s else t
-      Lambda ty t1 ctx -> Lambda ty (subs (j + 1) (shift 0 1 s) t1) ctx
+      Succ t'          -> Succ (subs j s t')
+      Pred t'          -> Pred (subs j s t')
+      IsZero t'        -> IsZero (subs j s t')
+      Lambda ty t' ctx -> Lambda ty (subs (j + 1) (shift 0 1 s) t') ctx
       App t1 t2        -> App (subs j s t1) (subs j s t2)
       _                -> t -- t is a constant
     
