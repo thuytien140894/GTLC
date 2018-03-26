@@ -26,6 +26,7 @@ library
                      , ParseHelper
                      , TypeParser
                      , Coercion
+                     , CastInserter
   build-depends:       base >= 4.7 && < 5
                      , mtl >= 2.2 && < 3.0
                      , filepath >= 1.3 && < 1.5
@@ -64,6 +65,7 @@ test-suite STLC-test
   hs-source-dirs:      test
   main-is:             Spec.hs
   other-modules:       CoercionSpec
+                     , CastInsertionSpec
                      , EvaluatorSpec
                      , ParserSpec
                      , PrinterSpec

@@ -85,28 +85,27 @@ module TypeChecker (
                                           Left err -> Left err
                               _      -> Left $ NotRecord t
                           
-      Var _ ty id         -> case ty of                                    -- (T-VAR)
+      Var _ ty _          -> case ty of                                    -- (T-VAR)
                               TUnit -> Left $ NotBound t   
                               _     -> Right ty                                  
 
-      Lambda ty t' _      -> Arr ty <$> typeOf t'                          -- (T-ABS)                       
-
-      App t1 t2           -> do                                            -- (T-APP1) + (T-SUB)
-                              funcTy  <- typeOf t1   
-                              argTy   <- typeOf t2                         
-                              case funcTy of 
-                                Arr paramTy retTy | argTy `isCompatible` paramTy -> Right retTy
-                                                  | otherwise                    -> Left $ Mismatch argTy paramTy
-                                _                                                -> Left $ NotFunction t1
-
-      Cast c t            -> do                                             -- (T-CAST)
-                              let (ty1, ty2) = getTypes c
+      Lambda ty t' _      -> Arr ty <$> typeOf t'                          -- (T-ABS)     
+      
+      Cast c t            -> do                                            -- (T-CAST)
+                              let (ty1, ty2) = getCoercionTypes c
                               ty <- typeOf t
                               case ty of 
                                 s | s == ty1   -> Right ty2
                                   | otherwise  -> Left $ IllegalCast ty ty1
 
-      _                   -> Left IllTyped                                 -- "Ill-typed"
+      App t1 t2           -> do                                            -- (T-APP1) + (T-SUB)
+                              funcTy  <- typeOf t1   
+                              argTy   <- typeOf t2                         
+                              case funcTy of 
+                                Arr paramTy retTy 
+                                  | argTy `isCompatible` paramTy -> Right retTy
+                                  | otherwise                    -> Left $ Mismatch argTy paramTy
+                                _                                -> Left $ NotFunction t1
          
     
         

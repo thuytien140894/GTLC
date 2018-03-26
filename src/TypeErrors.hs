@@ -13,5 +13,4 @@ module TypeErrors where
       | NotRecord Term
       | NotFound String
       | IllegalCast Type Type
-      | IllTyped
       deriving (Eq, Show)

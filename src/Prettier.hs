@@ -96,4 +96,3 @@ module Prettier (
                                          <+> output t
         NotFound l                    -> PP.text "Non-existent label on record:" 
                                          <+> PP.text l
-        IllTyped                      -> PP.text "Ill-Typed"
