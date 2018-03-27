@@ -38,3 +38,8 @@ module EvaluatorSpec where
           it "should be false" $ 
             evaluate (App (Lambda (Arr Nat Bool) (App (Var 0 (Arr Nat Bool) "x") (Succ Zero)) ["x"]) (Lambda Nat (IsZero (Var 0 Nat "x")) ["x"])) `shouldBe` 
             Just Fls
+
+        context "(\\x. (x <Nat!>0)) <Nat?->Nat!>(\\x:Nat. (succ x))" $
+          it "should be succ 0" $
+            evaluate (App (Lambda Dyn (App (Var 0 Dyn "x") (Cast (Inject Nat) Zero)) ["x"]) (Cast (Func (Project Nat) (Inject Nat)) (Lambda Nat (Succ (Var 0 Nat "x")) ["x"])))
+            `shouldBe` Just (Succ Zero)

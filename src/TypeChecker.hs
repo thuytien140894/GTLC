@@ -98,7 +98,7 @@ module TypeChecker (
                                 s | s == ty1   -> Right ty2
                                   | otherwise  -> Left $ IllegalCast ty ty1
 
-      App t1 t2           -> do                                            -- (T-APP1) + (T-SUB)
+      App t1 t2           -> do                                            -- (T-APP1, T-APP2) + (T-SUB)
                               funcTy  <- typeOf t1   
                               argTy   <- typeOf t2                         
                               case funcTy of 
