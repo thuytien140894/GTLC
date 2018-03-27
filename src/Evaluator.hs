@@ -119,7 +119,7 @@ module Evaluator (
       Cast (Iden _) v | isUncoercedVal v  -> Just v                                       -- (E-CID)
       App (Cast (Func c d) v1) v2 
         | isUncoercedVal v1 && isVal v2   -> Cast d <$> evaluate' (App v1 (Cast c v2))    -- (E-CAPP)
-      Cast c (Cast d t)                   -> Cast (combineCoercions c d) <$> evaluate' t  -- (E-CCAST)
+      Cast c (Cast d t)                   -> Cast (combineCoercions d c) <$> evaluate' t  -- (E-CCAST)
 
       -- Application
       App (Lambda _ t1 _) v2 | isVal v2   -> Just $ subsFromTop v2 t1                     -- (E-APPABS)
