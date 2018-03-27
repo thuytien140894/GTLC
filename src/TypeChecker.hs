@@ -102,6 +102,7 @@ module TypeChecker (
                               funcTy  <- typeOf t1   
                               argTy   <- typeOf t2                         
                               case funcTy of 
+                                Dyn                              -> Right Dyn
                                 Arr paramTy retTy 
                                   | argTy `isCompatible` paramTy -> Right retTy
                                   | otherwise                    -> Left $ Mismatch argTy paramTy
