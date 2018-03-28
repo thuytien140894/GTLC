@@ -4,7 +4,7 @@ module PrinterSpec where
     import Types
     import Syntax
     import Prettier
-    import TypeErrors
+    import Errors
 
     spec :: Spec
     spec = 

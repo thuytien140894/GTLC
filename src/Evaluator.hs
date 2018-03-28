@@ -5,7 +5,7 @@ module Evaluator (
     import Syntax
     import Coercion
     import TypeChecker
-    import TypeErrors
+    import Errors
     
     import Data.Maybe
     import Data.Functor
@@ -75,7 +75,7 @@ module Evaluator (
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
 
     -- get the value for the specified field
-    getVal :: Term -> String -> Either TypeError Term
+    getVal :: Term -> String -> Either RuntimeError Term
     getVal (Rec []) _               = Left Stuck
     getVal (Rec ((l1, t1) : ys)) l 
       | l1 == l                     = Right t1
@@ -89,7 +89,7 @@ module Evaluator (
        | otherwise                  = hasField (Rec ys) l
 
     -- evaluate a record 
-    evalRecord :: Term -> Either TypeError Term 
+    evalRecord :: Term -> Either RuntimeError Term 
     evalRecord (Rec [])               = Right $ Rec []
     evalRecord (Rec ((l1, v1) : ys)) 
       | isVal v1                      = (`addEntry` (l1, v1)) <$> evalRecord (Rec ys)
@@ -103,16 +103,16 @@ module Evaluator (
 
     -- remove an enclosing coercion from a value 
     -- if the run-time type matches the target type
-    unbox :: Term -> Either TypeError Term
-    unbox (Cast c v) = do 
-      srcTy <- typeOf v
-      let cstTy = fst (getCoercionTypes c)
-      case srcTy of 
-        _ | srcTy == cstTy     -> Right v
-          | otherwise          -> Left CastError 
+    unbox :: Term -> Either RuntimeError Term
+    unbox (Cast c v) = case typeOf v of 
+      Right srcTy 
+        | srcTy == cstTy        -> Right v
+        | otherwise             -> Left CastError
+        where cstTy = fst (getCoercionTypes c)
+      Left err                  -> Left $ TError err
 
     -- small-step evaluation
-    evaluate' :: Term -> Either TypeError Term
+    evaluate' :: Term -> Either RuntimeError Term
     evaluate' t = case t of
       -- Arithmetic
       Pred Zero                           -> Right Zero                                    -- (E-PREDZERO)

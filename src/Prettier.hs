@@ -4,7 +4,7 @@ module Prettier (
   
     import Syntax
     import Types
-    import TypeErrors
+    import Errors
 
     import Text.PrettyPrint (Doc, (<>), (<+>), ($$))
     import qualified Text.PrettyPrint as PP

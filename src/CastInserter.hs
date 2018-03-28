@@ -4,7 +4,7 @@ module CastInserter where
   import Syntax
   import Types
   import Coercion
-  import TypeErrors
+  import Errors
 
   import Data.Maybe
 

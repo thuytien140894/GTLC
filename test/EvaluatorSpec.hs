@@ -5,7 +5,7 @@ module EvaluatorSpec where
     import Evaluator
     import Types
     import Parser
-    import TypeErrors
+    import Errors
     import TypeChecker
     import Subtype
 

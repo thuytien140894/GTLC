@@ -4,7 +4,7 @@ module TypeChecker (
 
     import Syntax
     import Types
-    import TypeErrors
+    import Errors
     import Subtype
     import Coercion
 

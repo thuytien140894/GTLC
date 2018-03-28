@@ -4,7 +4,7 @@ module TypeCheckerSpec where
     import TypeChecker
     import Syntax
     import Types
-    import TypeErrors
+    import Errors
 
     spec :: Spec
     spec = 

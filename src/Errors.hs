@@ -1,4 +1,4 @@
-module TypeErrors where 
+module Errors where 
     
     import Syntax
     import Types
@@ -13,6 +13,10 @@ module TypeErrors where
       | NotRecord Term
       | NotFound String
       | IllegalCast Type Type
-      | CastError
+      deriving (Eq, Show)
+
+    data RuntimeError 
+      = CastError
+      | TError TypeError 
       | Stuck
       deriving (Eq, Show)

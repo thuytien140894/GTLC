@@ -20,7 +20,7 @@ library
                      , Prettier
                      , Syntax
                      , Types
-                     , TypeErrors
+                     , Errors
                      , TypeChecker
                      , Subtype
                      , ParseHelper
