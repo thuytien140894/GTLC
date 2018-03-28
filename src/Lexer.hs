@@ -29,6 +29,7 @@ module Lexer where
                               , "zero"
                               , "Bool"
                               , "Nat"
+                              , "Dyn"
                               , "Top" ]
       , Tok.reservedOpNames = [ "succ"
                               , "pred"
