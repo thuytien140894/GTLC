@@ -13,10 +13,10 @@ module ParserSpec where
             parseExpr "true" `shouldBe` 
             Right Tru
 
-        context "succ true" $ 
-          it "should be \"Succ Tru\"" $ 
-            parseExpr "succ (\\x. x)" `shouldBe` 
-            Right (Succ (Lambda Dyn (Var 0 Dyn "x") ["x"]))
+        context "(\\x. succ x) true" $ 
+          it "should be \"Lambda Dyn (Succ (Var 0 Dyn x)) [x]) Tru\"" $ 
+            parseExpr "(\\x. succ x) true" `shouldBe` 
+            Right (App (Lambda Dyn (Succ (Var 0 Dyn "x")) ["x"]) Tru)
 
         context "\\x. x" $ 
           it "should be \"Lambda Dyn x [x]\""$ 
