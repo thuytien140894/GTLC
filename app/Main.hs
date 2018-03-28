@@ -13,8 +13,8 @@ module Main where
     interpret line = case parseExpr line of 
       Right validExpr -> case typeOf validExpr of 
                            Right _  -> case evaluate validExpr of 
-                                        Just res -> putStrLn $ printPretty res
-                                        Nothing  -> putStrLn "Cannot evaluate"
+                                        Right res -> putStrLn $ printPretty res
+                                        Left _    -> putStrLn "Cannot evaluate"
                            Left err -> putStrLn $ printPretty err
       Left err        -> print err                       
 

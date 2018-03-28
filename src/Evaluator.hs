@@ -109,7 +109,7 @@ module Evaluator (
         | srcTy == cstTy        -> Right v
         | otherwise             -> Left CastError
         where cstTy = fst (getCoercionTypes c)
-      Left err                  -> Left $ TError err
+      Left err                            -> Left $ TError err
 
     -- small-step evaluation
     evaluate' :: Term -> Either RuntimeError Term
@@ -152,11 +152,18 @@ module Evaluator (
     -- big-step evaluation
     -- (apply evaluate' repeatedly until a value is reached or we're left with an expression
     -- that cannot be evaluated further)
-    evaluateToValue :: Term -> Term
-    evaluateToValue x = fromRight x (evaluateToValue <$> evaluate' x)
+    evaluateToValue :: Term -> Either RuntimeError Term
+    evaluateToValue x = case evaluate' x of
+      Right res  -> evaluateToValue res
+      Left Stuck -> Right x 
+      Left err   -> Left err
     
     -- evaluate a term
-    evaluate :: Term -> Maybe Term
+    evaluate :: Term -> Either RuntimeError Term
     evaluate t = case evaluateToValue t of
-      res | isUncoercedVal res -> Just res
-          | otherwise          -> Nothing -- term is "stuck"
+      Right res 
+        | isUncoercedVal res -> Right res
+        | otherwise          -> Left Stuck -- term is "stuck"
+      Left err               -> Left err
+      
+      
