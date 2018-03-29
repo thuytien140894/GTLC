@@ -18,10 +18,10 @@ module ParserSpec where
             parseExpr "(\\x. succ x) true" `shouldBe` 
             Right (App (Lambda Dyn (Succ (Var 0 Dyn "x")) ["x"]) Tru)
 
-        context "\\x. x" $ 
-          it "should be \"Lambda Dyn x [x]\""$ 
-            parseExpr "\\x . x" `shouldBe` 
-            Right (Lambda Dyn (Var 0 Dyn "x") ["x"])
+        context "(\\x:Bool->Nat. succ 0) (\\x:Nat. x)" $ 
+          it "should be \"Lambda Dyn (Var 0 Dyn x) [x]\""$ 
+            parseExpr "(\\x:Bool->Nat. succ 0) (\\x:Nat. x)" `shouldBe` 
+            Right (App (Lambda (Arr Bool Nat) (Succ Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"]))
 
         context "(\\x:Dyn->Nat. (x 0)) (\\x:Nat. x)" $ 
           it "should be \"App (Lambda (Arr Dyn Nat) (App (Var 0 (Arr Dyn Nat) x) Zero) [x]) (Lambda Nat (Var 0 Nat x) [x])\""$ 

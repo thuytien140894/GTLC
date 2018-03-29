@@ -45,5 +45,5 @@ module CastInserter where
     IsZero e'        -> do 
                           t' <- insertCast e'
                           c  <- getBoolCoercion t'
-                          return $ Succ (Cast c t')
-    _                -> Right e -- t is a constant            
+                          return $ Succ (Cast c t')  
+    _                -> Right e         

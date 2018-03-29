@@ -1,5 +1,6 @@
 module TypeChecker (
-  typeOf
+    typeOf
+  , isConsistent
   ) where
 
     import Syntax

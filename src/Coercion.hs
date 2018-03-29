@@ -22,8 +22,8 @@ module Coercion where
   combineCoercions (Fail ty1 ty2) _                     = Fail ty1 ty2 
   combineCoercions _ (Fail ty1 ty2)                     = Fail ty1 ty2
   combineCoercions (Inject ty1) (Project ty2) 
-    | ty1 == ty2                               = Iden ty1
-    | otherwise                                = Fail ty1 ty2
+    | ty1 == ty2                                        = Iden ty1
+    | otherwise                                         = Fail ty1 ty2
   combineCoercions (Func c1 c2) (Func d1 d2)            = Func (combineCoercions d1 c1) (combineCoercions c2 d2)
   combineCoercions c1 c2                                = Seq c1 c2
 

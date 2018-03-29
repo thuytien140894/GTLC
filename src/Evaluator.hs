@@ -50,19 +50,21 @@ module Evaluator (
     -- maintain the "cutoff" parameter c that controls which variables should be shifted
     -- i.e. variables with indices less than c are bound and therefore should stay the same
     shift :: Int -> Int -> Term -> Term
-    shift c d t = case t of 
-      Var k ty id      -> if k < c then t else Var (k + d) ty id
-      Succ t'          -> Succ (shift c d t')
-      Pred t'          -> Pred (shift c d t')
-      IsZero t'        -> IsZero (shift c d t')
-      Lambda ty t' ctx -> Lambda ty (shift (c + 1) d t') ctx 
-      App t1 t2        -> App (shift c d t1) (shift c d t2)
+    shift a b t = case t of 
+      Var k ty id      -> if k < a then t else Var (k + b) ty id
+      Cast c t'        -> Cast c (shift a b t')
+      Succ t'          -> Succ (shift a b t')
+      Pred t'          -> Pred (shift a b t')
+      IsZero t'        -> IsZero (shift a b t')
+      Lambda ty t' ctx -> Lambda ty (shift (a + 1) b t') ctx 
+      App t1 t2        -> App (shift a b t1) (shift a b t2)
       _                -> t -- t is a constant
       
     -- perform substitution given a variable with bruijn index j, a body s, and a term t
     subs :: Int -> Term -> Term -> Term 
     subs j s t = case t of 
       Var k ty id      -> if k == j then s else t
+      Cast c t'        -> Cast c (subs j s t')
       Succ t'          -> Succ (subs j s t')
       Pred t'          -> Pred (subs j s t')
       IsZero t'        -> IsZero (subs j s t')
@@ -106,10 +108,10 @@ module Evaluator (
     unbox :: Term -> Either RuntimeError Term
     unbox (Cast c v) = case typeOf v of 
       Right srcTy 
-        | srcTy == cstTy        -> Right v
-        | otherwise             -> Left CastError
-        where cstTy = fst (getCoercionTypes c)
-      Left err                            -> Left $ TError err
+        | srcTy `isConsistent` cstTy  -> Right v
+        | otherwise                   -> Left CastError
+        where cstTy = snd (getCoercionTypes c)
+      Left err                        -> Left $ TError err
 
     -- small-step evaluation
     evaluate' :: Term -> Either RuntimeError Term
