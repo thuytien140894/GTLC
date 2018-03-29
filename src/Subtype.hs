@@ -31,7 +31,8 @@ module Subtype (
     | otherwise                               = xs `isSubset` ((l2, ty2) : ys)
   
   isSubtype :: Type -> Type -> Bool
-  isSubtype _ Top                     = True                                      -- (S-TOP)
+  isSubtype _ Dyn                     = True                                      -- (S-DYN)
+  isSubtype s Top | s /= Dyn          = True                                      -- (S-TOP)
   isSubtype s t | s == t              = True                                      -- (S-REFL)
   isSubtype (Arr s1 s2) (Arr t1 t2)   = t1 `isSubtype` s1 && s2 `isSubtype` t2    -- (S-ARROW)
   isSubtype (TRec s) (TRec t)         = s `isRcdSubtype` t                        -- (S-RCD)
