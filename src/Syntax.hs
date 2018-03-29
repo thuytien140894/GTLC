@@ -20,8 +20,6 @@ module Syntax where
     | App Term Term                                               -- application
     | Cast Coercion Term                                          -- coercion
     deriving (Eq, Show) 
-
-  type Entry = (String, Term)
   
   data Coercion 
     = Iden Type
@@ -31,3 +29,7 @@ module Syntax where
     | Seq Coercion Coercion
     | Fail Type Type
     deriving (Eq, Show)
+
+
+  type Entry = (String, Term)
+  type Label = String

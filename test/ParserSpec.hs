@@ -38,6 +38,11 @@ module ParserSpec where
           parseExpr "(\\x. (x 0)) (\\x:Nat. (succ x))" `shouldBe` 
           Right (App (Lambda Dyn (App (Var 0 Dyn "x") Zero) ["x"]) (Lambda Nat (Succ (Var 0 Nat "x")) ["x"]))
 
+      context "(\\x:Nat->Nat. x (x 0)) (\\x. (succ x))" $ 
+        it "should be \"App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) x) (App (Var 0 (Arr Nat Nat) x) Zero)) [x]) (Lambda Dyn (Succ (Var 0 Dyn x)) [x])\""$ 
+          parseExpr "(\\x:Nat->Nat. x (x 0)) (\\x. (succ x))" `shouldBe` 
+          Right (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (App (Var 0 (Arr Nat Nat) "x") Zero)) ["x"]) (Lambda Dyn (Succ (Var 0 Dyn "x")) ["x"]))
+          
       context "(\\ x : Dyn->Nat . x z) (\\ y. y)" $ 
         it "should be \"App (Lambda (Arr Dyn Nat) (App (Var 0 (Arr Dyn Nat) x) (Var 1 TUnit z)) [x]) (Lambda Dyn (Var 0 Dyn y) [y])\"" $ 
           parseExpr "(\\ x : Dyn->Nat . x z) (\\ y. y)" `shouldBe` 

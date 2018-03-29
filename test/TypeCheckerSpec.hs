@@ -90,3 +90,8 @@ module TypeCheckerSpec where
         it "should be IllegalCast Bool Nat" $ 
             typeOf (Cast (Inject Nat) Fls) `shouldBe`
             Left (IllegalCast Bool Nat)
+
+      context "\\x:Nat->Nat. x (x 0)" $ 
+        it "should be (Nat->Nat)->Nat" $ 
+            typeOf (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (App (Var 0 (Arr Nat Nat) "x") Zero)) ["x"]) `shouldBe`
+            Right (Arr (Arr Nat Nat) Nat)
