@@ -10,23 +10,23 @@ module CoercionSpec where
     describe "coerces" $ do
       context "Bool to Dynamic" $
         it "should be Bool!" $
-          coerce Bool Dyn `shouldBe` Inject Bool
+          coerce Bool Dyn 0 `shouldBe` (Inject Bool, 0)
 
       context "Dynamic to Nat" $
         it "should be Nat?" $
-          coerce Dyn Nat `shouldBe` Project Nat
+          coerce Dyn Nat 0 `shouldBe` (Project Nat 0, 1)
 
       context "Bool to Bool" $
         it "should be Identity" $
-          coerce Bool Bool `shouldBe` Iden Bool
+          coerce Bool Bool 0 `shouldBe` (Iden Bool, 0)
 
       context "Dynamic to Bool->Nat" $
         it "should be Bool!->Nat?" $
-          coerce Dyn (Arr Bool Nat) `shouldBe` Func (Inject Bool) (Project Nat)
+          coerce Dyn (Arr Bool Nat) 0 `shouldBe` (Func (Inject Bool) (Project Nat 0), 1)
 
       context "Bool->Nat to Dynamic" $
         it "should be Bool?->Nat!" $
-          coerce (Arr Bool Nat) Dyn `shouldBe` Func (Project Bool) (Inject Nat)
+          coerce (Arr Bool Nat) Dyn 0 `shouldBe` (Func (Project Bool 0) (Inject Nat), 1)
 
     describe "combineCoercionss" $ do 
       context "Identity and Bool!" $
@@ -35,15 +35,15 @@ module CoercionSpec where
 
       context "Nat! and Bool?" $
         it "should fail" $
-          combineCoercions (Inject Nat) (Project Bool) `shouldBe` Fail Nat Bool
+          combineCoercions (Inject Nat) (Project Bool 0) `shouldBe` Fail Nat Bool 0
 
       context "Nat! and Nat?" $
         it "should be Identity" $
-          combineCoercions (Inject Nat) (Project Nat) `shouldBe` Iden Nat
+          combineCoercions (Inject Nat) (Project Nat 0) `shouldBe` Iden Nat
 
       context "Nat?->Bool! and Nat!->Bool?" $
         it "should Iden->Iden" $
-          combineCoercions (Func (Project Nat) (Inject Bool)) (Func (Inject Nat) (Project Bool)) 
+          combineCoercions (Func (Project Nat 0) (Inject Bool)) (Func (Inject Nat) (Project Bool 0)) 
           `shouldBe` Func (Iden Nat) (Iden Bool)
     
     describe "get coercion types" $ do
@@ -53,7 +53,7 @@ module CoercionSpec where
       
       context "Fail Nat Bool" $
         it "should be (Nat, Bool)" $
-          getCoercionTypes (Fail Nat Bool) `shouldBe` (Nat, Bool)
+          getCoercionTypes (Fail Nat Bool 0) `shouldBe` (Nat, Bool)
 
       context "Inject Nat" $ 
         it "should be (Nat, Dyn)" $ 
@@ -61,13 +61,13 @@ module CoercionSpec where
 
       context "Project Bool" $ 
         it "should be (Dyn, Bool)" $ 
-          getCoercionTypes (Project Bool) `shouldBe` (Dyn, Bool)
+          getCoercionTypes (Project Bool 0) `shouldBe` (Dyn, Bool)
 
       context "Func (Inject Bool) (Project Nat)" $ 
         it "should be (Arr Dyn Dyn, Arr Bool Nat)" $ 
-          getCoercionTypes (Func (Inject Bool) (Project Nat)) `shouldBe` (Arr Dyn Dyn, Arr Bool Nat)
+          getCoercionTypes (Func (Inject Bool) (Project Nat 0)) `shouldBe` (Arr Dyn Dyn, Arr Bool Nat)
 
       context "Seq (Iden Bool) (Project Nat)" $ 
         it "should be (Bool, Nat)" $ 
-          getCoercionTypes (Seq (Iden Bool) (Project Nat)) `shouldBe` (Bool, Nat)
+          getCoercionTypes (Seq (Iden Bool) (Project Nat 0)) `shouldBe` (Bool, Nat)
 

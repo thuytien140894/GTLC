@@ -2,6 +2,9 @@ module Syntax where
 
   import Types
   
+  type Entry = (String, Term)
+  type LabelIndex = Int
+
   data Term 
     = Unit                                                        -- identity term 
     | Zero                                                        -- 0
@@ -19,17 +22,14 @@ module Syntax where
     | Lambda Type Term [String]
     | App Term Term                                               -- application
     | Cast Coercion Term                                          -- coercion
+    | Blame LabelIndex                                            -- blame assignment
     deriving (Eq, Show) 
   
   data Coercion 
     = Iden Type
-    | Project Type
-    | Inject Type
+    | Project Type LabelIndex
+    | Inject Type 
     | Func Coercion Coercion
     | Seq Coercion Coercion
-    | Fail Type Type
+    | Fail Type Type LabelIndex
     deriving (Eq, Show)
-
-
-  type Entry = (String, Term)
-  type Label = String
