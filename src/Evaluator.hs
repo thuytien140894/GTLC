@@ -8,6 +8,7 @@ module Evaluator (
   import Errors
   
   import Data.Maybe
+  import Control.Applicative
   import Data.Functor
   import Data.Either 
   
@@ -27,6 +28,7 @@ module Evaluator (
     t' | isNumeric t'     -> True
     Lambda {}             -> True
     Rec ls                -> areAllVal ls
+    Blame _               -> True
     _                     -> False
 
   -- determine if a term is a coerced value
@@ -113,15 +115,37 @@ module Evaluator (
       where cstTy = snd (getCoercionTypes c)
     Left err                        -> Left $ TError err
 
+  -- check if a term has a blame assignment
+  isBlamed :: Term -> Maybe Term
+  isBlamed (Blame l)            = Just (Blame l)
+  isBlamed v | isUncoercedVal v = Nothing
+  isBlamed (Succ t)             = isBlamed t
+  isBlamed (IsZero t)           = isBlamed t 
+  isBlamed (If t1 t2 t3)        = isBlamed t1 <|> isBlamed t2 <|> isBlamed t3
+  isBlamed (Lambda _ t _ )      = isBlamed t
+  isBlamed (Cast _ t)           = isBlamed t 
+  isBlamed (App t1 t2)          = isBlamed t1 <|> isBlamed t2
+
   -- small-step evaluation
   evaluate' :: Term -> Either RuntimeError Term
   evaluate' t = case t of
+    -- Blame 
+    IsZero (Blame l)                    -> Right $ Blame l                               
+    Succ (Blame l)                      -> Right $ Blame l
+    Pred (Blame l)                      -> Right $ Blame l
+    If (Blame l) t2 t1                  -> Right $ Blame l
+    App (Blame l) _                     -> Right $ Blame l
+    App _ (Blame l)                     -> Right $ Blame l
+
     -- Arithmetic
     Pred Zero                           -> Right Zero                                    -- (E-PREDZERO)
-    Pred (Succ nv) | isNumeric nv       -> Right nv                                      -- (E-PREDSUCC)
+    Pred (Succ nv) 
+      | isNumeric nv                    -> Right nv                                      -- (E-PREDSUCC)
     IsZero Zero                         -> Right Tru                                     -- (E-ISZEROZERO)
-    IsZero (Succ nv) | isNumeric nv     -> Right Fls                                     -- (E-ISZEROSUCC)
-    IsZero t1 | not (isNumeric t1)      -> IsZero <$> evaluate' t1                       -- (E-ISZERO)
+    IsZero (Succ nv) 
+      | isNumeric nv                    -> Right Fls                                     -- (E-ISZEROSUCC)
+    IsZero t1 
+      | not (isNumeric t1)              -> IsZero <$> evaluate' t1                       -- (E-ISZERO)
     Succ t1                             -> Succ <$> evaluate' t1                         -- (E-SUCC)
     Pred t1                             -> Pred <$> evaluate' t1                         -- (E-PRED)
 
@@ -131,22 +155,30 @@ module Evaluator (
     If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> evaluate' t1       -- (E-IF)
 
     -- Cast
-    Cast (Iden _) v | isUncoercedVal v  -> Right v                                       -- (E-CID)
+    Cast (Iden _) v 
+      | isUncoercedVal v                -> Right v                                       -- (E-CID)
+    Cast (Fail _ _ l) v 
+      | isUncoercedVal v                -> Right $ Blame l                               -- (E-CFAIL)
     App (Cast (Func c d) v1) v2 
       | isUncoercedVal v1 && isVal v2   -> Right $ Cast d (App v1 (Cast c v2))           -- (E-CAPP)
     Cast c (Cast d t)                   -> Right $ Cast (combineCoercions d c) t         -- (E-CCOMB)
-    Cast c v | isUncoercedVal v         -> unbox t                                       -- (E-CGROUND)
+    Cast c v 
+      | isUncoercedVal v                -> unbox t                                       -- (E-CGROUND)
     Cast c t                            -> Cast c <$> evaluate' t                        -- (E-CCAST)
-
+    
     -- Application
-    App (Lambda _ t1 _) v2 | isVal v2   -> Right $ subsFromTop v2 t1                     -- (E-APPABS)
-    App v1 t2 | isVal v1                -> App v1 <$> evaluate' t2                       -- (E-APP2)
+    App (Lambda _ t1 _) v2 
+      | isVal v2                        -> Right $ subsFromTop v2 t1                     -- (E-APPABS)
+    App v1 t2 
+      | isVal v1                        -> App v1 <$> evaluate' t2                       -- (E-APP2)
     App t1 t2                           -> (`App` t2) <$> evaluate' t1                   -- (E-APP1)
 
     -- Records
-    Proj (Rec ls) l | isVal (Rec ls)    -> getVal (Rec ls) l                             -- (E-PROJRCD)
+    Proj (Rec ls) l 
+      | isVal (Rec ls)                  -> getVal (Rec ls) l                             -- (E-PROJRCD)
     Proj (Rec ls) l                     -> (`Proj` l) <$> evaluate' (Rec ls)             -- (E-PROJ)
-    Rec ls | not (isVal (Rec ls))       -> evalRecord t                                  -- (E-RCD)
+    Rec ls 
+      | not (isVal (Rec ls))            -> evalRecord t                                  -- (E-RCD)
                       
     -- No rules applied
     _                                   -> Left Stuck                                    -- "Stuck"
