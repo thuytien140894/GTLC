@@ -57,4 +57,4 @@ module EvaluatorSpec where
       context "(\\x:Bool->Nat. succ <Identity>0) <Fail->Identity>(\\x:Nat. x)" $
         it "should be CastError" $
           evaluate (App (Lambda (Arr Bool Nat) (Succ (Cast (Iden Nat) Zero)) ["x"]) (Cast (Func (Fail Bool Nat 0) (Iden Nat)) (Lambda Nat (Var 0 Nat "x") ["x"])))
-          `shouldBe` Left CastError
+          `shouldBe` Right (Blame 0)

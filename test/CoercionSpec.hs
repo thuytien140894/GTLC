@@ -31,19 +31,19 @@ module CoercionSpec where
     describe "combineCoercionss" $ do 
       context "Identity and Bool!" $
         it "should be Bool!" $
-          combineCoercions (Iden Bool) (Inject Bool) `shouldBe` Inject Bool
+          reduceCoercion (Seq (Iden Bool) (Inject Bool)) `shouldBe` Inject Bool
 
       context "Nat! and Bool?" $
         it "should fail" $
-          combineCoercions (Inject Nat) (Project Bool 0) `shouldBe` Fail Nat Bool 0
+          reduceCoercion (Seq (Inject Nat) (Project Bool 0)) `shouldBe` Fail Nat Bool 0
 
       context "Nat! and Nat?" $
         it "should be Identity" $
-          combineCoercions (Inject Nat) (Project Nat 0) `shouldBe` Iden Nat
+          reduceCoercion (Seq (Inject Nat) (Project Nat 0)) `shouldBe` Iden Nat
 
       context "Nat?->Bool! and Nat!->Bool?" $
         it "should Iden->Iden" $
-          combineCoercions (Func (Project Nat 0) (Inject Bool)) (Func (Inject Nat) (Project Bool 0)) 
+          reduceCoercion (Seq (Func (Project Nat 0) (Inject Bool)) (Func (Inject Nat) (Project Bool 0))) 
           `shouldBe` Func (Iden Nat) (Iden Bool)
     
     describe "get coercion types" $ do

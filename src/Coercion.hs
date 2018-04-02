@@ -3,6 +3,22 @@ module Coercion where
   import Syntax
   import Types
 
+  -- check if a coercion is normalized (cannot be further reduced)
+  isNormalized :: Coercion -> Bool
+  isNormalized c 
+    | c == reduceCoercion c = True
+    | otherwise             = False
+
+  -- check if a coercion is a failure
+  isFailure :: Coercion -> Bool
+  isFailure Fail {}   = True
+  isFailure _         = False
+
+  -- check if a coercion is an identity
+  isIdentity :: Coercion -> Bool
+  isIdentity (Iden _) = True
+  isIdentity _        = False
+
   -- coercion type system
   coerce :: Type -> Type -> LabelIndex -> (Coercion, LabelIndex)
   coerce ty Dyn l                  = case ty of                     
@@ -18,17 +34,23 @@ module Coercion where
                    | otherwise     = (Fail ty1 ty2 l, l + 1)      -- (C-FAIL)
 
   -- reduction rules
-  combineCoercions :: Coercion -> Coercion -> Coercion
-  combineCoercions (Iden _) c                           = c
-  combineCoercions c (Iden _)                           = c
-  combineCoercions (Fail ty1 ty2 l) _                   = Fail ty1 ty2 l
-  combineCoercions _ (Fail ty1 ty2 l)                   = Fail ty1 ty2 l
-  combineCoercions (Inject ty1) (Project ty2 l) 
-    | ty1 == ty2                                        = Iden ty1
-    | otherwise                                         = Fail ty1 ty2 l
-  combineCoercions (Func c1 c2) (Func d1 d2)            = Func (combineCoercions d1 c1) (combineCoercions c2 d2)
-  combineCoercions c1 c2                                = Seq c1 c2
-
+  reduceCoercion :: Coercion -> Coercion
+  reduceCoercion (Seq (Iden _) c)                           = c
+  reduceCoercion (Seq c (Iden _))                           = c
+  reduceCoercion (Seq (Fail ty1 ty2 l) _)                   = Fail ty1 ty2 l
+  reduceCoercion (Seq _ (Fail ty1 ty2 l))                   = Fail ty1 ty2 l
+  reduceCoercion (Seq (Inject ty1) (Project ty2 l)) 
+    | ty1 == ty2                                            = Iden ty1
+    | otherwise                                             = Fail ty1 ty2 l
+  reduceCoercion (Seq (Func c1 c2) (Func d1 d2))            = Func c d
+    where c = reduceCoercion $ Seq d1 c1
+          d = reduceCoercion $ Seq c2 d2
+  reduceCoercion (Func (Fail ty1 ty2 l) _)                  = Fail ty1 ty2 l
+  reduceCoercion (Func c (Fail ty1 ty2 l))
+    | isNormalized c && 
+      not (isFailure c)                                     = Fail ty1 ty1 l
+  reduceCoercion c                                          = c
+ 
   -- find the source and target type of a coercion
   getCoercionTypes :: Coercion -> (Type, Type) 
   getCoercionTypes (Iden ty)        = (ty, ty)

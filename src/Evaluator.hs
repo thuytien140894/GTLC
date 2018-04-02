@@ -33,9 +33,10 @@ module Evaluator (
 
   -- determine if a term is a coerced value
   isCoercedValue :: Term -> Bool
-  isCoercedValue t = case t of 
-    Cast _ v | isUncoercedVal v  -> True 
-    _                            -> False
+  isCoercedValue (Cast c v)  
+      | isUncoercedVal v && isRegular c    = True 
+      where isRegular c = isNormalized c && not (isFailure c || isIdentity c) 
+  isCoercedValue _                         = False
 
   -- determine if a term is a value
   isVal :: Term -> Bool
@@ -115,17 +116,6 @@ module Evaluator (
       where cstTy = snd (getCoercionTypes c)
     Left err                        -> Left $ TError err
 
-  -- check if a term has a blame assignment
-  isBlamed :: Term -> Maybe Term
-  isBlamed (Blame l)            = Just (Blame l)
-  isBlamed v | isUncoercedVal v = Nothing
-  isBlamed (Succ t)             = isBlamed t
-  isBlamed (IsZero t)           = isBlamed t 
-  isBlamed (If t1 t2 t3)        = isBlamed t1 <|> isBlamed t2 <|> isBlamed t3
-  isBlamed (Lambda _ t _ )      = isBlamed t
-  isBlamed (Cast _ t)           = isBlamed t 
-  isBlamed (App t1 t2)          = isBlamed t1 <|> isBlamed t2
-
   -- small-step evaluation
   evaluate' :: Term -> Either RuntimeError Term
   evaluate' t = case t of
@@ -159,13 +149,16 @@ module Evaluator (
       | isUncoercedVal v                -> Right v                                       -- (E-CID)
     Cast (Fail _ _ l) v 
       | isUncoercedVal v                -> Right $ Blame l                               -- (E-CFAIL)
+    Cast c v 
+      | isUncoercedVal v 
+      && isNormalized c                 -> unbox t                                       -- (E-CGROUND)
+    Cast c v 
+      | isUncoercedVal v                -> Right $ Cast (reduceCoercion c) v             -- (E-CSTEP)
+    Cast c (Cast d t)                   -> Right $ Cast (reduceCoercion $ Seq d c) t     -- (E-CCOMB)
+    Cast c t                            -> Cast c <$> evaluate' t                        -- (E-CCAST)
     App (Cast (Func c d) v1) v2 
       | isUncoercedVal v1 && isVal v2   -> Right $ Cast d (App v1 (Cast c v2))           -- (E-CAPP)
-    Cast c (Cast d t)                   -> Right $ Cast (combineCoercions d c) t         -- (E-CCOMB)
-    Cast c v 
-      | isUncoercedVal v                -> unbox t                                       -- (E-CGROUND)
-    Cast c t                            -> Cast c <$> evaluate' t                        -- (E-CCAST)
-    
+
     -- Application
     App (Lambda _ t1 _) v2 
       | isVal v2                        -> Right $ subsFromTop v2 t1                     -- (E-APPABS)
