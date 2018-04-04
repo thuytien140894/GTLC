@@ -119,13 +119,13 @@ module Evaluator (
   evaluate' :: Term -> Either RuntimeError Term
   evaluate' t = case t of
     -- Blame 
-    IsZero (Blame l)                    -> Right $ Blame l                               
-    Succ (Blame l)                      -> Right $ Blame l
-    Pred (Blame l)                      -> Right $ Blame l
-    If (Blame l) t2 t1                  -> Right $ Blame l
-    App (Blame l) _                     -> Right $ Blame l
-    App _ (Blame l)                     -> Right $ Blame l
-    Cast _ (Blame l)                    -> Right $ Blame l
+    IsZero (Blame l)                    -> Right $ Blame l                               -- (E-BISZERO)                                       
+    Succ (Blame l)                      -> Right $ Blame l                               -- (E-BSUCC)
+    Pred (Blame l)                      -> Right $ Blame l                               -- (E-BPRED)
+    If (Blame l) t2 t1                  -> Right $ Blame l                               -- (E-BIF)
+    App (Blame l) _                     -> Right $ Blame l                               -- (E-BAPP1)
+    App _ (Blame l)                     -> Right $ Blame l                               -- (E-BAPP2)
+    Cast _ (Blame l)                    -> Right $ Blame l                               -- (E-BCAST)
 
     -- Arithmetic
     Pred Zero                           -> Right Zero                                    -- (E-PREDZERO)
@@ -145,18 +145,14 @@ module Evaluator (
     If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> evaluate' t1       -- (E-IF)
 
     -- Cast
-    Cast (Iden _) v
-      | isUncoercedVal v                -> Right v                                       -- (E-CID)
-    Cast (Fail _ _ l) v
-      | isUncoercedVal v                -> Right $ Blame l                               -- (E-CFAIL)
+    Cast c t 
+      | not (isVal t)                   -> Cast c <$> evaluate' t                        -- (E-CCAST)
+    Cast c (Cast d v)                   -> Right $ Cast (Seq d c) v                      -- (E-CCOMB)
+    Cast (Iden _) v                     -> Right v                                       -- (E-CID)
+    Cast (Fail _ _ l) v                 -> Right $ Blame l                               -- (E-CFAIL)
     Cast c v 
-      | isUncoercedVal v && 
-        isNormalized c                  -> unbox t                                       -- (E-CGROUND)
-    Cast c v
-      | isUncoercedVal v                -> Right $ Cast (reduceCoercion c) v             -- (E-CSTEP)
-    Cast c (Cast d v)                   
-      | isCoercedVal $ Cast d v         -> Right $ Cast (Seq d c) v                      -- (E-CCOMB)
-    Cast c t                            -> Cast c <$> evaluate' t                        -- (E-CCAST)
+      | isNormalized c                  -> unbox t                                       -- (E-CGROUND)
+    Cast c v                            -> Right $ Cast (reduceCoercion c) v             -- (E-CSTEP)
     App (Cast (Func c d) v1) v2 
       | isUncoercedVal v1 && 
         isVal v2                        -> Right $ Cast d (App v1 (Cast c v2))           -- (E-CAPP)

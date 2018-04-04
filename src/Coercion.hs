@@ -5,16 +5,25 @@ module Coercion where
 
   -- check if a coercion is normalized (cannot be further reduced)
   isNormalized :: Coercion -> Bool
-  isNormalized c  
-    | c == reduceCoercion c = True
-    | otherwise             = False
+  isNormalized (Inject _)                         = True
+  isNormalized (Project _ _)                      = True
+  isNormalized (Iden _)                           = True
+  isNormalized (Func c d) 
+    | isNormalized c && isNormalized d            = True
+  isNormalized (Seq c (Inject _))                 
+    | isNormalized c                              = True
+  isNormalized (Seq (Project _ _) c)              
+    | isNormalized c                              = True
+  isNormalized (Seq (Project _ _) Fail{})         = True
+  isNormalized (Seq (Func c d) Fail{}) 
+    | isNormalized c && isNormalized d            = True
+  isNormalized _                                  = False
 
   -- check if a coercion is regular (normalized and not Identity or Fail)
   isRegular :: Coercion -> Bool
   isRegular c 
-    | isNormalized c &&
-      not (isFailure c || isIdentity c)      = True
-  isRegular _                                = False
+    | isNormalized c && not (isIdentity c)       = True
+  isRegular _                                    = False
 
   -- check if a coercion is a failure
   isFailure :: Coercion -> Bool
@@ -42,33 +51,33 @@ module Coercion where
 
   -- reduce a coercion (single-step)
   reduceCoercion :: Coercion -> Coercion
-  reduceCoercion (Seq (Iden _) c)                           = c
-  reduceCoercion (Seq c (Iden _))                           = c
-  reduceCoercion (Seq (Fail ty1 ty2 l) _)                   = Fail ty1 ty2 l
-  reduceCoercion (Seq (Inject _) (Fail ty1 ty2 l))          = Fail ty1 ty2 l
+  reduceCoercion (Seq (Iden _) c)                         = c
+  reduceCoercion (Seq c (Iden _))                         = c
+  reduceCoercion (Seq (Fail ty1 ty2 l) _)                 = Fail ty1 ty2 l
+  reduceCoercion (Seq (Inject _) (Fail ty1 ty2 l))        = Fail ty1 ty2 l
   reduceCoercion (Seq (Inject ty1) (Project ty2 l)) 
-    | ty1 == ty2                                            = Iden ty1
-    | otherwise                                             = Fail ty1 ty2 l
+    | ty1 == ty2                                          = Iden ty1
+    | otherwise                                           = Fail ty1 ty2 l
   reduceCoercion (Seq (Func c1 c2) (Func d1 d2))            
-    | areRegular [c1, c2, d1, d2]                           = Func (Seq d1 c1) (Seq c2 d2)
-    where areRegular l = all (== True) $ map isRegular l
+    | all isNormalized [c1, c2, d1, d2]                   = Func (Seq d1 c1) (Seq c2 d2)
   reduceCoercion (Seq (Seq c1 c2) c3)                       
-    | isNormalized c                                        = Seq c1 (Seq c2 c3)
-    | otherwise                                             = Seq (reduceCoercion c) c3
+    | isNormalized c                                      = Seq c1 (Seq c2 c3)
+    | otherwise                                           = Seq (reduceCoercion c) c3
     where c = Seq c1 c2
   reduceCoercion (Seq c1 (Seq c2 c3))                       
-    | isNormalized c                                        = Seq (Seq c1 c2) c3
-    | otherwise                                             = Seq c1 (reduceCoercion c)
+    | isNormalized c                                      = Seq (Seq c1 c2) c3
+    | otherwise                                           = Seq c1 (reduceCoercion c)
     where c = Seq c2 c3
   reduceCoercion (Seq c d)                                  
-    | isNormalized c                                        = Seq c (reduceCoercion d)
-    | otherwise                                             = Seq (reduceCoercion c) d
-  reduceCoercion (Func (Fail ty1 ty2 l) _)                  = Fail ty1 ty2 l
+    | isNormalized c                                      = Seq c (reduceCoercion d)
+    | otherwise                                           = Seq (reduceCoercion c) d
+  reduceCoercion (Func (Fail ty1 ty2 l) _)                = Fail ty1 ty2 l
   reduceCoercion (Func c (Fail ty1 ty2 l))
-    | isNormalized c && 
-      not (isFailure c)                                     = Fail ty1 ty1 l
-  reduceCoercion (Func c d)                                 = Func (reduceCoercion c) (reduceCoercion d)
-  reduceCoercion c                                          = c
+    | isNormalized c                                      = Fail ty1 ty2 l
+  reduceCoercion (Func c d)    
+    | isNormalized c                                      = Func c (reduceCoercion d)
+    | otherwise                                           = Func (reduceCoercion c) d
+  reduceCoercion c                                        = c
  
   -- normalize a coercion (big-step reduction)
   normalize :: Coercion -> Coercion

@@ -68,3 +68,13 @@ module EvaluatorSpec where
         it "should be Fail 1" $
           evaluate (Cast (Fail Bool Nat 2) (Cast (Project Nat 1) (Cast (Inject Bool) Tru)))
           `shouldBe` Right (Blame 1)
+    
+      context "<Fail2><Int?><Bool!>true" $
+        it "should be Fail 1" $
+          evaluate (Cast (Fail Bool Nat 1) (Cast (Func (Iden Bool) (Project Nat 2)) (Cast (Func (Iden Bool) (Inject Bool)) Tru)))
+          `shouldBe` Right (Blame 2)
+
+      context "<Fail2><Int?><Bool!>true" $
+        it "should be Fail 1" $
+          evaluate (Cast (Seq (Func (Iden Bool) (Inject Bool)) (Seq (Func (Iden Bool) (Project Nat 2)) (Fail Bool Nat 1))) Tru)
+          `shouldBe` Right (Blame 2)

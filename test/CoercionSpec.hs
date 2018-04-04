@@ -71,3 +71,17 @@ module CoercionSpec where
         it "should be (Bool, Nat)" $ 
           getCoercionTypes (Seq (Iden Bool) (Project Nat 0)) `shouldBe` (Bool, Nat)
 
+    describe "is normalized" $ do
+      context "Iden;<Nat?-Nat!>" $ 
+        it "should be true" $ 
+          isNormalized (Seq (Project Nat 2) (Func (Inject Nat) (Project Nat 1))) `shouldBe` True
+      
+      context "Bool?;(Nat?->Nat!);Nat!" $
+        it "should be true" $
+          isNormalized (Seq (Seq (Project Nat 2) (Func (Inject Nat) (Project Nat 1))) (Inject Nat))
+          `shouldBe` True
+
+      context "Bool?;(Nat?->Nat!);Nat!" $
+        it "should be true" $
+          isNormalized (Seq (Project Nat 2) (Seq (Func (Inject Nat) (Project Nat 1)) (Inject Nat)))
+          `shouldBe` True
