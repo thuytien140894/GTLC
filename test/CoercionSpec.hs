@@ -28,22 +28,22 @@ module CoercionSpec where
         it "should be Bool?->Nat!" $
           coerce (Arr Bool Nat) Dyn 0 `shouldBe` (Func (Project Bool 0) (Inject Nat), 1)
 
-    describe "combineCoercionss" $ do 
-      context "Identity and Bool!" $
+    describe "reduces coercion" $ do 
+      context "Identity; Bool!" $
         it "should be Bool!" $
           reduceCoercion (Seq (Iden Bool) (Inject Bool)) `shouldBe` Inject Bool
 
-      context "Nat! and Bool?" $
+      context "Nat!; Bool?" $
         it "should fail" $
           reduceCoercion (Seq (Inject Nat) (Project Bool 0)) `shouldBe` Fail Nat Bool 0
 
-      context "Nat! and Nat?" $
+      context "Nat!; Nat?" $
         it "should be Identity" $
-          reduceCoercion (Seq (Inject Nat) (Project Nat 0)) `shouldBe` Iden Nat
+          normalize (Seq (Inject Nat) (Project Nat 0)) `shouldBe` Iden Nat
 
-      context "Nat?->Bool! and Nat!->Bool?" $
-        it "should Iden->Iden" $
-          reduceCoercion (Seq (Func (Project Nat 0) (Inject Bool)) (Func (Inject Nat) (Project Bool 0))) 
+      context "Nat?->Bool!; Nat!->Bool?" $
+        it "should be Iden->Iden" $
+          normalize (Seq (Func (Project Nat 0) (Inject Bool)) (Func (Inject Nat) (Project Bool 0))) 
           `shouldBe` Func (Iden Nat) (Iden Bool)
     
     describe "get coercion types" $ do

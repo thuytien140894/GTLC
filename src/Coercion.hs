@@ -5,9 +5,16 @@ module Coercion where
 
   -- check if a coercion is normalized (cannot be further reduced)
   isNormalized :: Coercion -> Bool
-  isNormalized c 
+  isNormalized c  
     | c == reduceCoercion c = True
     | otherwise             = False
+
+  -- check if a coercion is regular (normalized and not Identity or Fail)
+  isRegular :: Coercion -> Bool
+  isRegular c 
+    | isNormalized c &&
+      not (isFailure c || isIdentity c)      = True
+  isRegular _                                = False
 
   -- check if a coercion is a failure
   isFailure :: Coercion -> Bool
@@ -33,24 +40,42 @@ module Coercion where
   coerce ty1 ty2 l | ty1 == ty2    = (Iden ty1, l)                -- (C-ID)
                    | otherwise     = (Fail ty1 ty2 l, l + 1)      -- (C-FAIL)
 
-  -- reduction rules
+  -- reduce a coercion (single-step)
   reduceCoercion :: Coercion -> Coercion
   reduceCoercion (Seq (Iden _) c)                           = c
   reduceCoercion (Seq c (Iden _))                           = c
   reduceCoercion (Seq (Fail ty1 ty2 l) _)                   = Fail ty1 ty2 l
-  reduceCoercion (Seq _ (Fail ty1 ty2 l))                   = Fail ty1 ty2 l
+  reduceCoercion (Seq (Inject _) (Fail ty1 ty2 l))          = Fail ty1 ty2 l
   reduceCoercion (Seq (Inject ty1) (Project ty2 l)) 
     | ty1 == ty2                                            = Iden ty1
     | otherwise                                             = Fail ty1 ty2 l
-  reduceCoercion (Seq (Func c1 c2) (Func d1 d2))            = Func c d
-    where c = reduceCoercion $ Seq d1 c1
-          d = reduceCoercion $ Seq c2 d2
+  reduceCoercion (Seq (Func c1 c2) (Func d1 d2))            
+    | areRegular [c1, c2, d1, d2]                           = Func (Seq d1 c1) (Seq c2 d2)
+    where areRegular l = all (== True) $ map isRegular l
+  reduceCoercion (Seq (Seq c1 c2) c3)                       
+    | isNormalized c                                        = Seq c1 (Seq c2 c3)
+    | otherwise                                             = Seq (reduceCoercion c) c3
+    where c = Seq c1 c2
+  reduceCoercion (Seq c1 (Seq c2 c3))                       
+    | isNormalized c                                        = Seq (Seq c1 c2) c3
+    | otherwise                                             = Seq c1 (reduceCoercion c)
+    where c = Seq c2 c3
+  reduceCoercion (Seq c d)                                  
+    | isNormalized c                                        = Seq c (reduceCoercion d)
+    | otherwise                                             = Seq (reduceCoercion c) d
   reduceCoercion (Func (Fail ty1 ty2 l) _)                  = Fail ty1 ty2 l
   reduceCoercion (Func c (Fail ty1 ty2 l))
     | isNormalized c && 
       not (isFailure c)                                     = Fail ty1 ty1 l
+  reduceCoercion (Func c d)                                 = Func (reduceCoercion c) (reduceCoercion d)
   reduceCoercion c                                          = c
  
+  -- normalize a coercion (big-step reduction)
+  normalize :: Coercion -> Coercion
+  normalize c 
+    | isNormalized c = c
+    | otherwise      = normalize $ reduceCoercion c
+
   -- find the source and target type of a coercion
   getCoercionTypes :: Coercion -> (Type, Type) 
   getCoercionTypes (Iden ty)        = (ty, ty)
@@ -63,13 +88,3 @@ module Coercion where
     where (s1, s2) = getCoercionTypes c1
           (t1, t2) = getCoercionTypes c2
   getCoercionTypes (Fail ty1 ty2 _) = (ty1, ty2)
-                                    
-
-
-
-
-
- 
-
-
-

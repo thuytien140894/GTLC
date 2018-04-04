@@ -58,3 +58,13 @@ module EvaluatorSpec where
         it "should be CastError" $
           evaluate (App (Lambda (Arr Bool Nat) (Succ (Cast (Iden Nat) Zero)) ["x"]) (Cast (Func (Fail Bool Nat 0) (Iden Nat)) (Lambda Nat (Var 0 Nat "x") ["x"])))
           `shouldBe` Right (Blame 0)
+
+      context "<Fail2->Nat!><Fail1->Nat?>(succ 0)" $
+        it "should be Fail2" $
+          evaluate (Cast (Func (Fail Bool Nat 2) (Inject Nat)) (Cast (Func (Fail Bool Nat 1) (Project Nat 1)) (Succ Zero)))
+          `shouldBe` Right (Blame 1)
+
+      context "<Fail2><Int?><Bool!>true" $
+        it "should be Fail 1" $
+          evaluate (Cast (Fail Bool Nat 2) (Cast (Project Nat 1) (Cast (Inject Bool) Tru)))
+          `shouldBe` Right (Blame 1)
