@@ -15,9 +15,9 @@ module CastInsertionSpec where
           Right (App (Lambda Dyn Zero ["x"]) (Cast (Inject Bool) Tru), 0)
 
       context "(\\x. (x 0)) (\\x:Nat. (succ x))" $
-        it "should be (\\x. (x <Nat!>0)) <Nat?->Nat!>(\\x:Nat. (succ x))" $ 
+        it "should be (\\x. (x <Nat!>0)) <Nat?->Nat!>(\\x:Nat. (succ <Iden>x))" $ 
           insertCast (App (Lambda Dyn (App (Var 0 Dyn "x") Zero) ["x"]) (Lambda Nat (Succ (Var 0 Nat "x")) ["x"])) 0 `shouldBe` 
-          Right (App (Lambda Dyn (App (Var 0 Dyn "x") (Cast (Inject Nat) Zero)) ["x"]) (Cast (Func (Project Nat 0) (Inject Nat)) (Lambda Nat (Succ (Cast (Iden Nat) (Var 0 Nat "x"))) ["x"])), 1)
+          Right (App (Lambda Dyn (App (Var 0 Dyn "x") (Cast (Inject Nat) Zero)) ["x"]) (Cast (Seq (Func (Project Nat 0) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda Nat (Succ (Cast (Iden Nat) (Var 0 Nat "x"))) ["x"])),1)
           
       context "(\\x:Dyn->Nat. (x 0)) (\\x:Nat. x)" $
         it "should be (\\x:Dyn->Nat. (x <Nat!>0)) <Nat?->Identity>(\\x:Nat. x)" $ 
@@ -30,9 +30,9 @@ module CastInsertionSpec where
           Right (App (Lambda Dyn (Succ (Cast (Project Nat 0) (Var 0 Dyn "x"))) ["x"]) (Cast (Inject Bool) Tru), 1)
 
       context "(\\x:Bool->Nat. succ 0) (\\x:Nat. x)" $
-        it "should be (\\x:Bool->Nat. succ <Identity>0) <Fail->Identity>(\\x:Nat. x)" $
+        it "should be (\\x:Bool->Nat. succ <Identity>0) <Fail>(\\x:Nat. x)" $
           insertCast (App (Lambda (Arr Bool Nat) (Succ Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])) 0 `shouldBe` 
-          Right (App (Lambda (Arr Bool Nat) (Succ (Cast (Iden Nat) Zero)) ["x"]) (Cast (Func (Fail Bool Nat 0) (Iden Nat)) (Lambda Nat (Var 0 Nat "x") ["x"])), 1)
+          Right (App (Lambda (Arr Bool Nat) (Succ (Cast (Iden Nat) Zero)) ["x"]) (Cast (Fail (Arr Nat Nat) (Arr Bool Nat) 0) (Lambda Nat (Var 0 Nat "x") ["x"])),1)
 
       context "(\\x:Bool. x) 0" $
         it "should be (\\x:Bool. x) <Fail>0" $

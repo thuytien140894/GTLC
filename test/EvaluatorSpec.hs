@@ -45,7 +45,7 @@ module EvaluatorSpec where
           `shouldBe` Right (Succ Zero)
 
       context "(\\x. succ <Nat?>x) <Bool!>true" $
-        it "should be CastError" $
+        it "should be Fail 0" $
           evaluate (App (Lambda Dyn (Succ (Cast (Project Nat 0) (Var 0 Dyn "x"))) ["x"]) (Cast (Inject Bool) Tru))
           `shouldBe` Right (Blame 0)
 
@@ -54,9 +54,9 @@ module EvaluatorSpec where
           evaluate (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (Cast (Iden Nat) (App (Var 0 (Arr Nat Nat) "x") (Cast (Iden Nat) Zero)))) ["x"]) (Cast (Func (Inject Nat) (Iden Nat)) (Lambda Dyn (Succ (Cast (Project Nat 0) (Var 0 Dyn "x"))) ["x"])))
           `shouldBe` Right (Succ (Succ Zero))
 
-      context "(\\x:Bool->Nat. succ <Identity>0) <Fail->Identity>(\\x:Nat. x)" $
-        it "should be CastError" $
-          evaluate (App (Lambda (Arr Bool Nat) (Succ (Cast (Iden Nat) Zero)) ["x"]) (Cast (Func (Fail Bool Nat 0) (Iden Nat)) (Lambda Nat (Var 0 Nat "x") ["x"])))
+      context "(\\x:Bool->Nat. succ <Identity>0) <Fail>(\\x:Nat. x)" $
+        it "should be Fail 0" $
+          evaluate (App (Lambda (Arr Bool Nat) (Succ (Cast (Iden Nat) Zero)) ["x"]) (Cast (Fail (Arr Nat Nat) (Arr Bool Nat) 0) (Lambda Nat (Var 0 Nat "x") ["x"])))
           `shouldBe` Right (Blame 0)
 
       context "<Fail2->Nat!><Fail1->Nat?>(succ 0)" $

@@ -3,6 +3,16 @@ module Coercion where
   import Syntax
   import Types
 
+  -- consistency rules
+  isConsistent :: Type -> Type -> Bool
+  isConsistent Dyn _                               = True
+  isConsistent _ Dyn                               = True
+  isConsistent ty1 ty2 | ty1 == ty2                = True
+  isConsistent (Arr s1 s2) (Arr t1 t2) 
+    | isConsistent t1 s1 &&
+      isConsistent s2 t2                           = True
+  isConsistent _ _                                 = False
+
   -- check if a coercion is normalized (cannot be further reduced)
   isNormalized :: Coercion -> Bool
   isNormalized (Inject _)                         = True
@@ -27,7 +37,7 @@ module Coercion where
 
   -- check if a coercion is a failure
   isFailure :: Coercion -> Bool
-  isFailure Fail {}   = True
+  isFailure Fail{}   = True
   isFailure _         = False
 
   -- check if a coercion is an identity
@@ -37,17 +47,20 @@ module Coercion where
 
   -- coercion type system
   coerce :: Type -> Type -> LabelIndex -> (Coercion, LabelIndex)
-  coerce ty Dyn l                  = case ty of                     
-    Arr _ _     -> coerce ty (Arr Dyn Dyn) l                      -- (C-FUN!)
+  coerce ty Dyn l                        = case ty of                     
+    Arr _ _     -> (Seq c FuncInj, l')                            -- (C-FUN!)
     _           -> (Inject ty, l)                                 -- (C-B!)
-  coerce Dyn ty l                  = case ty of 
-    Arr _ _     -> coerce (Arr Dyn Dyn) ty l                      -- (C-FUN?)
+    where (c, l') = coerce ty (Arr Dyn Dyn) l 
+  coerce Dyn ty l                        = case ty of 
+    Arr _ _     -> (Seq (FuncProj l) c, l')                       -- (C-FUN?)
     _           -> (Project ty l, l + 1)                          -- (C-B?)
-  coerce (Arr s1 s2) (Arr t1 t2) l = (Func c d, l2)               -- (C-FUN)
+    where (c, l') = coerce (Arr Dyn Dyn) ty (l + 1)
+  coerce (Arr s1 s2) (Arr t1 t2) l 
+    | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)         -- (C-FUN)
     where (c, l1) = coerce t1 s1 l
           (d, l2) = coerce s2 t2 l1
-  coerce ty1 ty2 l | ty1 == ty2    = (Iden ty1, l)                -- (C-ID)
-                   | otherwise     = (Fail ty1 ty2 l, l + 1)      -- (C-FAIL)
+  coerce ty1 ty2 l | ty1 == ty2          = (Iden ty1, l)                -- (C-ID)
+  coerce ty1 ty2 l                       = (Fail ty1 ty2 l, l + 1)      -- (C-FAIL)
 
   -- reduce a coercion (single-step)
   reduceCoercion :: Coercion -> Coercion

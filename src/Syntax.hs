@@ -1,3 +1,5 @@
+{-# Language PatternSynonyms #-}
+
 module Syntax where
 
   import Types
@@ -5,6 +7,12 @@ module Syntax where
   type Entry = (String, Term)
   type LabelIndex = Int
 
+  pattern FuncInj :: Coercion 
+  pattern FuncInj = Inject (Arr Dyn Dyn)
+
+  pattern FuncProj :: LabelIndex -> Coercion 
+  pattern FuncProj l = Project (Arr Dyn Dyn) l
+  
   data Term 
     = Unit                                                        -- identity term 
     | Zero                                                        -- 0
@@ -33,3 +41,4 @@ module Syntax where
     | Seq Coercion Coercion
     | Fail Type Type LabelIndex
     deriving (Eq, Show)
+  

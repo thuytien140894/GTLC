@@ -27,17 +27,6 @@ module TypeChecker (
     | l1 == l                    = Right ty
     | otherwise                  = getType (TRec ys) l
 
-  -- consistency rules
-  isConsistent :: Type -> Type -> Bool
-  isConsistent Dyn _                               = True
-  isConsistent _ Dyn                               = True
-  isConsistent ty1 ty2 | ty1 == ty2                = True
-  isConsistent (Arr param1 ret1) (Arr param2 ret2) 
-    | isConsistent param2 param1 &&
-      isConsistent ret1 ret2                       = True
-    | otherwise                                    = False
-  isConsistent _ _                                 = False
-
   -- two types are compatible if either they are subtypes of one another or 
   -- consistent
   isCompatible :: Type -> Type -> Bool
@@ -78,7 +67,7 @@ module TypeChecker (
                             snd  <- typeOf t3 
                             case cond of 
                               Bool | fst == snd -> Right fst 
-                                    | otherwise  -> Left $ Difference fst snd
+                                   | otherwise  -> Left $ Difference fst snd
                               _    -> Left $ NotBool cond
                         
     Rec ls             -> rcdTypeOf t                                   -- (T-RCD)

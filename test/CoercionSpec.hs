@@ -22,11 +22,11 @@ module CoercionSpec where
 
       context "Dynamic to Bool->Nat" $
         it "should be Bool!->Nat?" $
-          coerce Dyn (Arr Bool Nat) 0 `shouldBe` (Func (Inject Bool) (Project Nat 0), 1)
+          coerce Dyn (Arr Bool Nat) 0 `shouldBe` (Seq (Project (Arr Dyn Dyn) 0) (Func (Inject Bool) (Project Nat 1)),2)
 
       context "Bool->Nat to Dynamic" $
         it "should be Bool?->Nat!" $
-          coerce (Arr Bool Nat) Dyn 0 `shouldBe` (Func (Project Bool 0) (Inject Nat), 1)
+          coerce (Arr Bool Nat) Dyn 0 `shouldBe` (Seq (Func (Project Bool 0) (Inject Nat)) (Inject (Arr Dyn Dyn)),1)
 
     describe "reduces coercion" $ do 
       context "Identity; Bool!" $
