@@ -40,11 +40,6 @@ module Coercion where
     | isNormalized c && not (isIdentity c)       = True
   isRegular _                                    = False
 
-  -- check if a coercion is a failure
-  isFailure :: Coercion -> Bool
-  isFailure Fail{}    = True
-  isFailure _         = False
-
   -- check if a coercion is an identity
   isIdentity :: Coercion -> Bool
   isIdentity (Iden _) = True
@@ -69,34 +64,30 @@ module Coercion where
 
   -- reduce a coercion (single-step)
   reduceCoercion :: Coercion -> Coercion
-  reduceCoercion (Seq (Iden _) c)                         = c
-  reduceCoercion (Seq c (Iden _))                         = c
-  reduceCoercion (Seq (Fail ty1 ty2 l) _)                 = Fail ty1 ty2 l
-  reduceCoercion (Seq (Inject _) (Fail ty1 ty2 l))        = Fail ty1 ty2 l
+  reduceCoercion (Seq (Iden _) c)                    = c                           -- (L-ID1)
+  reduceCoercion (Seq c (Iden _))                    = c                           -- (L-ID2)
+  reduceCoercion (Seq (Fail ty1 ty2 l) _)            = Fail ty1 ty2 l              -- (L-FAILL)
+  reduceCoercion (Seq (Inject _) (Fail ty1 ty2 l))   = Fail ty1 ty2 l              -- (L-FAILR)
   reduceCoercion (Seq (Inject ty1) (Project ty2 l)) 
-    | ty1 == ty2                                          = Iden ty1
-    | otherwise                                           = Fail ty1 ty2 l
-  reduceCoercion (Seq (Func c1 c2) (Func d1 d2))            
-    | all isNormalized [c1, c2, d1, d2]                   = Seq d1 c1 `Func` Seq c2 d2
-  reduceCoercion (Seq (Seq c1 c2) c3)                       
-    | isNormalized c                                      = Seq c1 $ Seq c2 c3
-    | otherwise                                           = reduceCoercion c `Seq` c3
-    where c = Seq c1 c2
+    | ty1 == ty2                                     = Iden ty1                    -- (L-INJPROJ)
+    | otherwise                                      = Fail ty1 ty2 l              -- (L-FAIL)
+  reduceCoercion (Seq (Func c1 c2) (Func d1 d2))                          
+    | all isNormalized [c1, c2, d1, d2]              = Seq d1 c1 `Func` Seq c2 d2  -- (L-SEQFUN)
+  reduceCoercion (Seq (Seq c1 c2) c3)                        
+    | isNormalized $ Seq c1 c2                       = Seq c1 $ Seq c2 c3          -- (L-ASS1)
   reduceCoercion (Seq c1 (Seq c2 c3))                       
-    | isNormalized c                                      = Seq c1 c2 `Seq` c3
-    | otherwise                                           = Seq c1 $ reduceCoercion c
-    where c = Seq c2 c3
+    | isNormalized $ Seq c2 c3                       = Seq c1 c2 `Seq` c3          -- (L-ASS2)
   reduceCoercion (Seq c d)                                  
-    | isNormalized c                                      = Seq c $ reduceCoercion d
-    | otherwise                                           = reduceCoercion c `Seq` d
-  reduceCoercion (Func (Iden ty) (Iden _))                = Iden ty
-  reduceCoercion (Func (Fail ty1 ty2 l) _)                = Fail ty1 ty2 l
+    | isNormalized c                                 = Seq c $ reduceCoercion d    -- (L-SEQ1)
+    | otherwise                                      = reduceCoercion c `Seq` d    -- (L-SEQ2)
+  reduceCoercion (Func (Iden ty) (Iden _))           = Iden ty                     -- (L-FUNID)
+  reduceCoercion (Func (Fail ty1 ty2 l) _)           = Fail ty1 ty2 l              -- (E-FUNFAILL)
   reduceCoercion (Func c (Fail ty1 ty2 l))
-    | isNormalized c                                      = Fail ty1 ty2 l
+    | isNormalized c                                 = Fail ty1 ty2 l              -- (E-FUNFAILR)
   reduceCoercion (Func c d)    
-    | isNormalized c                                      = Func c $ reduceCoercion d 
-    | otherwise                                           = reduceCoercion c `Func` d
-  reduceCoercion c                                        = c
+    | isNormalized c                                 = Func c $ reduceCoercion d   -- (L-FUN1)
+    | otherwise                                      = reduceCoercion c `Func` d   -- (L-FUN2)
+  reduceCoercion c                                   = c
  
   -- normalize a coercion (big-step reduction)
   normalize :: Coercion -> Coercion

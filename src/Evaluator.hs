@@ -122,7 +122,7 @@ module Evaluator (
     IsZero (Blame l)                    -> Right $ Blame l                               -- (E-BISZERO)                                       
     Succ (Blame l)                      -> Right $ Blame l                               -- (E-BSUCC)
     Pred (Blame l)                      -> Right $ Blame l                               -- (E-BPRED)
-    If (Blame l) t2 t1                  -> Right $ Blame l                               -- (E-BIF)
+    If (Blame l) t1 t2                  -> Right $ Blame l                               -- (E-BIF)
     App (Blame l) _                     -> Right $ Blame l                               -- (E-BAPP1)
     App _ (Blame l)                     -> Right $ Blame l                               -- (E-BAPP2)
     Cast _ (Blame l)                    -> Right $ Blame l                               -- (E-BCAST)
@@ -147,15 +147,15 @@ module Evaluator (
     -- Cast
     Cast c t 
       | not (isVal t)                   -> Cast c <$> evaluate' t                        -- (E-CCAST)
-    Cast c (Cast d v)                   -> Right $ Cast (Seq d c) v                      -- (E-CCOMB)
-    Cast (Iden _) v                     -> Right v                                       -- (E-CID)
-    Cast (Fail _ _ l) v                 -> Right $ Blame l                               -- (E-CFAIL)
-    Cast c v 
+    Cast c (Cast d u)                   -> Right $ Cast (Seq d c) u                      -- (E-CCMP)
+    Cast (Iden _) u                     -> Right u                                       -- (E-CID)
+    Cast (Fail _ _ l) u                 -> Right $ Blame l                               -- (E-CFAIL)
+    Cast c u 
       | isNormalized c                  -> unbox t                                       -- (E-CGROUND)
-    Cast c v                            -> Right $ Cast (reduceCoercion c) v             -- (E-CSTEP)
-    App (Cast (Func c d) v1) v2 
-      | isUncoercedVal v1 && 
-        isVal v2                        -> Right $ Cast d (App v1 $ Cast c v2)           -- (E-CAPP)
+    Cast c u                            -> Right $ Cast (reduceCoercion c) u             -- (E-CSTEP)
+    App (Cast (Func c d) u) v 
+      | isUncoercedVal u && 
+        isVal v                         -> Right $ Cast d (App u $ Cast c v)             -- (E-CAPP)
 
     -- Application
     App (Lambda _ t1 _) v2 

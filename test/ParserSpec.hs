@@ -18,6 +18,11 @@ module ParserSpec where
           parseExpr "(\\m. (\\x. x 0) m)" `shouldBe` 
           Right (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"])
 
+      context "(\\m. ((\\x. (x 0)) m)) (\\y:Nat. succ y)" $ 
+        it "should be \"(\\m. (\\x. x 0) m) (\\:Nat. succ 0)\"" $ 
+          parseExpr "(\\m. ((\\x. (x 0)) m)) (\\y:Nat. succ y)" `shouldBe` 
+          Right (App (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"]))
+
       context "\\f. (\\x. f (\\y. (x x) y)) (\\x. f (\\y. (x x) y))"$ 
         it "should be \"\\. (\\. 1 (\\. (1 1) 0)) (\\. 1 (\\. (1 1) 0))\"" $ 
           parseExpr "\\f. (\\x. f (\\y. (x x) y)) (\\x. f (\\y. (x x) y))" `shouldBe` 
