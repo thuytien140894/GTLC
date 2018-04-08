@@ -190,5 +190,3 @@ module Evaluator (
       | isUncoercedVal res -> Right res
       | otherwise          -> Left Stuck -- term is "stuck"
     Left err               -> Left err
-      
-      

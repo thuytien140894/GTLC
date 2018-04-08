@@ -46,4 +46,3 @@ module TypeParser where
       <|> top
       <|> dynamic
       <|> recordTy
-

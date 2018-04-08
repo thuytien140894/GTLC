@@ -36,4 +36,3 @@ module Subtype (
   isSubtype (Arr s1 s2) (Arr t1 t2)   = t1 `isSubtype` s1 && s2 `isSubtype` t2    -- (S-ARROW)
   isSubtype (TRec s) (TRec t)         = s `isRcdSubtype` t                        -- (S-RCD)
   isSubtype _ _                       = False 
-                            

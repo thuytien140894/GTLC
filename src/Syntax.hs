@@ -41,4 +41,3 @@ module Syntax where
     | Seq Coercion Coercion
     | Fail Type Type LabelIndex
     deriving (Eq, Show)
-  

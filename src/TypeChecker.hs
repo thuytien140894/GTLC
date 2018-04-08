@@ -1,7 +1,6 @@
 module TypeChecker (
   typeOf,
-  typeCheck, 
-  insertCast
+  typeCheck
   ) where
 
   import Syntax
@@ -21,7 +20,7 @@ module TypeChecker (
   typeCheckRcd :: Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
   typeCheckRcd (Rec []) l               = Right (Rec [], TRec [], l)
   typeCheckRcd (Rec ((f1, t1) : ys)) l  = do 
-    (t1', ty, l1) <- typeCheck t1 l
+    (t1', ty, l1) <- typeCheck' t1 l
     (rcd, rcdTy, l2) <- typeCheckRcd (Rec ys) l1 
     return (rcd `addField` (f1, t1'), rcdTy `addType` (f1, ty), l2)
 
@@ -50,9 +49,9 @@ module TypeChecker (
   -- typecheck a conditional
   typeCheckCond :: Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
   typeCheckCond (If e1 e2 e3) l = do
-    (t1, cond, l1) <- typeCheck e1 l
-    (t2, fst, l2)  <- typeCheck e2 l1
-    (t3, snd, l3)  <- typeCheck e3 l2
+    (t1, cond, l1) <- typeCheck' e1 l
+    (t2, fst, l2)  <- typeCheck' e2 l1
+    (t3, snd, l3)  <- typeCheck' e3 l2
     case cond of 
       Dyn 
         | fst `isConsistent` snd -> let (c, l3) = coerce cond Bool l3
@@ -66,8 +65,8 @@ module TypeChecker (
   -- typecheck an application
   typeCheckApp :: Term -> Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
   typeCheckApp e1 e2 l = do                                            
-    (t1, funcTy, l1)  <- typeCheck e1 l  
-    (t2, argTy, l2)   <- typeCheck e2 l1
+    (t1, funcTy, l1)  <- typeCheck' e1 l  
+    (t2, argTy, l2)   <- typeCheck' e2 l1
     case funcTy of 
       Dyn                              -> let (c1, l3) = coerce argTy Dyn l2 
                                               c2       = FuncProj l3  
@@ -155,15 +154,15 @@ module TypeChecker (
                               _                                -> Left $ NotFunction t1                             
 
   -- typecheck the source term and insert cast if needed
-  typeCheck :: Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
-  typeCheck e l = case e of 
+  typeCheck' :: Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
+  typeCheck' e l = case e of 
     Unit               -> Right (Unit, TUnit, l)                        -- (C-CONST)
     Tru                -> Right (e, Bool, l)                                    
     Fls                -> Right (e, Bool, l)                                   
     Zero               -> Right (e, Nat, l)                                     
 
     Succ e'            -> do                                            -- (C-SUCC)
-                            (t', ty, l1) <- typeCheck e' l
+                            (t', ty, l1) <- typeCheck' e' l
                             case ty of  
                               Dyn -> let (c, l2) = coerce ty Nat l1
                                      in Right (Succ $ Cast c t', Nat, l2)
@@ -171,7 +170,7 @@ module TypeChecker (
                               _   -> Left $ NotNat ty
 
     Pred e'            -> do                                            -- (C-PRED)
-                            (t', ty, l1) <- typeCheck e' l
+                            (t', ty, l1) <- typeCheck' e' l
                             case ty of
                               Dyn -> let (c, l2) = coerce ty Nat l1
                                      in Right (Pred $ Cast c t', Nat, l2)
@@ -179,7 +178,7 @@ module TypeChecker (
                               _   -> Left $ NotNat ty
 
     IsZero e'          -> do                                            -- (C-ISZERO)
-                            (t', ty, l1) <- typeCheck e' l 
+                            (t', ty, l1) <- typeCheck' e' l 
                             case ty of 
                               Dyn  -> let (c, l2) = coerce ty Bool l1
                                       in Right (IsZero $ Cast c t', Bool, l2)
@@ -192,7 +191,7 @@ module TypeChecker (
 
     Proj e' f          -> case e' of                                     -- (C-PROJ)
                             Rec ls -> do 
-                                        res <- typeCheck e' l 
+                                        res <- typeCheck' e' l 
                                         typeCheckField res f 
                             _      -> Left $ NotRecord e
                         
@@ -201,13 +200,13 @@ module TypeChecker (
                             _     -> Right (e, ty, l)                                  
 
     Lambda ty e' ctx   -> do                                             -- (C-ABS)
-                            (t', retTy, l') <- typeCheck e' l           
+                            (t', retTy, l') <- typeCheck' e' l           
                             Right (Lambda ty t' ctx, Arr ty retTy, l')  
 
     App e1 e2          -> typeCheckApp e1 e2 l                           -- (C-APP1 + C-APP2)
         
   -- insert casts into a term
-  insertCast :: Term -> Either TypeError Term 
-  insertCast e = case typeCheck e 0 of 
+  typeCheck :: Term -> Either TypeError Term 
+  typeCheck e = case typeCheck' e 0 of 
     Right (t, _, _)      -> Right t 
     Left err             -> Left err

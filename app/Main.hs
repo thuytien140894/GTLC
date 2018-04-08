@@ -11,12 +11,12 @@ module Main where
     -- interpret each line input, either printing out the result or error
     interpret :: String -> IO ()
     interpret line = case parseExpr line of 
-      Right validExpr -> case typeOf validExpr of 
-                           Right _  -> case evaluate validExpr of 
-                                        Right res -> putStrLn $ printPretty res
-                                        Left _    -> putStrLn "Cannot evaluate"
-                           Left err -> putStrLn $ printPretty err
-      Left err        -> print err                       
+      Right validExpr  -> case typeCheck validExpr of 
+                            Right t  -> case evaluate t of 
+                                          Right res -> putStrLn $ printPretty res
+                                          Left _    -> putStrLn "Cannot evaluate"
+                            Left err -> putStrLn $ printPretty err
+      Left err         -> print err                       
 
     -- main method to read in user input
     main :: IO ()
