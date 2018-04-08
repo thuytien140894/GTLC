@@ -11,11 +11,11 @@ module ParseHelper where
   fixBinding :: Term -> String -> Int -> Term
   fixBinding t x b = case t of
     Var _ ty id | id == x   -> Var b ty id
-    Succ t'                 -> Succ (fixBinding t' x b)
-    Pred t'                 -> Pred (fixBinding t' x b)
-    IsZero t'               -> IsZero (fixBinding t' x b)
-    Lambda ty t' ctx        -> Lambda ty (fixBinding t' x (b + 1)) ctx
-    App t1 t2               -> App (fixBinding t1 x b) (fixBinding t2 x b)
+    Succ t'                 -> Succ $ fixBinding t' x b
+    Pred t'                 -> Pred $ fixBinding t' x b
+    IsZero t'               -> IsZero $ fixBinding t' x b
+    Lambda ty t' ctx        -> Lambda ty (fixBinding t' x $ b + 1) ctx
+    App t1 t2               -> fixBinding t1 x b `App` fixBinding t2 x b
     _                       -> t
 
   -- fix Bruijn indices for free variables
@@ -23,28 +23,28 @@ module ParseHelper where
   fixFreeBinding t freeVars boundVars = case t of
     Var _ ty id 
       | id `elem` freeVars  -> Var (getBruijnIndex id freeVars boundVars) ty id
-    Succ t'                 -> Succ (fixFreeBinding t' freeVars boundVars)
-    Pred t'                 -> Pred (fixFreeBinding t' freeVars boundVars)
-    IsZero t'               -> IsZero (fixFreeBinding t' freeVars boundVars)
+    Succ t'                 -> Succ $ fixFreeBinding t' freeVars boundVars
+    Pred t'                 -> Pred $ fixFreeBinding t' freeVars boundVars
+    IsZero t'               -> IsZero $ fixFreeBinding t' freeVars boundVars
     Lambda ty t' ctx        -> Lambda ty (fixFreeBinding t' freeVars boundVars) ctx
-    App t1 t2               -> App (fixFreeBinding t1 freeVars boundVars) (fixFreeBinding t2 freeVars boundVars)
+    App t1 t2               -> fixFreeBinding t1 freeVars boundVars `App` fixFreeBinding t2 freeVars boundVars
     _                       -> t
 
   -- update the typing environment for nested lambdas when new bound variables are introduced
   updateVarType :: Term -> String -> Type -> Term
   updateVarType t x ty = case t of 
     Var k _ id | id == x       -> Var k ty id
-    Succ t'                    -> Succ (updateVarType t' x ty)
-    Pred t'                    -> Pred (updateVarType t' x ty)
-    IsZero t'                  -> IsZero (updateVarType t' x ty)
+    Succ t'                    -> Succ $ updateVarType t' x ty
+    Pred t'                    -> Pred $ updateVarType t' x ty
+    IsZero t'                  -> IsZero $ updateVarType t' x ty
     Lambda ty t' ctx           -> Lambda ty (updateVarType t' x ty) ctx 
-    App t1 t2                  -> App (updateVarType t1 x ty) (updateVarType t2 x ty)
+    App t1 t2                  -> updateVarType t1 x ty `App` updateVarType t2 x ty
     _                          -> t
 
   -- get the bruijn index for a free variable
   getBruijnIndex :: String -> [String] -> [String] -> Int
   getBruijnIndex id freeVars boundVars = fromJust freeIndex + length boundVars
-    where freeIndex  = elemIndex id (reverse freeVars)
+    where freeIndex  = elemIndex id $ reverse freeVars
 
   -- retrieve the binding context of an abstraction
   getBoundVar :: Term -> [String]

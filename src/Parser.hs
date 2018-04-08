@@ -29,7 +29,7 @@ module Parser (
   lambda = do
     lamb >> whiteSpace
     arg <- identifier
-    ty <- option Dyn (try colon >> types) -- if there is type specified, parse it; else return Dyn
+    ty <- option Dyn $ try colon >> types -- if there is type specified, parse it; else return Dyn
     dot 
     body <- expr
     let t = fixBinding body arg 0
@@ -47,7 +47,7 @@ module Parser (
   record' :: Parser Term
   record' = do
     list <- sepBy1 entry comma
-    return $ Rec (concat list)
+    return $ Rec $ concat list
 
   -- parse one entry of a record
   entry :: Parser [Entry]
@@ -92,9 +92,9 @@ module Parser (
   prefixTable :: Ex.OperatorTable String () Identity Term
   prefixTable = [
       [
-        Ex.Prefix (reserved "succ"   >> return Succ)
-      , Ex.Prefix (reserved "pred"   >> return Pred)
-      , Ex.Prefix (reserved "iszero" >> return IsZero)
+        Ex.Prefix $ reserved "succ"   >> return Succ
+      , Ex.Prefix $ reserved "pred"   >> return Pred
+      , Ex.Prefix $ reserved "iszero" >> return IsZero
       ]
     ]
 

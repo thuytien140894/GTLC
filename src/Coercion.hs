@@ -77,25 +77,25 @@ module Coercion where
     | ty1 == ty2                                          = Iden ty1
     | otherwise                                           = Fail ty1 ty2 l
   reduceCoercion (Seq (Func c1 c2) (Func d1 d2))            
-    | all isNormalized [c1, c2, d1, d2]                   = Func (Seq d1 c1) (Seq c2 d2)
+    | all isNormalized [c1, c2, d1, d2]                   = Seq d1 c1 `Func` Seq c2 d2
   reduceCoercion (Seq (Seq c1 c2) c3)                       
-    | isNormalized c                                      = Seq c1 (Seq c2 c3)
-    | otherwise                                           = Seq (reduceCoercion c) c3
+    | isNormalized c                                      = Seq c1 $ Seq c2 c3
+    | otherwise                                           = reduceCoercion c `Seq` c3
     where c = Seq c1 c2
   reduceCoercion (Seq c1 (Seq c2 c3))                       
-    | isNormalized c                                      = Seq (Seq c1 c2) c3
-    | otherwise                                           = Seq c1 (reduceCoercion c)
+    | isNormalized c                                      = Seq c1 c2 `Seq` c3
+    | otherwise                                           = Seq c1 $ reduceCoercion c
     where c = Seq c2 c3
   reduceCoercion (Seq c d)                                  
-    | isNormalized c                                      = Seq c (reduceCoercion d)
-    | otherwise                                           = Seq (reduceCoercion c) d
+    | isNormalized c                                      = Seq c $ reduceCoercion d
+    | otherwise                                           = reduceCoercion c `Seq` d
   reduceCoercion (Func (Iden ty) (Iden _))                = Iden ty
   reduceCoercion (Func (Fail ty1 ty2 l) _)                = Fail ty1 ty2 l
   reduceCoercion (Func c (Fail ty1 ty2 l))
     | isNormalized c                                      = Fail ty1 ty2 l
   reduceCoercion (Func c d)    
-    | isNormalized c                                      = Func c (reduceCoercion d)
-    | otherwise                                           = Func (reduceCoercion c) d
+    | isNormalized c                                      = Func c $ reduceCoercion d 
+    | otherwise                                           = reduceCoercion c `Func` d
   reduceCoercion c                                        = c
  
   -- normalize a coercion (big-step reduction)

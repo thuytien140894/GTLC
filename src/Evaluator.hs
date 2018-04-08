@@ -54,24 +54,24 @@ module Evaluator (
   shift :: Int -> Int -> Term -> Term
   shift a b t = case t of 
     Var k ty id      -> if k < a then t else Var (k + b) ty id
-    Cast c t'        -> Cast c (shift a b t')
-    Succ t'          -> Succ (shift a b t')
-    Pred t'          -> Pred (shift a b t')
-    IsZero t'        -> IsZero (shift a b t')
+    Cast c t'        -> Cast c $ shift a b t'
+    Succ t'          -> Succ $ shift a b t'
+    Pred t'          -> Pred $ shift a b t'
+    IsZero t'        -> IsZero $ shift a b t'
     Lambda ty t' ctx -> Lambda ty (shift (a + 1) b t') ctx 
-    App t1 t2        -> App (shift a b t1) (shift a b t2)
+    App t1 t2        -> shift a b t1 `App` shift a b t2
     _                -> t -- t is a constant
     
   -- perform substitution given a variable with bruijn index j, a body s, and a term t
   subs :: Int -> Term -> Term -> Term 
   subs j s t = case t of 
     Var k ty id      -> if k == j then s else t
-    Cast c t'        -> Cast c (subs j s t')
-    Succ t'          -> Succ (subs j s t')
-    Pred t'          -> Pred (subs j s t')
-    IsZero t'        -> IsZero (subs j s t')
+    Cast c t'        -> Cast c $ subs j s t'
+    Succ t'          -> Succ $ subs j s t'
+    Pred t'          -> Pred $ subs j s t'
+    IsZero t'        -> IsZero $ subs j s t'
     Lambda ty t' ctx -> Lambda ty (subs (j + 1) (shift 0 1 s) t') ctx
-    App t1 t2        -> App (subs j s t1) (subs j s t2)
+    App t1 t2        -> subs j s t1 `App` subs j s t2
     _                -> t -- t is a constant
   
   -- perform substitution from the beginning
@@ -83,14 +83,14 @@ module Evaluator (
   getVal (Rec []) _               = Left Stuck
   getVal (Rec ((l1, t1) : ys)) l 
     | l1 == l                     = Right t1
-    | otherwise                   = getVal (Rec ys) l
+    | otherwise                   = Rec ys `getVal` l
 
   -- check whether a record contain the field
   hasField :: Term -> String -> Bool
-  hasField (Rec []) _             = False
+  hasField (Rec []) _              = False
   hasField (Rec ((l1, t1) : ys)) l 
       | l1 == l                    = True
-      | otherwise                  = hasField (Rec ys) l
+      | otherwise                  = Rec ys `hasField` l
 
   -- evaluate a record 
   evalRecord :: Term -> Either RuntimeError Term 
@@ -112,7 +112,7 @@ module Evaluator (
     Right srcTy 
       | srcTy `isConsistent` cstTy  -> Right v
       | otherwise                   -> Left CastError
-      where cstTy = snd (getCoercionTypes c)
+      where cstTy = snd $ getCoercionTypes c
     Left err                        -> Left $ TError err
 
   -- small-step evaluation
@@ -155,7 +155,7 @@ module Evaluator (
     Cast c v                            -> Right $ Cast (reduceCoercion c) v             -- (E-CSTEP)
     App (Cast (Func c d) v1) v2 
       | isUncoercedVal v1 && 
-        isVal v2                        -> Right $ Cast d (App v1 (Cast c v2))           -- (E-CAPP)
+        isVal v2                        -> Right $ Cast d (App v1 $ Cast c v2)           -- (E-CAPP)
 
     -- Application
     App (Lambda _ t1 _) v2 
@@ -166,10 +166,10 @@ module Evaluator (
 
     -- Records
     Proj (Rec ls) l 
-      | isVal (Rec ls)                  -> getVal (Rec ls) l                             -- (E-PROJRCD)
+      | isVal $ Rec ls                  -> Rec ls `getVal` l                             -- (E-PROJRCD)
     Proj (Rec ls) l                     -> (`Proj` l) <$> evaluate' (Rec ls)             -- (E-PROJ)
     Rec ls 
-      | not (isVal (Rec ls))            -> evalRecord t                                  -- (E-RCD)
+      | not $ isVal $ Rec ls            -> evalRecord t                                  -- (E-RCD)
                       
     -- No rules applied
     _                                   -> Left Stuck                                    -- "Stuck"

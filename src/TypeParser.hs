@@ -22,7 +22,7 @@ module TypeParser where
   recordTy' :: Parser Type
   recordTy' = do
       list <- sepBy1 entryTy comma
-      return $ TRec (concat list)
+      return $ TRec $ concat list
 
   -- parse one entry of a record
   entryTy :: Parser [TEntry]

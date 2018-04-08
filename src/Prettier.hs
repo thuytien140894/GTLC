@@ -62,8 +62,8 @@ module Prettier (
                                 App _ _   -> PP.parens (output t1) <+> sndTerm
                                 _         -> output t1 <+> sndTerm
                                 where sndTerm = case t2 of 
-                                                  Lambda {} -> PP.parens (output t2)
-                                                  App _ _   -> PP.parens (output t2)
+                                                  Lambda{}  -> PP.parens $ output t2
+                                                  App _ _   -> PP.parens $ output t2
                                                   _         -> output t2
 
   -- pretty printing for type                                            
@@ -73,7 +73,7 @@ module Prettier (
       Nat                 -> PP.text "Nat"
       Bool                -> PP.text "Bool"
       Arr ty1 ty2         -> output ty1 <> PP.text "->" <> output ty2
-      TRec ls             -> PP.braces (outputRcdTypes ls)
+      TRec ls             -> PP.braces $ outputRcdTypes ls
 
   -- pretty printing for type error
   instance Pretty TypeError where 

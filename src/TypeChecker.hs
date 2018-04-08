@@ -38,7 +38,7 @@ module TypeChecker (
   getType (TRec []) l            = Left $ NotFound l 
   getType (TRec ((l1, ty) : ys)) l 
     | l1 == l                    = Right ty
-    | otherwise                  = getType (TRec ys) l
+    | otherwise                  = TRec ys `getType` l
 
   -- typecheck a record field
   typeCheckField :: (Term, Type, LabelIndex) -> String -> Either TypeError (Term, Type, LabelIndex)
