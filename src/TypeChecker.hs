@@ -55,9 +55,9 @@ module TypeChecker (
     (t3, snd, l3)  <- typeCheck e3 l2
     case cond of 
       Dyn 
-        | fst `isConsistent` snd -> Right (If (Cast c t1) t2 t3, fst, l3) 
+        | fst `isConsistent` snd -> let (c, l3) = coerce cond Bool l3
+                                    in Right (If (Cast c t1) t2 t3, fst, l3) 
         | otherwise              -> Left $ Difference fst snd
-        where (c, l3) = coerce cond Bool l3
       Bool 
         | fst `isConsistent` snd -> Right (If t1 t2 t3, fst, l3) 
         | otherwise              -> Left $ Difference fst snd
@@ -69,11 +69,13 @@ module TypeChecker (
     (t1, funcTy, l1)  <- typeCheck e1 l  
     (t2, argTy, l2)   <- typeCheck e2 l1
     case funcTy of 
-      Dyn                              -> let (c, l3) = coerce argTy Dyn l2 in 
-                                          Right (App t1 $ Cast c t2, Dyn, l3)
+      Dyn                              -> let (c1, l3) = coerce argTy Dyn l2 
+                                              c2       = FuncProj l3  
+                                          in Right (App (Cast c2 t1) (Cast c1 t2), Dyn, l3 + 1)
       Arr paramTy retTy 
-        | argTy `isCompatible` paramTy -> let (c, l3) = coerce argTy paramTy l2 in 
-                                          Right (App t1 $ Cast c t2, retTy, l3)
+        | argTy `isSubtype` paramTy    -> Right (App t1 t2, retTy, l2)
+        | argTy `isConsistent` paramTy -> let (c, l3) = coerce argTy paramTy l2 
+                                          in Right (App t1 $ Cast c t2, retTy, l3)
         | otherwise                    -> Left $ Mismatch argTy paramTy
         where (c, l3) = coerce argTy paramTy l2
       _                                -> Left $ NotFunction t1
@@ -163,24 +165,24 @@ module TypeChecker (
     Succ e'            -> do                                            -- (C-SUCC)
                             (t', ty, l1) <- typeCheck e' l
                             case ty of  
-                              Dyn -> let (c, l2) = coerce ty Nat l1 in
-                                     Right (Succ $ Cast c t', Nat, l2)
+                              Dyn -> let (c, l2) = coerce ty Nat l1
+                                     in Right (Succ $ Cast c t', Nat, l2)
                               Nat -> Right (Succ t', Nat, l1)
                               _   -> Left $ NotNat ty
 
     Pred e'            -> do                                            -- (C-PRED)
                             (t', ty, l1) <- typeCheck e' l
                             case ty of
-                              Dyn -> let (c, l2) = coerce ty Nat l1 in
-                                     Right (Pred $ Cast c t', Nat, l2)
+                              Dyn -> let (c, l2) = coerce ty Nat l1
+                                     in Right (Pred $ Cast c t', Nat, l2)
                               Nat -> Right (Pred t', Nat, l1)
                               _   -> Left $ NotNat ty
 
     IsZero e'          -> do                                            -- (C-ISZERO)
                             (t', ty, l1) <- typeCheck e' l 
                             case ty of 
-                              Dyn  -> let (c, l2) = coerce ty Bool l1 in
-                                      Right (IsZero $ Cast c t', Bool, l2)
+                              Dyn  -> let (c, l2) = coerce ty Bool l1
+                                      in Right (IsZero $ Cast c t', Bool, l2)
                               Nat  -> Right (IsZero t', Bool, l1)
                               _    -> Left $ NotNat ty
 
@@ -209,5 +211,3 @@ module TypeChecker (
   insertCast e = case typeCheck e 0 of 
     Right (t, _, _)      -> Right t 
     Left err             -> Left err
-  
-      

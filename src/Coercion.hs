@@ -18,6 +18,7 @@ module Coercion where
   isNormalized (Inject _)                         = True
   isNormalized (Project _ _)                      = True
   isNormalized (Iden _)                           = True
+  isNormalized (Func (Iden _) (Iden _))           = False
   isNormalized (Func c d) 
     | isNormalized c && isNormalized d            = True
   isNormalized (Seq c (Inject _))                 
@@ -27,6 +28,10 @@ module Coercion where
   isNormalized (Seq (Project _ _) Fail{})         = True
   isNormalized (Seq (Func c d) Fail{}) 
     | isNormalized c && isNormalized d            = True
+  isNormalized (Seq c FuncInj) 
+    | isNormalized c                              = True
+  isNormalized (Seq (FuncProj _) c)
+    | isNormalized c                              = True
   isNormalized _                                  = False
 
   -- check if a coercion is regular (normalized and not Identity or Fail)
@@ -37,7 +42,7 @@ module Coercion where
 
   -- check if a coercion is a failure
   isFailure :: Coercion -> Bool
-  isFailure Fail{}   = True
+  isFailure Fail{}    = True
   isFailure _         = False
 
   -- check if a coercion is an identity
@@ -48,15 +53,15 @@ module Coercion where
   -- coercion type system
   coerce :: Type -> Type -> LabelIndex -> (Coercion, LabelIndex)
   coerce ty Dyn l                        = case ty of                     
-    Arr _ _     -> (Seq c FuncInj, l')                            -- (C-FUN!)
-    _           -> (Inject ty, l)                                 -- (C-B!)
+    Arr _ _     -> (Seq c FuncInj, l')                                  -- (C-FUN!)
+    _           -> (Inject ty, l)                                       -- (C-B!)
     where (c, l') = coerce ty (Arr Dyn Dyn) l 
   coerce Dyn ty l                        = case ty of 
-    Arr _ _     -> (Seq (FuncProj l) c, l')                       -- (C-FUN?)
-    _           -> (Project ty l, l + 1)                          -- (C-B?)
+    Arr _ _     -> (Seq (FuncProj l) c, l')                             -- (C-FUN?)
+    _           -> (Project ty l, l + 1)                                -- (C-B?)
     where (c, l') = coerce (Arr Dyn Dyn) ty (l + 1)
   coerce (Arr s1 s2) (Arr t1 t2) l 
-    | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)         -- (C-FUN)
+    | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)               -- (C-FUN)
     where (c, l1) = coerce t1 s1 l
           (d, l2) = coerce s2 t2 l1
   coerce ty1 ty2 l | ty1 == ty2          = (Iden ty1, l)                -- (C-ID)
@@ -84,6 +89,7 @@ module Coercion where
   reduceCoercion (Seq c d)                                  
     | isNormalized c                                      = Seq c (reduceCoercion d)
     | otherwise                                           = Seq (reduceCoercion c) d
+  reduceCoercion (Func (Iden ty) (Iden _))                = Iden ty
   reduceCoercion (Func (Fail ty1 ty2 l) _)                = Fail ty1 ty2 l
   reduceCoercion (Func c (Fail ty1 ty2 l))
     | isNormalized c                                      = Fail ty1 ty2 l

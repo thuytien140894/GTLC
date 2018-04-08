@@ -44,7 +44,7 @@ module CoercionSpec where
       context "Nat?->Bool!; Nat!->Bool?" $
         it "should be Iden->Iden" $
           normalize (Seq (Func (Project Nat 0) (Inject Bool)) (Func (Inject Nat) (Project Bool 0))) 
-          `shouldBe` Func (Iden Nat) (Iden Bool)
+          `shouldBe` Iden Nat
     
     describe "get coercion types" $ do
       context "Iden Bool" $ 
