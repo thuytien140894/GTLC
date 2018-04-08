@@ -6,41 +6,54 @@ module ParseHelper where
   import Data.Maybe
   import Data.List (elemIndex)
 
-  -- correct the bruijn index for each variable
+  -- correct the bruijn index for a bound variable
   -- this function is called when parsing a Lambda term 
-  fixBinding :: Term -> [String] -> [String] -> Term
-  fixBinding t boundVars freeVars = case t of
-    Var _ ty id             -> Var (getBruijnIndex id boundVars freeVars) ty id
-    Succ t'                 -> Succ (fixBinding t' boundVars freeVars)
-    Pred t'                 -> Pred (fixBinding t' boundVars freeVars)
-    IsZero t'               -> IsZero (fixBinding t' boundVars freeVars)
-    Lambda ty t' localBound -> Lambda ty (fixBinding t' boundVars freeVars) localBound
-    App t1 t2               -> App (fixBinding t1 boundVars freeVars) (fixBinding t2 boundVars freeVars)
+  fixBinding :: Term -> String -> Int -> Term
+  fixBinding t x b = case t of
+    Var _ ty id | id == x   -> Var b ty id
+    Succ t'                 -> Succ (fixBinding t' x b)
+    Pred t'                 -> Pred (fixBinding t' x b)
+    IsZero t'               -> IsZero (fixBinding t' x b)
+    Lambda ty t' ctx        -> Lambda ty (fixBinding t' x (b + 1)) ctx
+    App t1 t2               -> App (fixBinding t1 x b) (fixBinding t2 x b)
+    _                       -> t
+
+  -- fix Bruijn indices for free variables
+  fixFreeBinding :: Term -> [String] -> [String] -> Term
+  fixFreeBinding t freeVars boundVars = case t of
+    Var _ ty id 
+      | id `elem` freeVars  -> Var (getBruijnIndex id freeVars boundVars) ty id
+    Succ t'                 -> Succ (fixFreeBinding t' freeVars boundVars)
+    Pred t'                 -> Pred (fixFreeBinding t' freeVars boundVars)
+    IsZero t'               -> IsZero (fixFreeBinding t' freeVars boundVars)
+    Lambda ty t' ctx        -> Lambda ty (fixFreeBinding t' freeVars boundVars) ctx
+    App t1 t2               -> App (fixFreeBinding t1 freeVars boundVars) (fixFreeBinding t2 freeVars boundVars)
     _                       -> t
 
   -- update the typing environment for nested lambdas when new bound variables are introduced
   updateVarType :: Term -> String -> Type -> Term
-  updateVarType t varName ty = case t of 
-    Var k _ id            -> if id == varName then Var k ty id else t
-    Succ t'               -> Succ (updateVarType t' varName ty)
-    Pred t'               -> Pred (updateVarType t' varName ty)
-    IsZero t'             -> IsZero (updateVarType t' varName ty)
-    Lambda ty t' ctx      -> Lambda ty (updateVarType t' varName ty) ctx 
-    App t1 t2             -> App (updateVarType t1 varName ty) (updateVarType t2 varName ty)
-    _                     -> t
+  updateVarType t x ty = case t of 
+    Var k _ id | id == x       -> Var k ty id
+    Succ t'                    -> Succ (updateVarType t' x ty)
+    Pred t'                    -> Pred (updateVarType t' x ty)
+    IsZero t'                  -> IsZero (updateVarType t' x ty)
+    Lambda ty t' ctx           -> Lambda ty (updateVarType t' x ty) ctx 
+    App t1 t2                  -> App (updateVarType t1 x ty) (updateVarType t2 x ty)
+    _                          -> t
 
-  -- get the bruijn index for a variable with a given identifier and its binding context
+  -- get the bruijn index for a free variable
   getBruijnIndex :: String -> [String] -> [String] -> Int
-  getBruijnIndex id boundVars freeVars 
-    | isNothing boundIndex = fromJust freeIndex + length boundVars
-    | otherwise            = fromJust boundIndex
-    where boundIndex = elemIndex id (reverse boundVars)
-          freeIndex  = elemIndex id (reverse freeVars)
+  getBruijnIndex id freeVars boundVars = fromJust freeIndex + length boundVars
+    where freeIndex  = elemIndex id (reverse freeVars)
 
   -- retrieve the binding context of an abstraction
   getBoundVar :: Term -> [String]
   getBoundVar t = case t of
     Lambda _ _ ctx -> ctx
+    Succ t'        -> getBoundVar t'
+    Pred t'        -> getBoundVar t'
+    IsZero t'      -> getBoundVar t'
+    App t1 t2      -> getBoundVar t1 ++ getBoundVar t2
     _              -> []
 
   -- find free variables

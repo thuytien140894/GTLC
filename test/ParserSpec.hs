@@ -13,6 +13,16 @@ module ParserSpec where
           parseExpr "true" `shouldBe` 
           Right Tru
 
+      context "(\\m. (\\x. x 0) m)" $ 
+        it "should be \"\\. (\\.0 zero) 0\"" $ 
+          parseExpr "(\\m. (\\x. x 0) m)" `shouldBe` 
+          Right (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"])
+
+      context "\\f. (\\x. f (\\y. (x x) y)) (\\x. f (\\y. (x x) y))"$ 
+        it "should be \"\\. (\\. 1 (\\. (1 1) 0)) (\\. 1 (\\. (1 1) 0))\"" $ 
+          parseExpr "\\f. (\\x. f (\\y. (x x) y)) (\\x. f (\\y. (x x) y))" `shouldBe` 
+          Right (Lambda Dyn (App (Lambda Dyn (App (Var 1 Dyn "f") (Lambda Dyn (App (App (Var 1 Dyn "x") (Var 1 Dyn "x")) (Var 0 Dyn "y"))["y"])) ["x","y"]) (Lambda Dyn (App (Var 1 Dyn "f") (Lambda Dyn (App (App (Var 1 Dyn "x") (Var 1 Dyn "x")) (Var 0 Dyn "y")) ["y"])) ["x","y"])) ["f","x","y","x","y"])
+
       context "(\\x. succ x) true" $ 
         it "should be \"Lambda Dyn (Succ (Var 0 Dyn x)) [x]) Tru\"" $ 
           parseExpr "(\\x. succ x) true" `shouldBe` 

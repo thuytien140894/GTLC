@@ -32,10 +32,12 @@ module Parser (
     ty <- option Dyn (try colon >> types) -- if there is type specified, parse it; else return Dyn
     dot 
     body <- expr
+    let t = fixBinding body arg 0
+    let t' = updateVarType t arg ty
     let boundVars = arg : getBoundVar body
-    let freeVars = getFreeVar body boundVars 
-    let t = fixBinding (Lambda ty body boundVars) boundVars freeVars
-    return $ updateVarType t arg ty
+    let freeVars = getFreeVar body boundVars
+    let t'' = fixFreeBinding t' freeVars boundVars
+    return $ Lambda ty t'' boundVars
 
   -- parse a record
   record :: Parser Term 
