@@ -1,4 +1,4 @@
-# Simply Typed Lambda Calculus
+# Gradually Typed Lambda Calculus
 
 This program implemented an interpreter for the simply typed lambda calculus using 
 the formal definitions and the OCaml implementation described in the textbook, 
@@ -26,7 +26,7 @@ sure that Haskell and the Stack build tool are installed on the system.
    Go to the program directory, then run the following commands in the same order:  
    
         stack build  
-        stack exec STLC-exe  
+        stack exec GTLC-exe  
 
 
 **3. How to use the program**
