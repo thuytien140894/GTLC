@@ -45,6 +45,16 @@ module CastInsertionSpec where
           typeCheck (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"]))
           `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn)0) (Func (Inject Nat) (Project Nat 1))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Seq (Func (Project Nat 2) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"])))
 
+      context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. iszero y)" $
+        it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Func?>m)) <Func!><Nat?->Bool!>(\\y:Nat. iszero y)" $
+          typeCheck (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"]))
+          `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn)0) (Func (Inject Nat) (Project Nat 1))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Seq (Func (Project Nat 2) (Inject Bool)) (Inject (Arr Dyn Dyn))) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"])))
+
+      context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true" $
+        it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Func?>m)) <Bool!>true" $
+          typeCheck (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) Tru)
+          `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn) 0) (Func (Inject Nat) (Project Nat 1))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Inject Bool) Tru))
+      
       context "(\\m. ((\\x. (x 0)) m)) (\\y:Nat. succ y)" $
         it "should be (\\m. ((\\x. (<Func?>x <Nat!>0)) m)) <Func!><Nat?->Nat!>(\\y:Nat. succ y)" $
           typeCheck (App (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"]))
