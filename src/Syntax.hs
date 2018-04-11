@@ -5,12 +5,14 @@ module Syntax where
   import Types
   
   type Entry = (String, Term)
-  type LabelIndex = Int
+
+  newtype Label = Label Int
+    deriving (Eq, Show)
 
   pattern FuncInj :: Coercion 
   pattern FuncInj = Inject (Arr Dyn Dyn)
 
-  pattern FuncProj :: LabelIndex -> Coercion 
+  pattern FuncProj :: Label -> Coercion 
   pattern FuncProj l = Project (Arr Dyn Dyn) l
   
   data Term 
@@ -30,14 +32,14 @@ module Syntax where
     | Lambda Type Term [String]
     | App Term Term                                               -- application
     | Cast Coercion Term                                          -- coercion
-    | Blame LabelIndex                                            -- blame assignment
+    | Blame Label                                                 -- blame assignment
     deriving (Eq, Show) 
   
   data Coercion 
     = Iden Type
-    | Project Type LabelIndex
+    | Project Type Label
     | Inject Type 
     | Func Coercion Coercion
     | Seq Coercion Coercion
-    | Fail Type Type LabelIndex
+    | Fail Type Type Label
     deriving (Eq, Show)

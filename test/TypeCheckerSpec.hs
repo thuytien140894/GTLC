@@ -83,7 +83,7 @@ module TypeCheckerSpec where
 
       context "<Bool?->Nat!> \\x:Bool. 0" $ 
         it "should be Bool->Nat" $ 
-            typeOf (Cast (Func (Project Bool 0) (Inject Nat)) (Lambda Bool Zero ["x"])) `shouldBe`
+            typeOf (Cast (Func (Project Bool (Label 0)) (Inject Nat)) (Lambda Bool Zero ["x"])) `shouldBe`
             Right (Arr Dyn Dyn)
       
       context "<Nat!> False" $ 

@@ -10,23 +10,23 @@ module CoercionSpec where
     describe "coerces" $ do
       context "Bool to Dynamic" $
         it "should be Bool!" $
-          coerce Bool Dyn 0 `shouldBe` (Inject Bool, 0)
+          coerce Bool Dyn (Label 0) `shouldBe` (Inject Bool,Label 0)
 
       context "Dynamic to Nat" $
         it "should be Nat?" $
-          coerce Dyn Nat 0 `shouldBe` (Project Nat 0, 1)
+          coerce Dyn Nat (Label 0) `shouldBe` (Project Nat (Label 0),Label 1)
 
       context "Bool to Bool" $
         it "should be Identity" $
-          coerce Bool Bool 0 `shouldBe` (Iden Bool, 0)
+          coerce Bool Bool (Label 0) `shouldBe` (Iden Bool,Label 0)
 
       context "Dynamic to Bool->Nat" $
         it "should be Bool!->Nat?" $
-          coerce Dyn (Arr Bool Nat) 0 `shouldBe` (Seq (Project (Arr Dyn Dyn) 0) (Func (Inject Bool) (Project Nat 1)),2)
+          coerce Dyn (Arr Bool Nat) (Label 0) `shouldBe` (Seq (Project (Arr Dyn Dyn) (Label 0)) (Func (Inject Bool) (Project Nat (Label 1))),Label 2)
 
       context "Bool->Nat to Dynamic" $
         it "should be Bool?->Nat!" $
-          coerce (Arr Bool Nat) Dyn 0 `shouldBe` (Seq (Func (Project Bool 0) (Inject Nat)) (Inject (Arr Dyn Dyn)),1)
+          coerce (Arr Bool Nat) Dyn (Label 0) `shouldBe` (Seq (Func (Project Bool (Label 0)) (Inject Nat)) (Inject (Arr Dyn Dyn)),Label 1)
 
     describe "reduces coercion" $ do 
       context "Identity; Bool!" $
@@ -35,15 +35,15 @@ module CoercionSpec where
 
       context "Nat!; Bool?" $
         it "should fail" $
-          reduceCoercion (Seq (Inject Nat) (Project Bool 0)) `shouldBe` Fail Nat Bool 0
+          reduceCoercion (Seq (Inject Nat) (Project Bool (Label 0))) `shouldBe` Fail Nat Bool (Label 0)
 
       context "Nat!; Nat?" $
         it "should be Identity" $
-          normalize (Seq (Inject Nat) (Project Nat 0)) `shouldBe` Iden Nat
+          normalize (Seq (Inject Nat) (Project Nat (Label 0))) `shouldBe` Iden Nat
 
       context "Nat?->Bool!; Nat!->Bool?" $
         it "should be Iden->Iden" $
-          normalize (Seq (Func (Project Nat 0) (Inject Bool)) (Func (Inject Nat) (Project Bool 0))) 
+          normalize (Seq (Func (Project Nat (Label 0)) (Inject Bool)) (Func (Inject Nat) (Project Bool (Label 0)))) 
           `shouldBe` Iden Nat
     
     describe "get coercion types" $ do
@@ -53,7 +53,7 @@ module CoercionSpec where
       
       context "Fail Nat Bool" $
         it "should be (Nat, Bool)" $
-          getCoercionTypes (Fail Nat Bool 0) `shouldBe` (Nat, Bool)
+          getCoercionTypes (Fail Nat Bool (Label 0)) `shouldBe` (Nat, Bool)
 
       context "Inject Nat" $ 
         it "should be (Nat, Dyn)" $ 
@@ -61,27 +61,27 @@ module CoercionSpec where
 
       context "Project Bool" $ 
         it "should be (Dyn, Bool)" $ 
-          getCoercionTypes (Project Bool 0) `shouldBe` (Dyn, Bool)
+          getCoercionTypes (Project Bool (Label 0)) `shouldBe` (Dyn, Bool)
 
       context "Func (Inject Bool) (Project Nat)" $ 
         it "should be (Arr Dyn Dyn, Arr Bool Nat)" $ 
-          getCoercionTypes (Func (Inject Bool) (Project Nat 0)) `shouldBe` (Arr Dyn Dyn, Arr Bool Nat)
+          getCoercionTypes (Func (Inject Bool) (Project Nat (Label 0))) `shouldBe` (Arr Dyn Dyn, Arr Bool Nat)
 
       context "Seq (Iden Bool) (Project Nat)" $ 
         it "should be (Bool, Nat)" $ 
-          getCoercionTypes (Seq (Iden Bool) (Project Nat 0)) `shouldBe` (Bool, Nat)
+          getCoercionTypes (Seq (Iden Bool) (Project Nat (Label 0))) `shouldBe` (Bool, Nat)
 
     describe "is normalized" $ do
       context "Iden;<Nat?-Nat!>" $ 
         it "should be true" $ 
-          isNormalized (Seq (Project Nat 2) (Func (Inject Nat) (Project Nat 1))) `shouldBe` True
+          isNormalized (Seq (Project Nat (Label 2)) (Func (Inject Nat) (Project Nat (Label 1)))) `shouldBe` True
       
       context "Bool?;(Nat?->Nat!);Nat!" $
         it "should be true" $
-          isNormalized (Seq (Seq (Project Nat 2) (Func (Inject Nat) (Project Nat 1))) (Inject Nat))
+          isNormalized (Seq (Seq (Project Nat (Label 2)) (Func (Inject Nat) (Project Nat (Label 1)))) (Inject Nat))
           `shouldBe` True
 
       context "Bool?;(Nat?->Nat!);Nat!" $
         it "should be true" $
-          isNormalized (Seq (Project Nat 2) (Seq (Func (Inject Nat) (Project Nat 1)) (Inject Nat)))
+          isNormalized (Seq (Project Nat (Label 2)) (Seq (Func (Inject Nat) (Project Nat (Label 1))) (Inject Nat)))
           `shouldBe` True

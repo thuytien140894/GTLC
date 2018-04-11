@@ -17,7 +17,7 @@ module TypeChecker (
     Left err   -> Left err
 
   -- find the type for a record
-  typeCheckRcd :: Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
+  typeCheckRcd :: Term -> Label -> Either TypeError (Term, Type, Label)
   typeCheckRcd (Rec []) l               = Right (Rec [], TRec [], l)
   typeCheckRcd (Rec ((f1, t1) : ys)) l  = do 
     (t1', ty, l1) <- typeCheck' t1 l
@@ -40,14 +40,14 @@ module TypeChecker (
     | otherwise                  = TRec ys `getType` l
 
   -- typecheck a record field
-  typeCheckField :: (Term, Type, LabelIndex) -> String -> Either TypeError (Term, Type, LabelIndex)
+  typeCheckField :: (Term, Type, Label) -> String -> Either TypeError (Term, Type, Label)
   typeCheckField (_, TRec [], _) f                           = Left $ NotFound f 
   typeCheckField (Rec ((_, t1) : xs), TRec ((f1, ty1) : ys), l) f 
     | f1 == f                                                = Right (t1, ty1, l)
     | otherwise                                              = typeCheckField (Rec xs, TRec ys, l) f
 
   -- typecheck a conditional
-  typeCheckCond :: Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
+  typeCheckCond :: Term -> Label -> Either TypeError (Term, Type, Label)
   typeCheckCond (If e1 e2 e3) l = do
     (t1, cond, l1) <- typeCheck' e1 l
     (t2, fst, l2)  <- typeCheck' e2 l1
@@ -63,14 +63,14 @@ module TypeChecker (
       _                          -> Left $ NotBool cond
 
   -- typecheck an application
-  typeCheckApp :: Term -> Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
+  typeCheckApp :: Term -> Term -> Label -> Either TypeError (Term, Type, Label)
   typeCheckApp e1 e2 l = do                                            
     (t1, funcTy, l1)  <- typeCheck' e1 l  
     (t2, argTy, l2)   <- typeCheck' e2 l1
     case funcTy of 
       Dyn                              -> let (c1, l3) = coerce argTy Dyn l2 
                                               c2       = FuncProj l3  
-                                          in Right (App (Cast c2 t1) (Cast c1 t2), Dyn, l3 + 1)
+                                          in Right (App (Cast c2 t1) (Cast c1 t2), Dyn, incrementLabel l3)
       Arr paramTy retTy 
         | argTy `isSubtype` paramTy    -> Right (App t1 t2, retTy, l2)
         | argTy `isConsistent` paramTy -> let (c, l3) = coerce argTy paramTy l2 
@@ -154,7 +154,7 @@ module TypeChecker (
                               _                                -> Left $ NotFunction t1                             
 
   -- typecheck the source term and insert cast if needed
-  typeCheck' :: Term -> LabelIndex -> Either TypeError (Term, Type, LabelIndex)
+  typeCheck' :: Term -> Label -> Either TypeError (Term, Type, Label)
   typeCheck' e l = case e of 
     Unit               -> Right (Unit, TUnit, l)                        -- (C-CONST)
     Tru                -> Right (e, Bool, l)                                    
@@ -207,6 +207,6 @@ module TypeChecker (
         
   -- insert casts into a term
   typeCheck :: Term -> Either TypeError Term 
-  typeCheck e = case typeCheck' e 0 of 
+  typeCheck e = case typeCheck' e (Label 0) of 
     Right (t, _, _)      -> Right t 
     Left err             -> Left err

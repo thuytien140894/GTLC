@@ -3,6 +3,10 @@ module Coercion where
   import Syntax
   import Types
 
+  -- increment the label index
+  incrementLabel :: Label -> Label
+  incrementLabel (Label l) = Label $ l + 1
+
   -- consistency rules
   isConsistent :: Type -> Type -> Bool
   isConsistent Dyn _                               = True
@@ -46,21 +50,21 @@ module Coercion where
   isIdentity _        = False
 
   -- coercion type system
-  coerce :: Type -> Type -> LabelIndex -> (Coercion, LabelIndex)
+  coerce :: Type -> Type -> Label -> (Coercion, Label)
   coerce ty Dyn l                        = case ty of                     
-    Arr _ _     -> (Seq c FuncInj, l')                                  -- (C-FUN!)
-    _           -> (Inject ty, l)                                       -- (C-B!)
+    Arr _ _     -> (Seq c FuncInj, l')                                             -- (C-FUN!)
+    _           -> (Inject ty, l)                                                  -- (C-B!)
     where (c, l') = coerce ty (Arr Dyn Dyn) l 
   coerce Dyn ty l                        = case ty of 
-    Arr _ _     -> (Seq (FuncProj l) c, l')                             -- (C-FUN?)
-    _           -> (Project ty l, l + 1)                                -- (C-B?)
-    where (c, l') = coerce (Arr Dyn Dyn) ty (l + 1)
+    Arr _ _     -> (Seq (FuncProj l) c, l')                                        -- (C-FUN?)
+    _           -> (Project ty l, incrementLabel l)                                -- (C-B?)
+    where (c, l') = coerce (Arr Dyn Dyn) ty (incrementLabel l)
   coerce (Arr s1 s2) (Arr t1 t2) l 
-    | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)               -- (C-FUN)
+    | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)                          -- (C-FUN)
     where (c, l1) = coerce t1 s1 l
           (d, l2) = coerce s2 t2 l1
-  coerce ty1 ty2 l | ty1 == ty2          = (Iden ty1, l)                -- (C-ID)
-  coerce ty1 ty2 l                       = (Fail ty1 ty2 l, l + 1)      -- (C-FAIL)
+  coerce ty1 ty2 l | ty1 == ty2          = (Iden ty1, l)                           -- (C-ID)
+  coerce ty1 ty2 l                       = (Fail ty1 ty2 l, incrementLabel l)      -- (C-FAIL)
 
   -- reduce a coercion (single-step)
   reduceCoercion :: Coercion -> Coercion
