@@ -84,6 +84,11 @@ module EvaluatorSpec where
           evaluate (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn) (Label 0)) (Func (Inject Nat) (Project Nat (Label 1)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Inject Bool) Tru))
           `shouldBe` Right (Blame (Label 0))
 
+      context "if (\\x. iszero x) <Nat!>(succ 0) then <Nat!>0 else <Nat?>(\\x. <FuncProj>x <Nat!>0) <FuncInj><I->Nat!>(\\y. succ <Nat?>y)" $
+        it "should be succ 0" $
+          evaluate (If (App (Lambda Dyn (IsZero (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Cast (Inject Nat) (Succ Zero)))(Cast (Inject Nat) Zero) (Cast (Project Nat (Label 3)) (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 1)) (Var 0 Dyn "x")) (Cast(Inject Nat) Zero)) ["x"]) (Cast (Seq (Func (Iden Dyn) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda Dyn (Succ (Cast (Project Nat (Label 2)) (Var 0 Dyn "y"))) ["y"])))))
+          `shouldBe` Right (Succ Zero)
+
       context "<Fail2->Nat!><Fail1->Nat?>(succ 0)" $
         it "should be Fail2" $
           evaluate (Cast (Func (Fail Bool Nat (Label 2)) (Inject Nat)) (Cast (Func (Fail Bool Nat (Label 1)) (Project Nat (Label 1))) (Succ Zero)))

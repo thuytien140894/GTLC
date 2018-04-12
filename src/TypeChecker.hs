@@ -54,11 +54,20 @@ module TypeChecker (
     (t3, snd, l3)  <- typeCheck' e3 l2
     case cond of 
       Dyn 
-        | fst `isConsistent` snd -> let (c, l3) = coerce cond Bool l3
-                                    in Right (If (Cast c t1) t2 t3, fst, l3) 
+        | fst == snd             -> Right (If t1' t2 t3, fst, l4)  
+        | fst `isConsistent` snd -> let (c1, l4)   = coerce fst snd l3
+                                        (c2, l5)   = coerce snd fst l4
+                                        (t2', t3') = (Cast c1 t2, Cast c2 t3)
+                                    in Right (If t1' t2' t3', Dyn, l5) 
         | otherwise              -> Left $ Difference fst snd
+        where t1'      = Cast c1 t1 
+              (c1, l4) = coerce cond Bool l3
       Bool 
-        | fst `isConsistent` snd -> Right (If t1 t2 t3, fst, l3) 
+        | fst == snd             -> Right (If t1 t2 t3, fst, l3) 
+        | fst `isConsistent` snd -> let (c2, l4)   = coerce fst snd l3
+                                        (c3, l5)   = coerce snd fst l4
+                                        (t2', t3') = (Cast c2 t2, Cast c3 t3)
+                                    in Right (If t1 t2' t3', Dyn, l5) 
         | otherwise              -> Left $ Difference fst snd
       _                          -> Left $ NotBool cond
 
@@ -180,7 +189,7 @@ module TypeChecker (
     IsZero e'          -> do                                            -- (C-ISZERO)
                             (t', ty, l1) <- typeCheck' e' l 
                             case ty of 
-                              Dyn  -> let (c, l2) = coerce ty Bool l1
+                              Dyn  -> let (c, l2) = coerce ty Nat l1
                                       in Right (IsZero $ Cast c t', Bool, l2)
                               Nat  -> Right (IsZero t', Bool, l1)
                               _    -> Left $ NotNat ty

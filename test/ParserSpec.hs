@@ -92,6 +92,11 @@ module ParserSpec where
         it "should be \"App (Lambda (Arr Nat Nat) (App (Lambda (Arr Nat Nat) (App (Var 1 (Arr Nat Nat) x) Zero) [x]) (Var 0 (Arr Nat Nat) m)) [m]) (Lambda Nat (Succ (Var 0 Nat y)) [y]\"" $ 
           parseExpr "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. succ y)" `shouldBe` 
           Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"]))
+
+      context "if (\\x. iszero 0) (succ 0) then 0 else (\\x:Nat->Nat. x 0) (\\y. succ y)" $ 
+        it "should be \"If (App (Lambda Dyn (IsZero Zero) [x]) (Succ Zero)) Zero (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) x) Zero) [x]) (Lambda Dyn (Succ (Var 0 Dyn y)) [y]))\"" $ 
+          parseExpr "if (\\x. iszero 0) (succ 0) then 0 else (\\x:Nat->Nat. x 0) (\\y. succ y)" `shouldBe` 
+          Right (If (App (Lambda Dyn (IsZero Zero) ["x"]) (Succ Zero)) Zero (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Lambda Dyn (Succ (Var 0 Dyn "y")) ["y"])))
       
       context "{x=true,y=false}" $ 
         it "should be \"Rec [(x,Tru),(y,Fls)]\"" $ 
