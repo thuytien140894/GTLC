@@ -31,6 +31,9 @@ module Syntax where
     -- | Lambda {varTy :: Type, body :: Term, boundVars :: [String]} -- abstraction
     | Lambda Type Term [String]
     | App Term Term                                               -- application
+    | Ref Term                                                    -- reference creation
+    | Deref Term                                                  -- dereference
+    | Assign Term Term                                            -- assignment
     | Cast Coercion Term                                          -- coercion
     | Blame Label                                                 -- blame assignment
     deriving (Eq, Show) 

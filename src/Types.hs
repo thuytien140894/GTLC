@@ -8,6 +8,8 @@ module Types where
     | Nat                                   -- natural number
     | Arr Type Type                         -- function type
     | TRec [TEntry]                         -- record type
+    | TRef Type                             -- reference type
+    | Loc Int                               -- store location
     deriving (Eq, Show)
 
   type TEntry = (String, Type)
