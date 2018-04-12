@@ -18,6 +18,11 @@ module ParseHelper where
                                    t2' = fixBinding t2 x b
                                    t3' = fixBinding t3 x b
                                in If t1' t2' t3'
+    Ref t'                  -> Ref $ fixBinding t' x b
+    Deref t'                -> Deref $ fixBinding t' x b
+    Assign t1 t2            -> let t1' = fixBinding t1 x b
+                                   t2' = fixBinding t2 x b
+                               in Assign t1' t2'
     Lambda ty t' ctx        -> Lambda ty (fixBinding t' x $ b + 1) ctx
     App t1 t2               -> fixBinding t1 x b `App` fixBinding t2 x b
     _                       -> t
@@ -34,6 +39,11 @@ module ParseHelper where
                                    t2' = fixFreeBinding t2 freeVars boundVars
                                    t3' = fixFreeBinding t3 freeVars boundVars
                                in If t1' t2' t3'
+    Ref t'                  -> Ref $ fixFreeBinding t' freeVars boundVars
+    Deref t'                -> Deref $ fixFreeBinding t' freeVars boundVars
+    Assign t1 t2            -> let t1' = fixFreeBinding t1 freeVars boundVars
+                                   t2' = fixFreeBinding t2 freeVars boundVars
+                               in Assign t1' t2'
     Lambda ty t' ctx        -> Lambda ty (fixFreeBinding t' freeVars boundVars) ctx
     App t1 t2               -> fixFreeBinding t1 freeVars boundVars `App` fixFreeBinding t2 freeVars boundVars
     _                       -> t
@@ -49,6 +59,11 @@ module ParseHelper where
                                       t2' = updateVarType t2 x ty
                                       t3' = updateVarType t3 x ty
                                   in If t1' t2' t3'
+    Ref t'                     -> Ref $ updateVarType t' x ty
+    Deref t'                   -> Deref $ updateVarType t' x ty
+    Assign t1 t2               -> let t1' = updateVarType t1 x ty
+                                      t2' = updateVarType t2 x ty
+                                  in Assign t1' t2'
     Lambda ty t' ctx           -> Lambda ty (updateVarType t' x ty) ctx 
     App t1 t2                  -> updateVarType t1 x ty `App` updateVarType t2 x ty
     _                          -> t

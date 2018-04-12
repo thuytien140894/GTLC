@@ -27,7 +27,7 @@ module Parser (
   -- abstraction
   lambda :: Parser Term
   lambda = do
-    lamb >> whiteSpace
+    reservedOp "\\" >> whiteSpace
     arg <- identifier
     ty <- option Dyn $ try colon >> types -- if there is type specified, parse it; else return Dyn
     dot 
@@ -38,6 +38,13 @@ module Parser (
     let freeVars = getFreeVar body boundVars
     let t'' = fixFreeBinding t' freeVars boundVars
     return $ Lambda ty t'' boundVars
+
+  -- parse a dereference
+  dereference :: Parser Term 
+  dereference = do 
+    reservedOp "!" >> whiteSpace 
+    t <- expr
+    return $ Deref t
 
   -- parse a record
   record :: Parser Term 
@@ -53,7 +60,7 @@ module Parser (
   entry :: Parser [Entry]
   entry = do
     field <- identifier 
-    equal >> whiteSpace
+    reservedOp "=" >> whiteSpace
     value <- expr
     return [(field, value)]
 
@@ -73,7 +80,7 @@ module Parser (
     return $ Var (-1) TUnit id -- the variable is first parsed as free
 
   -- Constants
-  true, false :: Parser Term
+  true, false, zero :: Parser Term
   true  = reserved "true" >> notProjection >> return Tru
   false = reserved "false" >> notProjection >> return Fls
   zero  = reserved "0" >> notProjection >> return Zero
@@ -95,10 +102,12 @@ module Parser (
         Ex.Prefix $ reserved "succ"   >> return Succ
       , Ex.Prefix $ reserved "pred"   >> return Pred
       , Ex.Prefix $ reserved "iszero" >> return IsZero
+      , Ex.Prefix $ reserved "ref"    >> return Ref
+      , Ex.Infix (reservedOp ":=" >> return Assign) Ex.AssocLeft
       ]
     ]
 
-  -- parse an arithmetic expression such succ, pred, and iszero
+  -- parse an arithmetic expression such as succ, pred, and iszero
   expr' :: Parser Term
   expr' = Ex.buildExpressionParser prefixTable expr''
 
@@ -120,6 +129,7 @@ module Parser (
       <|> conditional
       <|> try projection -- "look ahead" and see if an expression is a projection, if not, then move on
       <|> record
+      <|> dereference
 
   -- remove the initial whitespace, line comments, and block comments 
   -- the parser only removes white spaces after the tokens

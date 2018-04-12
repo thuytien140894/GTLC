@@ -20,6 +20,7 @@ module Lexer where
     , Tok.opLetter        = oneOf ":!#$%&*+./<=>?@\\^|-~"
     , Tok.reservedNames   = [ "true"
                             , "false"
+                            , "ref"
                             , "if"
                             , "then"
                             , "else"
@@ -52,10 +53,6 @@ module Lexer where
   -- parse comma
   comma :: Parser String
   comma = Tok.comma lexer
-  
-  -- parse a lambda symbol
-  lamb :: Parser String
-  lamb = string "\\"
 
   -- parse colon
   colon :: Parser String
@@ -64,10 +61,6 @@ module Lexer where
   -- parse dot
   dot :: Parser String
   dot = Tok.dot lexer
-
-  -- parse equal sign
-  equal :: Parser String
-  equal = string "="
 
   -- parse a reserved name
   reserved :: String -> Parser ()
