@@ -14,6 +14,10 @@ module ParseHelper where
     Succ t'                 -> Succ $ fixBinding t' x b
     Pred t'                 -> Pred $ fixBinding t' x b
     IsZero t'               -> IsZero $ fixBinding t' x b
+    If t1 t2 t3             -> let t1' = fixBinding t1 x b
+                                   t2' = fixBinding t2 x b
+                                   t3' = fixBinding t3 x b
+                               in If t1' t2' t3'
     Lambda ty t' ctx        -> Lambda ty (fixBinding t' x $ b + 1) ctx
     App t1 t2               -> fixBinding t1 x b `App` fixBinding t2 x b
     _                       -> t
@@ -26,6 +30,10 @@ module ParseHelper where
     Succ t'                 -> Succ $ fixFreeBinding t' freeVars boundVars
     Pred t'                 -> Pred $ fixFreeBinding t' freeVars boundVars
     IsZero t'               -> IsZero $ fixFreeBinding t' freeVars boundVars
+    If t1 t2 t3             -> let t1' = fixFreeBinding t1 freeVars boundVars
+                                   t2' = fixFreeBinding t2 freeVars boundVars
+                                   t3' = fixFreeBinding t3 freeVars boundVars
+                               in If t1' t2' t3'
     Lambda ty t' ctx        -> Lambda ty (fixFreeBinding t' freeVars boundVars) ctx
     App t1 t2               -> fixFreeBinding t1 freeVars boundVars `App` fixFreeBinding t2 freeVars boundVars
     _                       -> t
@@ -37,6 +45,10 @@ module ParseHelper where
     Succ t'                    -> Succ $ updateVarType t' x ty
     Pred t'                    -> Pred $ updateVarType t' x ty
     IsZero t'                  -> IsZero $ updateVarType t' x ty
+    If t1 t2 t3                -> let t1' = updateVarType t1 x ty
+                                      t2' = updateVarType t2 x ty
+                                      t3' = updateVarType t3 x ty
+                                  in If t1' t2' t3'
     Lambda ty t' ctx           -> Lambda ty (updateVarType t' x ty) ctx 
     App t1 t2                  -> updateVarType t1 x ty `App` updateVarType t2 x ty
     _                          -> t

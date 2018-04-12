@@ -58,6 +58,10 @@ module Evaluator (
     Succ t'          -> Succ $ shift a b t'
     Pred t'          -> Pred $ shift a b t'
     IsZero t'        -> IsZero $ shift a b t'
+    If t1 t2 t3      -> let t1' = shift a b t1
+                            t2' = shift a b t2 
+                            t3' = shift a b t3
+                        in If t1' t2' t3'
     Lambda ty t' ctx -> Lambda ty (shift (a + 1) b t') ctx 
     App t1 t2        -> shift a b t1 `App` shift a b t2
     _                -> t -- t is a constant
@@ -70,6 +74,10 @@ module Evaluator (
     Succ t'          -> Succ $ subs j s t'
     Pred t'          -> Pred $ subs j s t'
     IsZero t'        -> IsZero $ subs j s t'
+    If t1 t2 t3      -> let t1' = subs j s t1
+                            t2' = subs j s t2 
+                            t3' = subs j s t3
+                        in If t1' t2' t3'
     Lambda ty t' ctx -> Lambda ty (subs (j + 1) (shift 0 1 s) t') ctx
     App t1 t2        -> subs j s t1 `App` subs j s t2
     _                -> t -- t is a constant
