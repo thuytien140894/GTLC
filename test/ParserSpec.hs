@@ -109,14 +109,14 @@ module ParserSpec where
           Right (If (App (Lambda Dyn (IsZero Zero) ["x"]) (Succ Zero)) Zero (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Lambda Dyn (Succ (Var 0 Dyn "y")) ["y"])))
 
       context "((\\m. if (\\x. iszero x) m then (\\x. succ x) else (\\x. pred x)) 0) true" $ 
-        it "should be \"App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn x)) [x]) (Var 0 Dyn m)) (Lambda Dyn (Succ (Var 0Dyn x)) [x]) (Lambda Dyn (Pred (Var 0 Dyn x)) [x])) [m]) Zero) Tru\"" $ 
+        it "should be \"App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn x)) [x]) (Var 0 Dyn m)) (Lambda Dyn (Succ (Var 0Dyn x)) [x]) (Lambda Dyn (Pred (Var 0 Dyn x)) [x])) [m,x,x,x]) Zero) Tru\"" $ 
           parseExpr "((\\m. if (\\x. iszero x) m then (\\x. succ x) else (\\x. pred x)) 0) true" `shouldBe` 
-          Right (App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn "x")) ["x"]) (Var 0 Dyn "m")) (Lambda Dyn (Succ (Var 0Dyn "x")) ["x"]) (Lambda Dyn (Pred (Var 0 Dyn "x")) ["x"])) ["m"]) Zero) Tru)
+          Right (App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn "x")) ["x"]) (Var 0 Dyn "m")) (Lambda Dyn (Succ (Var 0Dyn "x")) ["x"]) (Lambda Dyn (Pred (Var 0 Dyn "x")) ["x"])) ["m","x","x","x"]) Zero) Tru)
 
       context "(\\n. (\\m. if (\\x. iszero x) n then m 0 else m (succ 0)) (\\y. succ y))) 0" $ 
-        it "should be \"App (Lambda Dyn (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn x)) [x]) (Var 1 Dyn n)) (App (Var 0 Dyn m) Zero) (App (Var 0 Dyn m) (Succ Zero))) [m]) (Lambda Dyn (Succ (Var 0 Dyn y)) [y])) [n,m,y]) Zero\"" $ 
+        it "should be \"App (Lambda Dyn (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn x)) [x]) (Var 1 Dyn n)) (App (Var 0 Dyn m) Zero) (App (Var 0 Dyn m) (Succ Zero))) [m,x]) (Lambda Dyn (Succ (Var 0 Dyn y)) [y])) [n,m,x,y]) Zero\"" $ 
           parseExpr "(\\n. (\\m. if (\\x. iszero x) n then m 0 else m (succ 0)) (\\y. succ y)) 0" `shouldBe` 
-          Right (App (Lambda Dyn (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn "x")) ["x"]) (Var 1 Dyn "n")) (App (Var 0 Dyn "m") Zero) (App (Var 0 Dyn "m") (Succ Zero))) ["m"]) (Lambda Dyn (Succ (Var 0 Dyn "y")) ["y"])) ["n","m","y"]) Zero)
+          Right (App (Lambda Dyn (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn "x")) ["x"]) (Var 1 Dyn "n")) (App (Var 0 Dyn "m") Zero) (App (Var 0 Dyn "m") (Succ Zero))) ["m","x"]) (Lambda Dyn (Succ (Var 0 Dyn "y")) ["y"])) ["n","m","x","y"]) Zero)
       
       context "{x=true,y=false}" $ 
         it "should be \"Rec [(x,Tru),(y,Fls)]\"" $ 

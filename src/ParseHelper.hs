@@ -80,6 +80,10 @@ module ParseHelper where
     Succ t'        -> getBoundVar t'
     Pred t'        -> getBoundVar t'
     IsZero t'      -> getBoundVar t'
+    If t1 t2 t3    -> getBoundVar t1 ++ getBoundVar t2 ++ getBoundVar t3
+    Ref t'         -> getBoundVar t'
+    Deref t'       -> getBoundVar t'
+    Assign t1 t2   -> getBoundVar t1 ++ getBoundVar t2
     App t1 t2      -> getBoundVar t1 ++ getBoundVar t2
     _              -> []
 
@@ -87,6 +91,18 @@ module ParseHelper where
   getFreeVar :: Term -> [String] -> [String]
   getFreeVar t boundVars = case t of
     Lambda _ t1 _        -> getFreeVar t1 boundVars
+    Succ t'              -> getFreeVar t' boundVars
+    Pred t'              -> getFreeVar t' boundVars
+    IsZero t'            -> getFreeVar t' boundVars
+    If t1 t2 t3          -> let l1 = getFreeVar t1 boundVars
+                                l2 = getFreeVar t2 boundVars
+                                l3 = getFreeVar t3 boundVars
+                            in l1 ++ l2 ++ l3
+    Ref t'               -> getFreeVar t' boundVars
+    Deref t'             -> getFreeVar t' boundVars
+    Assign t1 t2         -> let l1 = getFreeVar t1 boundVars
+                                l2 = getFreeVar t2 boundVars
+                            in l1 ++ l2
     App t1 t2            -> getFreeVar t1 boundVars ++ getFreeVar t2 boundVars
     Var _ _ id           -> if id `elem` boundVars then [] else [id]
     _                    -> []  
