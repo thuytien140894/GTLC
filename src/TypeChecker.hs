@@ -79,7 +79,7 @@ module TypeChecker (
     case ty1 of 
       TRef s      -> let (c, l3) = coerce ty2 s l2
                      in Right (t1 `Assign` Cast c t2, s, l3)
-      Dyn         -> let (c1, l3) = (RefProj l2, incrementLabel l2)
+      Dyn         -> let (c1, l3) = (RefProj l2, increment l2)
                          (c2, l4) = coerce ty2 Dyn l3
                      in Right (Cast c1 t1 `Assign` Cast c2 t2, Dyn, l4)
       _           -> Left $ NotRef e1
@@ -90,7 +90,7 @@ module TypeChecker (
     (t1, funcTy, l1)  <- typeCheck' e1 l  
     (t2, argTy, l2)   <- typeCheck' e2 l1
     case funcTy of 
-      Dyn                              -> let (c1, l3) = (FuncProj l2, incrementLabel l2)  
+      Dyn                              -> let (c1, l3) = (FuncProj l2, increment l2)  
                                               (c2, l4) = coerce argTy Dyn l3  
                                           in Right (Cast c1 t1 `App` Cast c2 t2, Dyn, l4)
       Arr paramTy retTy 
@@ -229,7 +229,7 @@ module TypeChecker (
     Deref e'           -> do                                                    -- (C-DEREF1 + C-DEREF2)
                             (t', ty, l1) <- typeCheck' e' l
                             case ty of 
-                              Dyn     -> let (c, l2) = (RefProj l1, incrementLabel l1)
+                              Dyn     -> let (c, l2) = (RefProj l1, increment l1)
                                          in Right (Deref $ Cast c t', Dyn, l2)
                               TRef s  -> Right (Deref t', s, l)
                               _       -> Left $ NotRef e' 

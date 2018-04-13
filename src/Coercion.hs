@@ -4,8 +4,8 @@ module Coercion where
   import Types
 
   -- increment the label index
-  incrementLabel :: Label -> Label
-  incrementLabel (Label l) = Label $ l + 1
+  increment :: Label -> Label
+  increment (Label l) = Label $ l + 1
 
   -- consistency rules
   isConsistent :: Type -> Type -> Bool
@@ -58,10 +58,10 @@ module Coercion where
     where (c, l') = coerce (TRef s) (TRef Dyn) l
   coerce ty Dyn l                        = (Inject ty, l)                          -- (C-B!)
   coerce Dyn (Arr s t) l                 = (Seq (FuncProj l) c, l')                -- (C-FUN?)
-    where (c, l') = coerce (Arr Dyn Dyn) (Arr s t) (incrementLabel l)
+    where (c, l') = coerce (Arr Dyn Dyn) (Arr s t) (increment l)
   coerce Dyn (TRef s) l                  = (Seq (RefProj l) c, l')                 -- (C-REF?)
-    where (c, l') = coerce (TRef Dyn) (TRef s) (incrementLabel l)
-  coerce Dyn ty l                        = (Project ty l, incrementLabel l)        -- (C-B?)
+    where (c, l') = coerce (TRef Dyn) (TRef s) (increment l)
+  coerce Dyn ty l                        = (Project ty l, increment l)        -- (C-B?)
   coerce (Arr s1 s2) (Arr t1 t2) l 
     | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)                          -- (C-FUN)
     where (c, l1) = coerce t1 s1 l
@@ -70,7 +70,7 @@ module Coercion where
     | s `isConsistent` t                 = (CRef c d, l2)                           -- (C-REF)
     where (c, l1) = coerce t s l
           (d, l2) = coerce s t l1
-  coerce ty1 ty2 l                       = (Fail ty1 ty2 l, incrementLabel l)      -- (C-FAIL)
+  coerce ty1 ty2 l                       = (Fail ty1 ty2 l, increment l)      -- (C-FAIL)
 
   -- reduce a coercion (single-step)
   reduceCoercion :: Coercion -> Coercion
