@@ -52,18 +52,24 @@ module Coercion where
   -- coercion type system
   coerce :: Type -> Type -> Label -> (Coercion, Label)
   coerce ty1 ty2 l | ty1 == ty2          = (Iden ty1, l)                           -- (C-ID)
-  coerce ty Dyn l                        = case ty of                     
-    Arr _ _     -> (Seq c FuncInj, l')                                             -- (C-FUN!)
-    _           -> (Inject ty, l)                                                  -- (C-B!)
-    where (c, l') = coerce ty (Arr Dyn Dyn) l 
-  coerce Dyn ty l                        = case ty of 
-    Arr _ _     -> (Seq (FuncProj l) c, l')                                        -- (C-FUN?)
-    _           -> (Project ty l, incrementLabel l)                                -- (C-B?)
-    where (c, l') = coerce (Arr Dyn Dyn) ty (incrementLabel l)
+  coerce (Arr s t) Dyn l                 = (Seq c FuncInj, l')                     -- (C-FUN!)                                                  -- (C-B!)
+    where (c, l') = coerce (Arr s t) (Arr Dyn Dyn) l 
+  coerce (TRef s) Dyn l                  = (Seq c RefInj, l')                      -- (C-REF!)
+    where (c, l') = coerce (TRef s) (TRef Dyn) l
+  coerce ty Dyn l                        = (Inject ty, l)                          -- (C-B!)
+  coerce Dyn (Arr s t) l                 = (Seq (FuncProj l) c, l')                -- (C-FUN?)
+    where (c, l') = coerce (Arr Dyn Dyn) (Arr s t) (incrementLabel l)
+  coerce Dyn (TRef s) l                  = (Seq (RefProj l) c, l')                 -- (C-REF?)
+    where (c, l') = coerce (TRef Dyn) (TRef s) (incrementLabel l)
+  coerce Dyn ty l                        = (Project ty l, incrementLabel l)        -- (C-B?)
   coerce (Arr s1 s2) (Arr t1 t2) l 
     | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)                          -- (C-FUN)
     where (c, l1) = coerce t1 s1 l
           (d, l2) = coerce s2 t2 l1
+  coerce (TRef s) (TRef t) l
+    | s `isConsistent` t                 = (CRef c d, l2)                           -- (C-REF)
+    where (c, l1) = coerce t s l
+          (d, l2) = coerce s t l1
   coerce ty1 ty2 l                       = (Fail ty1 ty2 l, incrementLabel l)      -- (C-FAIL)
 
   -- reduce a coercion (single-step)

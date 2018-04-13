@@ -71,28 +71,42 @@ module TypeChecker (
         | otherwise              -> Left $ Difference fst snd
       _                          -> Left $ NotBool cond
 
+  -- typecheck an assignment 
+  typeCheckAssignment :: Term -> Term -> Label -> Either TypeError (Term, Type, Label)
+  typeCheckAssignment e1 e2 l = do
+    (t1, ty1, l1) <- typeCheck' e1 l
+    (t2, ty2, l2) <- typeCheck' e2 l1
+    case ty1 of 
+      TRef s      -> let (c, l3) = coerce ty2 s l2
+                     in Right (t1 `Assign` Cast c t2, s, l3)
+      Dyn         -> let (c1, l3) = (RefProj l2, incrementLabel l2)
+                         (c2, l4) = coerce ty2 Dyn l3
+                     in Right (Cast c1 t1 `Assign` Cast c2 t2, Dyn, l4)
+      _           -> Left $ NotRef e1
+
   -- typecheck an application
   typeCheckApp :: Term -> Term -> Label -> Either TypeError (Term, Type, Label)
   typeCheckApp e1 e2 l = do                                            
     (t1, funcTy, l1)  <- typeCheck' e1 l  
     (t2, argTy, l2)   <- typeCheck' e2 l1
     case funcTy of 
-      Dyn                              -> let (c1, l3) = coerce argTy Dyn l2 
-                                              c2       = FuncProj l3  
-                                          in Right (App (Cast c2 t1) (Cast c1 t2), Dyn, incrementLabel l3)
+      Dyn                              -> let (c1, l3) = (FuncProj l2, incrementLabel l2)  
+                                              (c2, l4) = coerce argTy Dyn l3  
+                                          in Right (Cast c1 t1 `App` Cast c2 t2, Dyn, l4)
       Arr paramTy retTy 
         | argTy `isSubtype` paramTy    -> Right (App t1 t2, retTy, l2)
         | argTy `isConsistent` paramTy -> let (c, l3) = coerce argTy paramTy l2 
                                           in Right (App t1 $ Cast c t2, retTy, l3)
         | otherwise                    -> Left $ Mismatch argTy paramTy
         where (c, l3) = coerce argTy paramTy l2
-      _                                -> Left $ NotFunction t1
+      _                                -> Left $ NotFunction e1
 
   -- two types are compatible if either they are subtypes of one another or 
   -- consistent
   isCompatible :: Type -> Type -> Bool
   isCompatible ty1 ty2 = isSubtype ty1 ty2 || isConsistent ty1 ty2
   
+  -- TODO: Add typeOf() for reference, dereference, and assignment
   -- find the type for a term 
   typeOf :: Term -> Either TypeError Type
   typeOf t = case t of 
@@ -134,7 +148,7 @@ module TypeChecker (
     Rec ls             -> rcdTypeOf t                                   -- (T-RCD)
 
     Proj t l           -> case t of                                     -- (T-PROJ)
-                            Rec ls -> case typeOf (Rec ls) of                       
+                            Rec _  -> case typeOf t of                       
                                         Right ty -> getType ty l
                                         Left err -> Left err
                             _      -> Left $ NotRecord t
@@ -165,12 +179,12 @@ module TypeChecker (
   -- typecheck the source term and insert cast if needed
   typeCheck' :: Term -> Label -> Either TypeError (Term, Type, Label)
   typeCheck' e l = case e of 
-    Unit               -> Right (Unit, TUnit, l)                        -- (C-CONST)
+    Unit               -> Right (Unit, TUnit, l)                                -- (C-CONST)
     Tru                -> Right (e, Bool, l)                                    
     Fls                -> Right (e, Bool, l)                                   
     Zero               -> Right (e, Nat, l)                                     
 
-    Succ e'            -> do                                            -- (C-SUCC)
+    Succ e'            -> do                                                    -- (C-SUCC)
                             (t', ty, l1) <- typeCheck' e' l
                             case ty of  
                               Dyn -> let (c, l2) = coerce ty Nat l1
@@ -178,7 +192,7 @@ module TypeChecker (
                               Nat -> Right (Succ t', Nat, l1)
                               _   -> Left $ NotNat ty
 
-    Pred e'            -> do                                            -- (C-PRED)
+    Pred e'            -> do                                                    -- (C-PRED)
                             (t', ty, l1) <- typeCheck' e' l
                             case ty of
                               Dyn -> let (c, l2) = coerce ty Nat l1
@@ -186,7 +200,7 @@ module TypeChecker (
                               Nat -> Right (Pred t', Nat, l1)
                               _   -> Left $ NotNat ty
 
-    IsZero e'          -> do                                            -- (C-ISZERO)
+    IsZero e'          -> do                                                    -- (C-ISZERO)
                             (t', ty, l1) <- typeCheck' e' l 
                             case ty of 
                               Dyn  -> let (c, l2) = coerce ty Nat l1
@@ -194,25 +208,39 @@ module TypeChecker (
                               Nat  -> Right (IsZero t', Bool, l1)
                               _    -> Left $ NotNat ty
 
-    If e1 e2 e3        -> typeCheckCond e l                              -- (C-IF)
+    If e1 e2 e3        -> typeCheckCond e l                                     -- (C-IF)
                         
-    Rec ls             -> typeCheckRcd e l                               -- (C-RCD)
+    Rec ls             -> typeCheckRcd e l                                      -- (C-RCD)
 
-    Proj e' f          -> case e' of                                     -- (C-PROJ)
-                            Rec ls -> do 
+    Proj e' f          -> case e' of                                            -- (C-PROJ)
+                            Rec _  -> do 
                                         res <- typeCheck' e' l 
                                         typeCheckField res f 
-                            _      -> Left $ NotRecord e
+                            _      -> Left $ NotRecord e'
                         
-    Var _ ty _         -> case ty of                                     -- (C-VAR)
+    Var _ ty _         -> case ty of                                            -- (C-VAR)
                             TUnit -> Left $ NotBound e   
-                            _     -> Right (e, ty, l)                                  
+                            _     -> Right (e, ty, l)                           
+                            
+    Ref e'             -> do                                                    -- (C-REF) 
+                            (t', ty, l1) <- typeCheck' e' l   
+                            return (Ref t', TRef ty, l1)                             
 
-    Lambda ty e' ctx   -> do                                             -- (C-ABS)
+    Deref e'           -> do                                                    -- (C-DEREF1 + C-DEREF2)
+                            (t', ty, l1) <- typeCheck' e' l
+                            case ty of 
+                              Dyn     -> let (c, l2) = (RefProj l1, incrementLabel l1)
+                                         in Right (Deref $ Cast c t', Dyn, l2)
+                              TRef s  -> Right (Deref t', s, l)
+                              _       -> Left $ NotRef e' 
+                              
+    Assign e1 e2       -> typeCheckAssignment e1 e2 l                           -- (C-ASSIGN1 + C-ASSIGN2)
+
+    Lambda ty e' ctx   -> do                                                    -- (C-ABS)
                             (t', retTy, l') <- typeCheck' e' l           
                             Right (Lambda ty t' ctx, Arr ty retTy, l')  
 
-    App e1 e2          -> typeCheckApp e1 e2 l                           -- (C-APP1 + C-APP2)
+    App e1 e2          -> typeCheckApp e1 e2 l                                  -- (C-APP1 + C-APP2)
         
   -- insert casts into a term
   typeCheck :: Term -> Either TypeError Term 

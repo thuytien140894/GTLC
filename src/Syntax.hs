@@ -14,6 +14,12 @@ module Syntax where
 
   pattern FuncProj :: Label -> Coercion 
   pattern FuncProj l = Project (Arr Dyn Dyn) l
+
+  pattern RefInj :: Coercion
+  pattern RefInj = Inject (TRef Dyn)
+
+  pattern RefProj :: Label -> Coercion
+  pattern RefProj l = Project (TRef Dyn) l 
   
   data Term 
     = Unit                                                        -- identity term 
@@ -42,6 +48,7 @@ module Syntax where
     = Iden Type
     | Project Type Label
     | Inject Type 
+    | CRef Coercion Coercion
     | Func Coercion Coercion
     | Seq Coercion Coercion
     | Fail Type Type Label

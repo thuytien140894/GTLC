@@ -10,6 +10,7 @@ module Errors where
     | NotBool Type
     | NotNat Type
     | NotFunction Term
+    | NotRef Term
     | NotRecord Term
     | NotFound String
     | IllegalCast Type Type

@@ -22,6 +22,11 @@ module ParserSpec where
         it "should be \"Deref (App (Lambda Dyn (Lambda Dyn (Assign (Var 1 Dyn x) Tru) [y]) [x,y]) (Ref Fls))\"" $ 
           parseExpr "!((\\x. \\y. x:=true) ref false)" `shouldBe` 
           Right (Deref (App (Lambda Dyn (Lambda Dyn (Assign (Var 1 Dyn "x") Tru) ["y"]) ["x","y"]) (Ref Fls)))
+
+      context "(\\x. x:=succ 0) ref 0" $ 
+        it "should be \"App (Lambda Dyn (Assign (Var 0 Dyn x) (Succ Zero)) [x]) (Ref Zero)\"" $ 
+          parseExpr "(\\x. x:=succ 0) ref 0" `shouldBe` 
+          Right (App (Lambda Dyn (Assign (Var 0 Dyn "x") (Succ Zero)) ["x"]) (Ref Zero))
       
       context "(\\m. (\\x. x 0) m)" $ 
         it "should be \"\\. (\\.0 zero) 0\"" $ 
