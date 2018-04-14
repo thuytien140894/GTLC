@@ -3,11 +3,16 @@
 module Syntax where
 
   import Types
-  
-  type Entry = (String, Term)
 
-  newtype Label = Label Int
+  import Data.Map as Map
+  
+  type Entry       = (String, Term)
+
+  newtype Label    = Label Int
     deriving (Eq, Show)
+    
+  newtype Store    = Store (Term, Type)
+  newtype StoreEnv = StoreEnv (Map.Map Int Store)
 
   pattern FuncInj :: Coercion 
   pattern FuncInj = Inject (Arr Dyn Dyn)
@@ -19,7 +24,7 @@ module Syntax where
   pattern RefInj = Inject (TRef Dyn)
 
   pattern RefProj :: Label -> Coercion
-  pattern RefProj l = Project (TRef Dyn) l 
+  pattern RefProj l = Project (TRef Dyn) l
   
   data Term 
     = Unit                                                        -- identity term 
@@ -39,6 +44,7 @@ module Syntax where
     | App Term Term                                               -- application
     | Ref Term                                                    -- reference creation
     | Deref Term                                                  -- dereference
+    | Loc Int                                                     -- store location
     | Assign Term Term                                            -- assignment
     | Cast Coercion Term                                          -- coercion
     | Blame Label                                                 -- blame assignment

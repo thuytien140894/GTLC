@@ -10,7 +10,8 @@ module Evaluator (
   import Data.Maybe
   import Control.Applicative
   import Data.Functor
-  import Data.Either 
+  import Data.Either
+  import Data.Map as Map 
   
   -- determine if a list contains all values
   areAllVal :: [Entry] -> Bool
@@ -101,13 +102,16 @@ module Evaluator (
       | otherwise                  = Rec ys `hasField` l
 
   -- evaluate a record 
-  evalRecord :: Term -> Either RuntimeError Term 
-  evalRecord (Rec [])               = Right $ Rec []
-  evalRecord (Rec ((l1, v1) : ys)) 
-    | isVal v1                      = (`addEntry` (l1, v1)) <$> evalRecord (Rec ys)
-    | otherwise                     = case evaluate' v1 of 
-                                        Right res     -> (`addEntry` (l1, res)) <$> evalRecord (Rec ys)
-                                        Left err      -> Left err
+  evalRecord :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv) 
+  evalRecord (Rec [], store)              = Right (Rec [], store)
+  evalRecord (Rec ((l1, t1) : ys), store) 
+    | isVal t1                            = do 
+                                              (rd, store') <- evalRecord (Rec ys, store)
+                                              Right (rd `addEntry` (l1, t1), store')
+    | otherwise                           = do 
+                                              (t1', store') <- evaluate' (t1, store) 
+                                              (rd, store'') <- evalRecord (Rec ys, store')
+                                              Right (rd `addEntry` (l1, t1'), store'')
 
   -- add new entry to the record
   addEntry :: Term -> Entry -> Term
@@ -124,68 +128,87 @@ module Evaluator (
     Left err                        -> Left $ TError err
 
   -- small-step evaluation
-  evaluate' :: Term -> Either RuntimeError Term
-  evaluate' t = case t of
+  evaluate' :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv)
+  evaluate' (t, store) = case t of
     -- Blame 
-    IsZero (Blame l)                    -> Right $ Blame l                               -- (E-BISZERO)                                       
-    Succ (Blame l)                      -> Right $ Blame l                               -- (E-BSUCC)
-    Pred (Blame l)                      -> Right $ Blame l                               -- (E-BPRED)
-    If (Blame l) t1 t2                  -> Right $ Blame l                               -- (E-BIF)
-    App (Blame l) _                     -> Right $ Blame l                               -- (E-BAPP1)
-    App _ (Blame l)                     -> Right $ Blame l                               -- (E-BAPP2)
-    Cast _ (Blame l)                    -> Right $ Blame l                               -- (E-BCAST)
+    IsZero (Blame l)               -> Right (Blame l, store)                      -- (E-BISZERO)
+    Succ (Blame l)                 -> Right (Blame l, store)                      -- (E-BSUCC)
+    Pred (Blame l)                 -> Right (Blame l, store)                      -- (E-BPRED)
+    If (Blame l) t1 t2             -> Right (Blame l, store)                      -- (E-BIF)
+    App (Blame l) _                -> Right (Blame l, store)                      -- (E-BAPP1)
+    App _ (Blame l)                -> Right (Blame l, store)                      -- (E-BAPP2)
+    Cast _ (Blame l)               -> Right (Blame l, store)                      -- (E-BCAST)
 
     -- Arithmetic
-    Pred Zero                           -> Right Zero                                    -- (E-PREDZERO)
+    Pred Zero                      -> Right (Zero, store)                         -- (E-PREDZERO)
     Pred (Succ nv) 
-      | isNumeric nv                    -> Right nv                                      -- (E-PREDSUCC)
-    IsZero Zero                         -> Right Tru                                     -- (E-ISZEROZERO)
+      | isNumeric nv               -> Right (nv, store)                           -- (E-PREDSUCC)
+    Pred t'                        -> do                                          -- (E-PRED)
+                                        (t'', store') <- evaluate' (t', store)
+                                        Right (Pred t'', store')
+    IsZero Zero                    -> Right (Tru, store)                          -- (E-ISZEROZERO)
     IsZero (Succ nv) 
-      | isNumeric nv                    -> Right Fls                                     -- (E-ISZEROSUCC)
-    IsZero t1 
-      | not (isNumeric t1)              -> IsZero <$> evaluate' t1                       -- (E-ISZERO)
-    Succ t1                             -> Succ <$> evaluate' t1                         -- (E-SUCC)
-    Pred t1                             -> Pred <$> evaluate' t1                         -- (E-PRED)
+      | isNumeric nv               -> Right (Fls, store)                          -- (E-ISZEROSUCC)
+    IsZero t'                      -> do                                          -- (E-ISZERO)
+                                        (t'', store') <- evaluate' (t', store)
+                                        Right (IsZero t'', store')
+    Succ t'                        -> do                                          -- (E-SUCC)
+                                        (t'', store') <- evaluate' (t', store)
+                                        Right (Succ t'', store')
 
     -- Conditional
-    If Tru t2 t3                        -> Right t2                                      -- (E-IFTRUE)
-    If Fls t2 t3                        -> Right t3                                      -- (E-IFFALSE)
-    If t1 t2 t3                         -> (\t1' -> If t1' t2 t3) <$> evaluate' t1       -- (E-IF)
+    If Tru t2 t3                   -> Right (t2, store)                           -- (E-IFTRUE)
+    If Fls t2 t3                   -> Right (t3, store)                           -- (E-IFFALSE)
+    If t1 t2 t3                    -> do                                          -- (E-IF)
+                                        (t1', store') <- evaluate' (t1, store)
+                                        Right (If t1' t2 t3, store')
 
     -- Cast
-    Cast c t 
-      | not (isVal t)                   -> Cast c <$> evaluate' t                        -- (E-CCAST)
-    Cast c (Cast d u)                   -> Right $ Cast (Seq d c) u                      -- (E-CCMP)
-    Cast (Iden _) u                     -> Right u                                       -- (E-CID)
-    Cast (Fail _ _ l) u                 -> Right $ Blame l                               -- (E-CFAIL)
+    Cast c t' 
+      | not (isVal t')             -> do                                          -- (E-CCAST)
+                                        (t'', store') <- evaluate' (t', store)
+                                        Right (Cast c t'', store')
+    Cast c (Cast d u)              -> Right (Seq d c `Cast` u, store)             -- (E-CCMP)
+    Cast (Iden _) u                -> Right (u, store)                            -- (E-CID)
+    Cast (Fail _ _ l) u            -> Right (Blame l, store)                      -- (E-CFAIL)
     Cast c u 
-      | isNormalized c                  -> unbox t                                       -- (E-CGROUND)
-    Cast c u                            -> Right $ Cast (reduceCoercion c) u             -- (E-CSTEP)
+      | isNormalized c             -> do                                          -- (E-CGROUND)
+                                        t' <- unbox t
+                                        Right (t', store)                               
+    Cast c u                       -> Right (reduceCoercion c `Cast` u, store)    -- (E-CSTEP)
     App (Cast (Func c d) u) v 
       | isUncoercedVal u && 
-        isVal v                         -> Right $ Cast d (App u $ Cast c v)             -- (E-CAPP)
-
+        isVal v                    -> Right (Cast d $ App u $ Cast c v, store)    -- (E-CAPP)
+    
     -- Application
     App (Lambda _ t1 _) v2 
-      | isVal v2                        -> Right $ subsFromTop v2 t1                     -- (E-APPABS)
+      | isVal v2                   -> Right (subsFromTop v2 t1, store)            -- (E-APPABS)
     App v1 t2 
-      | isVal v1                        -> App v1 <$> evaluate' t2                       -- (E-APP2)
-    App t1 t2                           -> (`App` t2) <$> evaluate' t1                   -- (E-APP1)
+      | isVal v1                   -> do                                          -- (E-APP2)
+                                        (t2', store') <- evaluate' (t2, store)
+                                        Right (App v1 t2', store')              
+    App t1 t2                      -> do                                          -- (E-APP1)
+                                        (t1', store') <- evaluate' (t1, store)
+                                        Right (App t1' t2, store')              
 
     -- Records
     Proj (Rec ls) l 
-      | isVal $ Rec ls                  -> Rec ls `getVal` l                             -- (E-PROJRCD)
-    Proj (Rec ls) l                     -> (`Proj` l) <$> evaluate' (Rec ls)             -- (E-PROJ)
+      | isVal $ Rec ls             -> do                                          -- (E-PROJRCD)
+                                        t' <- Rec ls `getVal` l                 
+                                        Right (t', store)
+    Proj (Rec ls) l                -> do                                          -- (E-PROJ)
+                                        (t', store') <- evaluate' (Rec ls, store)
+                                        Right (Proj t' l, store')            
     Rec ls 
-      | not $ isVal $ Rec ls            -> evalRecord t                                  -- (E-RCD)
+      | not $ isVal $ Rec ls       -> evalRecord (t, store)                       -- (E-RCD)
                       
     -- No rules applied
-    _                                   -> Left Stuck                                    -- "Stuck"
+    _                              -> Left Stuck                                  -- "Stuck"
 
   -- big-step evaluation
   -- (apply evaluate' repeatedly until a value is reached or we're left with an expression
   -- that cannot be evaluated further)
-  evaluateToValue :: Term -> Either RuntimeError Term
+  evaluateToValue :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv)
   evaluateToValue x = case evaluate' x of
     Right res  -> evaluateToValue res
     Left Stuck -> Right x 
@@ -193,8 +216,8 @@ module Evaluator (
   
   -- evaluate a term
   evaluate :: Term -> Either RuntimeError Term
-  evaluate t = case evaluateToValue t of
-    Right res 
+  evaluate t = case evaluateToValue (t, StoreEnv Map.empty) of
+    Right (res, _) 
       | isUncoercedVal res -> Right res
       | otherwise          -> Left Stuck -- term is "stuck"
     Left err               -> Left err
