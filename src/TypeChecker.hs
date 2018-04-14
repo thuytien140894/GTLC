@@ -221,7 +221,7 @@ module TypeChecker (
     Var _ ty _         -> case ty of                                            -- (C-VAR)
                             TUnit -> Left $ NotBound e   
                             _     -> Right (e, ty, l)                           
-                            
+                
     Ref e'             -> do                                                    -- (C-REF) 
                             (t', ty, l1) <- typeCheck' e' l   
                             return (Ref t', TRef ty, l1)                             

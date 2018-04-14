@@ -19,23 +19,35 @@ module Coercion where
 
   -- check if a coercion is normalized (cannot be further reduced)
   isNormalized :: Coercion -> Bool
+  -- Base
   isNormalized (Inject _)                         = True
   isNormalized (Project _ _)                      = True
   isNormalized (Iden _)                           = True
-  isNormalized (Func (Iden _) (Iden _))           = False
-  isNormalized (Func c d) 
-    | isNormalized c && isNormalized d            = True
   isNormalized (Seq c (Inject _))                 
     | isNormalized c                              = True
   isNormalized (Seq (Project _ _) c)              
     | isNormalized c                              = True
-  isNormalized (Seq (Project _ _) Fail{})         = True
+  -- Fail
+  isNormalized (Seq (Project _ _) Fail{})         = True      
   isNormalized (Seq (Func c d) Fail{}) 
+    | isNormalized c && isNormalized d            = True
+  -- Function
+  isNormalized (Func (Iden _) (Iden _))           = False
+  isNormalized (Func c d) 
     | isNormalized c && isNormalized d            = True
   isNormalized (Seq c FuncInj) 
     | isNormalized c                              = True
   isNormalized (Seq (FuncProj _) c)
     | isNormalized c                              = True
+  -- Reference
+  isNormalized (CRef (Iden _) (Iden _))            = False
+  isNormalized (CRef c d) 
+    | isNormalized c && isNormalized d            = True
+  isNormalized (Seq c RefInj)                    
+    | isNormalized c                              = True
+  isNormalized (Seq (RefProj _) c)
+    | isNormalized c                              = True
+  -- Other
   isNormalized _                                  = False
 
   -- check if a coercion is regular (normalized and not Identity or Fail)
@@ -51,23 +63,23 @@ module Coercion where
 
   -- coercion type system
   coerce :: Type -> Type -> Label -> (Coercion, Label)
-  coerce ty1 ty2 l | ty1 == ty2          = (Iden ty1, l)                           -- (C-ID)
-  coerce (Arr s t) Dyn l                 = (Seq c FuncInj, l')                     -- (C-FUN!)                                                  -- (C-B!)
+  coerce ty1 ty2 l | ty1 == ty2          = (Iden ty1, l)                      -- (C-ID)
+  coerce (Arr s t) Dyn l                 = (Seq c FuncInj, l')                -- (C-FUN!)                                                  -- (C-B!)
     where (c, l') = coerce (Arr s t) (Arr Dyn Dyn) l 
-  coerce (TRef s) Dyn l                  = (Seq c RefInj, l')                      -- (C-REF!)
+  coerce (TRef s) Dyn l                  = (Seq c RefInj, l')                 -- (C-REF!)
     where (c, l') = coerce (TRef s) (TRef Dyn) l
-  coerce ty Dyn l                        = (Inject ty, l)                          -- (C-B!)
-  coerce Dyn (Arr s t) l                 = (Seq (FuncProj l) c, l')                -- (C-FUN?)
+  coerce ty Dyn l                        = (Inject ty, l)                     -- (C-B!)
+  coerce Dyn (Arr s t) l                 = (Seq (FuncProj l) c, l')           -- (C-FUN?)
     where (c, l') = coerce (Arr Dyn Dyn) (Arr s t) (increment l)
-  coerce Dyn (TRef s) l                  = (Seq (RefProj l) c, l')                 -- (C-REF?)
+  coerce Dyn (TRef s) l                  = (Seq (RefProj l) c, l')            -- (C-REF?)
     where (c, l') = coerce (TRef Dyn) (TRef s) (increment l)
   coerce Dyn ty l                        = (Project ty l, increment l)        -- (C-B?)
   coerce (Arr s1 s2) (Arr t1 t2) l 
-    | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)                          -- (C-FUN)
+    | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)                     -- (C-FUN)
     where (c, l1) = coerce t1 s1 l
           (d, l2) = coerce s2 t2 l1
   coerce (TRef s) (TRef t) l
-    | s `isConsistent` t                 = (CRef c d, l2)                           -- (C-REF)
+    | s `isConsistent` t                 = (CRef c d, l2)                     -- (C-REF)
     where (c, l1) = coerce t s l
           (d, l2) = coerce s t l1
   coerce ty1 ty2 l                       = (Fail ty1 ty2 l, increment l)      -- (C-FAIL)
@@ -80,7 +92,23 @@ module Coercion where
   reduceCoercion (Seq (Inject _) (Fail ty1 ty2 l))   = Fail ty1 ty2 l              -- (L-FAILR)
   reduceCoercion (Seq (Inject ty1) (Project ty2 l)) 
     | ty1 == ty2                                     = Iden ty1                    -- (L-INJPROJ)
-    | otherwise                                      = Fail ty1 ty2 l              -- (L-FAIL)
+    | otherwise                                      = Fail ty1 ty2 l              -- (L-FAIL
+  reduceCoercion (Func (Iden ty) (Iden _))           = Iden ty                     -- (L-FUNID)
+  reduceCoercion (Func (Fail ty1 ty2 l) _)           = Fail ty1 ty2 l              -- (E-FUNFAILL)
+  reduceCoercion (Func c (Fail ty1 ty2 l))
+    | isNormalized c                                 = Fail ty1 ty2 l              -- (E-FUNFAILR)
+  reduceCoercion (Func c d)    
+    | isNormalized c                                 = Func c $ reduceCoercion d   -- (L-FUN1)
+    | otherwise                                      = reduceCoercion c `Func` d   -- (L-FUN2)
+  reduceCoercion (CRef (Iden ty) (Iden _))           = Iden ty                     -- (L-FUNID)
+  reduceCoercion (CRef (Fail ty1 ty2 l) _)           = Fail ty1 ty2 l              -- (E-REFFAILL)
+  reduceCoercion (CRef c (Fail ty1 ty2 l))
+    | isNormalized c                                 = Fail ty1 ty2 l              -- (E-REFFAILR)
+  reduceCoercion (CRef c d)    
+    | isNormalized c                                 = Func c $ reduceCoercion d   -- (L-REF1)
+    | otherwise                                      = reduceCoercion c `Func` d   -- (L-REF2)
+  reduceCoercion (Seq (CRef c1 c2) (CRef d1 d2))     
+    | all isNormalized [c1, c2, d1, d2]              = Seq d1 c1 `CRef` Seq c2 d2  -- (L-SEQREF)
   reduceCoercion (Seq (Func c1 c2) (Func d1 d2))                          
     | all isNormalized [c1, c2, d1, d2]              = Seq d1 c1 `Func` Seq c2 d2  -- (L-SEQFUN)
   reduceCoercion (Seq (Seq c1 c2) c3)                        
@@ -90,13 +118,6 @@ module Coercion where
   reduceCoercion (Seq c d)                                  
     | isNormalized c                                 = Seq c $ reduceCoercion d    -- (L-SEQ1)
     | otherwise                                      = reduceCoercion c `Seq` d    -- (L-SEQ2)
-  reduceCoercion (Func (Iden ty) (Iden _))           = Iden ty                     -- (L-FUNID)
-  reduceCoercion (Func (Fail ty1 ty2 l) _)           = Fail ty1 ty2 l              -- (E-FUNFAILL)
-  reduceCoercion (Func c (Fail ty1 ty2 l))
-    | isNormalized c                                 = Fail ty1 ty2 l              -- (E-FUNFAILR)
-  reduceCoercion (Func c d)    
-    | isNormalized c                                 = Func c $ reduceCoercion d   -- (L-FUN1)
-    | otherwise                                      = reduceCoercion c `Func` d   -- (L-FUN2)
   reduceCoercion c                                   = c
  
   -- normalize a coercion (big-step reduction)

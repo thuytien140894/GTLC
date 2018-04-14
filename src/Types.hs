@@ -1,5 +1,7 @@
 module Types where
 
+  type TEntry = (String, Type)
+  
   data Type 
     = TUnit                                 -- identity type
     | Dyn                                   -- dynamic type
@@ -9,7 +11,4 @@ module Types where
     | Arr Type Type                         -- function type
     | TRec [TEntry]                         -- record type
     | TRef Type                             -- reference type
-    | Loc Int                               -- store location
     deriving (Eq, Show)
-
-  type TEntry = (String, Type)
