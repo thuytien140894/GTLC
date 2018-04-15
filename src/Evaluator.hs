@@ -11,7 +11,6 @@ module Evaluator (
   import Control.Applicative
   import Data.Functor
   import Data.Either
-  import qualified Data.Map as Map (empty)
 
   -- determine if a term is a value
   isVal :: Term -> Bool
@@ -201,7 +200,7 @@ module Evaluator (
   
   -- evaluate a term
   evaluate :: Term -> Either RuntimeError Term
-  evaluate t = case evaluateToValue (t, StoreEnv Map.empty) of
+  evaluate t = case evaluateToValue (t, EmptyStore) of
     Right (res, _) 
       | isUncoercedVal res -> Right res
       | otherwise          -> Left Stuck -- term is "stuck"

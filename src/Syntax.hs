@@ -1,21 +1,26 @@
 {-# Language PatternSynonyms #-}
+{-# Language ViewPatterns #-}
 
 module Syntax where
 
   import Types
 
-  import qualified Data.Map as Map
-  import Prelude hiding (empty)
+  import Data.Map (Map)
+  import qualified Data.Map as Map (null, empty)
 
   type Entry = (String, Term)
 
   newtype Label = Label Int
     deriving (Eq, Show)
 
+  pattern EmptyStore :: StoreEnv 
+  pattern EmptyStore <- StoreEnv (Map.null -> True) 
+    where EmptyStore = StoreEnv Map.empty
+
   newtype Store = Store (Term, Type)
     deriving (Eq, Show)
 
-  newtype StoreEnv = StoreEnv (Map.Map Int Store)
+  newtype StoreEnv = StoreEnv (Map Int Store)
     deriving (Eq, Show)
 
   pattern FuncInj :: Coercion 
