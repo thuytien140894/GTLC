@@ -42,29 +42,29 @@ module Syntax where
     | Fls                                                         -- false
     -- | Var {index :: Int, ty :: Type, name :: String}              -- variable
     | Var Int Type String
-    | If Term Term Term                                           -- conditional
-    | Succ Term                                                   -- succ
-    | Pred Term                                                   -- pred
-    | IsZero Term                                                 -- iszero
+    | If Term Term Term                                           -- if t then t else t
+    | Succ Term                                                   -- succ t 
+    | Pred Term                                                   -- pred t
+    | IsZero Term                                                 -- iszero t
     | Rec [Entry]                                                 -- record
     | Proj Term String                                            -- projection
     -- | Lambda {varTy :: Type, body :: Term, boundVars :: [String]} -- abstraction
     | Lambda Type Term [String]
-    | App Term Term                                               -- application
+    | App Term Term                                               -- application 
     | Ref Term                                                    -- reference creation
-    | Deref Term                                                  -- dereference
-    | Loc Int                                                -- store location
-    | Assign Term Term                                            -- assignment
-    | Cast Coercion Term                                          -- coercion
+    | Deref Term                                                  -- dereference (!t)
+    | Loc Int                                                     -- store location
+    | Assign Term Term                                            -- assignment (t := t)
+    | Cast Coercion Term                                          -- coercion (<c> t)
     | Blame Label                                                 -- blame assignment
     deriving (Eq, Show) 
   
   data Coercion 
-    = Iden Type
-    | Project Type Label
-    | Inject Type 
-    | CRef Coercion Coercion
-    | Func Coercion Coercion
-    | Seq Coercion Coercion
-    | Fail Type Type Label
+    = Iden Type                                                   -- Identity 
+    | Project Type Label                                          -- type projection (B?)
+    | Inject Type                                                 -- type injection (B!)
+    | CRef Coercion Coercion                                      -- reference coercion
+    | Func Coercion Coercion                                      -- function coercion
+    | Seq Coercion Coercion                                       -- coercion sequence (c;c)
+    | Fail Type Type Label                                        -- fail
     deriving (Eq, Show)
