@@ -4,8 +4,9 @@ module Syntax where
 
   import Types
 
-  import Data.Map as Map
-  
+  import qualified Data.Map as Map
+  import Prelude hiding (empty)
+
   type Entry = (String, Term)
 
   newtype Label = Label Int
@@ -13,6 +14,7 @@ module Syntax where
 
   newtype Store = Store (Term, Type)
     deriving (Eq, Show)
+
   newtype StoreEnv = StoreEnv (Map.Map Int Store)
     deriving (Eq, Show)
 

@@ -4,7 +4,7 @@ module Utils where
   import Types
   import Errors
 
-  import Data.Map as Map 
+  import qualified Data.Map as Map 
   import Data.Maybe
 
   -- get the type of a store
@@ -19,7 +19,7 @@ module Utils where
 
   -- return the number of stores 
   sizeOf :: StoreEnv -> Int 
-  sizeOf (StoreEnv s) = size s
+  sizeOf (StoreEnv s) = Map.size s
 
   -- look up the store at a location
   lookUp :: StoreEnv -> Int -> Maybe Store

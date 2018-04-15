@@ -3,17 +3,15 @@ module Evaluator (
   ) where
 
   import Syntax
-  import Coercion
-  import TypeChecker
+  import Coercion 
   import Errors
-  import Types
   import Utils
   
   import Data.Maybe
   import Control.Applicative
   import Data.Functor
   import Data.Either
-  import Data.Map as Map 
+  import qualified Data.Map as Map (empty)
 
   -- determine if a term is a value
   isVal :: Term -> Bool
