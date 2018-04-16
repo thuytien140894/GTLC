@@ -7,12 +7,19 @@ module TypeParser where
   import Text.Parsec
   import Text.Parsec.String (Parser)
 
-  -- Base types
+  -- base types
   boolean, nat, top, dynamic :: Parser Type
   boolean = reserved "Bool" >> return Bool
   nat = reserved "Nat" >> return Nat
   top = reserved "Top" >> return Top
   dynamic = reserved "Dyn" >> return Dyn
+  
+  -- reference types 
+  ref :: Parser Type 
+  ref = do 
+    reserved "Ref"
+    ty <- types 
+    return $ TRef ty
 
   -- Record type
   recordTy :: Parser Type
@@ -45,4 +52,5 @@ module TypeParser where
       <|> nat
       <|> top
       <|> dynamic
+      <|> ref
       <|> recordTy

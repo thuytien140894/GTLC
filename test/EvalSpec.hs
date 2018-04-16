@@ -90,7 +90,7 @@ module EvalSpec where
           `shouldBe` Right (Succ Zero)
 
       context "((\\m. if (\\x. iszero <Nat?>x) m then (\\x. succ <Nat?>x) else (\\x. pred <Nat?>x)) <Nat!>0) <Bool!>true" $
-        it "should be " $
+        it "should be blame 1" $
           evaluate (App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Var 0 Dyn"m")) (Lambda Dyn (Succ (Cast (Project Nat (Label 1)) (Var 0 Dyn "x"))) ["x"]) (Lambda Dyn (Pred (Cast (Project Nat (Label 2)) (Var 0 Dyn "x"))) ["x"])) ["m"]) (Cast (Inject Nat) Zero)) (Cast (Inject Bool) Tru))
           `shouldBe` Right (Blame (Label 1))
       
@@ -103,6 +103,16 @@ module EvalSpec where
         it "should be succ (succ 0)" $
           evaluate (App (Lambda Dyn (Assign (Cast (Project (TRef Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ Zero))) ["x"]) (Cast (Seq (CRef (Project Nat (Label 1)) (Inject Nat)) (Inject (TRef Dyn))) (Ref Zero)))
           `shouldBe` Right (Succ Zero)
+
+      context "(\\m. ((\\x. (<Fun?>x <Ref!><Ref Nat? Nat!>ref (succ (succ 0)))) m)) <Fun!><<Ref Nat! Nat?><Ref?>->Nat!>(\\y:Ref Nat. !y)" $
+        it "should be succ (succ 0)" $
+          evaluate (App (Lambda Dyn (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Seq (CRef (Project Nat (Label 1)) (Inject Nat)) (Inject (TRef Dyn))) (Ref (Succ (Succ Zero))))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (Func (Seq (Project (TRef Dyn) (Label 2)) (CRef (Inject Nat) (Project Nat (Label 3)))) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"])))
+          `shouldBe` Right (Succ (Succ Zero))
+
+      context "(\\m. ((\\x. (<Fun?>x <Nat!>(succ (succ 0))) m)) <Fun!><<Ref Nat! Nat?><Ref?>->Nat!>(\\y:Ref Nat. !y)" $
+        it "should be blame" $
+          evaluate (App (Lambda Dyn (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ (Succ Zero)))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (Func (Seq (Project (TRef Dyn) (Label 1)) (CRef (Inject Nat) (Project Nat (Label 2)))) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"])))
+          `shouldBe` Right (Blame (Label 1))
 
       context "<Fail2->Nat!><Fail1->Nat?>(succ 0)" $
         it "should be Fail2" $

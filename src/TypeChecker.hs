@@ -139,7 +139,7 @@ module TypeChecker (
                             case ty of 
                               Dyn     -> let (c, l2) = (RefProj l1, increment l1)
                                          in Right (Deref $ Cast c t', Dyn, l2)
-                              TRef s  -> Right (Deref t', s, l)
+                              TRef s  -> Right (Deref t', s, l1)
                               _       -> Left $ NotRef e' 
                               
     Assign e1 e2       -> typeCheckAssignment e1 e2 l                           -- (C-ASSIGN1 + C-ASSIGN2)

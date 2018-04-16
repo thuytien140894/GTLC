@@ -148,7 +148,7 @@ module Evaluator (
                                             (t'', store') <- evaluate' (t', store)
                                             Right (Ref t'', store')
     Deref (Loc l)                      -> case store `lookUp` l of                    -- (E-DEREFLOC)
-                                            Just (Store (v, _)) -> Right (v, store)
+                                            Just (Store (v, _))  -> Right (v, store)
                                             Nothing              -> Left $ InvalidRef l
 
     Deref t'                           -> do                                          -- (E-DEREF)

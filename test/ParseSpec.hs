@@ -27,6 +27,11 @@ module ParseSpec where
         it "should be \"App (Lambda Dyn (Assign (Var 0 Dyn x) (Succ Zero)) [x]) (Ref Zero)\"" $ 
           parseExpr "(\\x. x:=succ 0) ref 0" `shouldBe` 
           Right (App (Lambda Dyn (Assign (Var 0 Dyn "x") (Succ Zero)) ["x"]) (Ref Zero))
+
+      context "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Nat. !y)" $ 
+        it "should be \"App (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn x) (Ref (Succ (Succ Zero)))) [x]) (Var 0 Dyn m)) [m,x]) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) y)) [y])\"" $ 
+          parseExpr "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Nat. !y)" `shouldBe` 
+          Right (App (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn "x") (Ref (Succ (Succ Zero)))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"]))
       
       context "(\\m. (\\x. x 0) m)" $ 
         it "should be \"\\. (\\.0 zero) 0\"" $ 

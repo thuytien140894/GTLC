@@ -84,3 +84,13 @@ module TypeCheckSpec where
         it "should be (\\x. <Ref?>x:=<Nat!>succ 0) <Ref!><Ref Nat? Nat!>ref 0" $
           typeCheck (App (Lambda Dyn (Assign (Var 0 Dyn "x") (Succ Zero)) ["x"]) (Ref Zero))
           `shouldBe` Right (App (Lambda Dyn (Assign (Cast (Project (TRef Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ Zero))) ["x"]) (Cast (Seq (CRef (Project Nat (Label 1)) (Inject Nat)) (Inject (TRef Dyn))) (Ref Zero)))
+
+      context "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Nat. !y)" $
+        it "should be (\\m. ((\\x. (<Fun?>x <Ref!><Ref Nat? Nat!>ref (succ (succ 0)))) m)) <Fun!><<Ref Nat! Nat?><Ref?>->Nat!>(\\y:Ref Nat. !y)" $
+          typeCheck (App (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn "x") (Ref (Succ (Succ Zero)))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"]))
+          `shouldBe` Right (App (Lambda Dyn (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Seq (CRef (Project Nat (Label 1)) (Inject Nat)) (Inject (TRef Dyn))) (Ref (Succ (Succ Zero))))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (Func (Seq (Project (TRef Dyn) (Label 2)) (CRef (Inject Nat) (Project Nat (Label 3)))) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"])))
+
+      context "(\\m. ((\\x. (x (succ (succ 0)))) m)) (\\y:Ref Nat. !y)" $
+        it "should be (\\m. ((\\x. <Nat!>(succ (succ 0)))) m)) <Fun!><<Ref Nat! Nat?><Ref?>->Nat!>(\\y:Ref Nat. !y)" $
+          typeCheck (App (Lambda Dyn (App (Lambda Dyn (App (Var 0 Dyn "x") (Succ (Succ Zero))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"]))
+          `shouldBe` Right (App (Lambda Dyn (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ (Succ Zero)))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (Func (Seq (Project (TRef Dyn) (Label 1)) (CRef (Inject Nat) (Project Nat (Label 2)))) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"])))
