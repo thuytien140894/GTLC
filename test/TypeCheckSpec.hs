@@ -1,4 +1,4 @@
-module CastInsertionSpec where
+module TypeCheckSpec where
 
   import Test.Hspec
   import TypeChecker

@@ -1,4 +1,4 @@
-module EvaluatorSpec where
+module EvalSpec where
 
   import Test.Hspec
   import Syntax

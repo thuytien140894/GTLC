@@ -1,4 +1,4 @@
-module SubtyperSpec where 
+module SubtypeSpec where 
 
   import Test.Hspec
   import Subtype 

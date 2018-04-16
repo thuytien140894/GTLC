@@ -1,4 +1,4 @@
-module PrinterSpec where 
+module PrintSpec where 
 
   import Test.Hspec
   import Types

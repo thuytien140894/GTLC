@@ -36,7 +36,7 @@ library:
   source-dirs: src
 
 executables:
-  Tien-exe:
+  GTLC-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -47,7 +47,7 @@ executables:
     - GTLC
 
 tests:
-  Tien-test:
+  GTLC-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
