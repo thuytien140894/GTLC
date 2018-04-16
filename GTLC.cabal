@@ -1,81 +1,112 @@
-name:                GTLC
-version:             0.1.0.0
-synopsis:            Intepretation of Gradually Typed Lambda Calculus
-description:         Please see README.md
-homepage:            https://github.com/thuytien140894/GTLC
-license:             BSD3
-license-file:        LICENSE
-author:              Tien Thuy Ho
-maintainer:          thuytien140894@gmail.com
-copyright:           2018 Tien Thuy Ho
-category:            Interpreter
-build-type:          Simple
-cabal-version:       >=1.10
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 9d453d065f2f71e9c9f9aebeb40e8334d6b06065c2b06db89ead0aa70f3f88db
 
-library
-  hs-source-dirs:      src
-  exposed-modules:     Evaluator
-                     , Parser
-                     , Lexer
-                     , Prettier
-                     , Syntax
-                     , Types
-                     , Errors
-                     , TypeChecker
-                     , Subtype
-                     , ParseHelper
-                     , TypeParser
-                     , Coercion
-                     , Utils
-  build-depends:       base >= 4.7 && < 5
-                     , mtl >= 2.2 && < 3.0
-                     , filepath >= 1.3 && < 1.5
-                     , text >= 1.1 && < 1.5
-                     , pretty >= 1.1 && < 1.2
-                     , process >= 1.1 && < 1.7
-                     , directory >= 1.2 && < 1.4
-                     , haskeline >= 0.7 && < 0.8
-                     , containers >= 0.5 && < 0.6
-                     , parsec >= 3.1 && < 3.2
-                     , transformers >= 0.4 && < 0.6
-                     , hspec >= 2.2 && < 2.5
-  default-language:    Haskell2010
+name:           GTLC
+version:        0.1.0.0
+description:    Please see the README on Github at <https://github.com/thuytien140894/GTLC/#readme>
+homepage:       https://github.com/thuytien140894/GTLC#readme
+bug-reports:    https://github.com/thuytien140894/GTLC/issues
+author:         Tien Thuy Ho
+maintainer:     example@example.com
+copyright:      2018 Tien Thuy Ho
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
 
-executable GTLC-exe
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , mtl
-                     , filepath
-                     , text
-                     , pretty
-                     , process
-                     , directory
-                     , haskeline
-                     , containers
-                     , parsec
-                     , transformers
-                     , hspec
-                     , GTLC
-  default-language:    Haskell2010
-
-test-suite GTLC-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Spec.hs
-  other-modules:       CoercionSpec
-                     , CastInsertionSpec
-                     , EvaluatorSpec
-                     , ParserSpec
-                     , PrinterSpec
-                     , SubtyperSpec
-  build-depends:       base
-                     , hspec >= 2.2
-                     , GTLC
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
+  type: git
   location: https://github.com/thuytien140894/GTLC
+
+library
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers >=0.5 && <0.6
+    , directory >=1.2 && <1.4
+    , filepath >=1.3 && <1.5
+    , haskeline >=0.7 && <0.8
+    , hspec >=2.2 && <2.5
+    , mtl >=2.2 && <3.0
+    , parsec >=3.1 && <3.2
+    , pretty >=1.1 && <1.2
+    , process >=1.1 && <1.7
+    , text >=1.1 && <1.5
+    , transformers >=0.4 && <0.6
+  exposed-modules:
+      Coercion
+      Errors
+      Evaluator
+      Lexer
+      ParseHelper
+      Parser
+      Prettier
+      Subtype
+      Syntax
+      TypeChecker
+      TypeParser
+      Types
+      Utils
+  other-modules:
+      Paths_GTLC
+  default-language: Haskell2010
+
+executable Tien-exe
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GTLC
+    , base >=4.7 && <5
+    , containers >=0.5 && <0.6
+    , directory >=1.2 && <1.4
+    , filepath >=1.3 && <1.5
+    , haskeline >=0.7 && <0.8
+    , hspec >=2.2 && <2.5
+    , mtl >=2.2 && <3.0
+    , parsec >=3.1 && <3.2
+    , pretty >=1.1 && <1.2
+    , process >=1.1 && <1.7
+    , text >=1.1 && <1.5
+    , transformers >=0.4 && <0.6
+  other-modules:
+      Paths_GTLC
+  default-language: Haskell2010
+
+test-suite Tien-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GTLC
+    , base >=4.7 && <5
+    , containers >=0.5 && <0.6
+    , directory >=1.2 && <1.4
+    , filepath >=1.3 && <1.5
+    , haskeline >=0.7 && <0.8
+    , hspec >=2.2
+    , mtl >=2.2 && <3.0
+    , parsec >=3.1 && <3.2
+    , pretty >=1.1 && <1.2
+    , process >=1.1 && <1.7
+    , text >=1.1 && <1.5
+    , transformers >=0.4 && <0.6
+  other-modules:
+      CastInsertionSpec
+      CoercionSpec
+      EvaluatorSpec
+      ParserSpec
+      PrinterSpec
+      SubtyperSpec
+      Paths_GTLC
+  default-language: Haskell2010

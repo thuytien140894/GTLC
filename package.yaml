@@ -1,0 +1,60 @@
+name:                GTLC
+version:             0.1.0.0
+github:              "thuytien140894/GTLC"
+license:             BSD3
+author:              "Tien Thuy Ho"
+maintainer:          "example@example.com"
+copyright:           "2018 Tien Thuy Ho"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://github.com/thuytien140894/GTLC/#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- mtl >= 2.2 && < 3.0
+- filepath >= 1.3 && < 1.5
+- text >= 1.1 && < 1.5
+- pretty >= 1.1 && < 1.2
+- process >= 1.1 && < 1.7
+- directory >= 1.2 && < 1.4
+- haskeline >= 0.7 && < 0.8
+- containers >= 0.5 && < 0.6
+- parsec >= 3.1 && < 3.2
+- transformers >= 0.4 && < 0.6
+- hspec >= 2.2 && < 2.5
+
+library:
+  source-dirs: src
+
+executables:
+  Tien-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - GTLC
+
+tests:
+  Tien-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - GTLC
+    - base >=4.7 && <5
+    - hspec >= 2.2
