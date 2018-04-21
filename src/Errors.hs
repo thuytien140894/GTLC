@@ -19,6 +19,5 @@ module Errors where
   data RuntimeError 
     = CastError
     | InvalidRef Int
-    | TError TypeError 
     | Stuck
     deriving (Eq, Show)
