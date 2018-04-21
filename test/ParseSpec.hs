@@ -13,16 +13,6 @@ module ParseSpec where
           parseExpr "true" `shouldBe` 
           Right Tru
 
-      context "if ref true then x:=0 else !x" $ 
-        it "should be \"If (Ref Tru) (Assign (Var (-1) TUnit c) Zero) (Deref (Var (-1) TUnit x))\"" $ 
-          parseExpr "if ref true then x:=0 else !x" `shouldBe` 
-          Right (If (Ref Tru) (Assign (Var (-1) TUnit "x") Zero) (Deref (Var (-1) TUnit "x")))
-
-      context "!((\\x. \\y. x:=true) ref false)" $ 
-        it "should be \"Deref (App (Lambda Dyn (Lambda Dyn (Assign (Var 1 Dyn x) Tru) [y]) [x,y]) (Ref Fls))\"" $ 
-          parseExpr "!((\\x. \\y. x:=true) ref false)" `shouldBe` 
-          Right (Deref (App (Lambda Dyn (Lambda Dyn (Assign (Var 1 Dyn "x") Tru) ["y"]) ["x","y"]) (Ref Fls)))
-
       context "(\\x. x:=succ 0) ref 0" $ 
         it "should be \"App (Lambda Dyn (Assign (Var 0 Dyn x) (Succ Zero)) [x]) (Ref Zero)\"" $ 
           parseExpr "(\\x. x:=succ 0) ref 0" `shouldBe` 
