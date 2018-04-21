@@ -1,5 +1,4 @@
 {-# Language PatternSynonyms #-}
-{-# Language ViewPatterns #-}
 
 module Syntax where
 
@@ -13,15 +12,14 @@ module Syntax where
   newtype Label = Label Int
     deriving (Eq, Show)
 
-  pattern EmptyStore :: StoreEnv 
-  pattern EmptyStore <- StoreEnv (Map.null -> True) 
-    where EmptyStore = StoreEnv Map.empty
-
   newtype Store = Store (Term, Type)
     deriving (Eq, Show)
 
   newtype StoreEnv = StoreEnv (Map Int Store)
     deriving (Eq, Show)
+
+  emptyStore :: StoreEnv
+  emptyStore = StoreEnv Map.empty
 
   pattern FuncInj :: Coercion 
   pattern FuncInj = Inject (Arr Dyn Dyn)

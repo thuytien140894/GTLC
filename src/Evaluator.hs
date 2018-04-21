@@ -200,7 +200,7 @@ module Evaluator (
   
   -- evaluate a term
   evaluate :: Term -> Either RuntimeError Term
-  evaluate t = case evaluateToValue (t, EmptyStore) of
+  evaluate t = case evaluateToValue (t, emptyStore) of
     Right (res, _) 
       | isUncoercedVal res -> Right res
       | otherwise          -> Left Stuck -- term is "stuck"
