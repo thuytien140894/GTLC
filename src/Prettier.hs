@@ -76,6 +76,7 @@ module Prettier (
   instance Pretty Type where 
     output ty = case ty of 
       Top                 -> PP.text "Top"
+      Dyn                 -> PP.text "Dynamic"
       Nat                 -> PP.text "Nat"
       Bool                -> PP.text "Bool"
       TRef ty'            -> PP.text "Ref" <+> output ty'
@@ -112,7 +113,8 @@ module Prettier (
   instance Pretty RuntimeError where 
     output e = case e of 
       InvalidRef l               -> PP.text "Non-existent reference at location" <+> PP.int l
-      CastError srcTy cstTy      -> PP.text "Illegal cast from" 
+      CastError srcTy cstTy      -> PP.text "Invalid cast exception:" 
                                     <+> output srcTy 
                                     <+> PP.text "to" 
-                                    <+> output cstTy         
+                                    <+> output cstTy
+      Stuck                      -> PP.text "Evaluation is stuck"         
