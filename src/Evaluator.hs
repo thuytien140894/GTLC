@@ -77,7 +77,7 @@ module Evaluator (
   unbox :: Term -> StoreEnv -> Either RuntimeError Term
   unbox (Cast c v) store = case typeOf v store of 
     srcTy | srcTy `isConsistent` cstTy  -> Right v
-          | otherwise                   -> Left CastError
+          | otherwise                   -> Left $ CastError srcTy cstTy 
           where cstTy = snd $ getCoercionTypes c
 
   -- small-step evaluation

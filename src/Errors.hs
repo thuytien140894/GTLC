@@ -10,14 +10,14 @@ module Errors where
     | NotBool Type
     | NotNat Type
     | NotFunction Term
-    | NotRef Term
+    | IllegalAssign Term
+    | IllegalDeref Term
     | NotRecord Term
-    | NotFound String
-    | IllegalCast Type Type
+    | InvalidLabel String
     deriving (Eq, Show)
 
   data RuntimeError 
-    = CastError
+    = CastError Type Type
     | InvalidRef Int
     | Stuck
     deriving (Eq, Show)

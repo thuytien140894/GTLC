@@ -526,7 +526,7 @@ respectively. Typechecking other expressions will throw an error if they fail to
         | NotRecord Term
         | Difference Type Type
         | Mismatch Type Type
-        | NotFound String 
+        | InvalidLabel String 
         | IllTyped
 \end{Verbatim}
 
@@ -635,7 +635,7 @@ of the matched field is returned as the projection type.
 \end{Verbatim}
 
 If the term \texttt{t} is not a record, then a \texttt{NotRecord} error is thrown. Else, if the record \texttt{t} does not contain the input 
-label \texttt{l}, a \texttt{NotFound} error is thrown. The final case of typechecking is application. According to \texttt{T-APP}, the first 
+label \texttt{l}, a \texttt{InvalidLabel} error is thrown. The final case of typechecking is application. According to \texttt{T-APP}, the first 
 term \texttt{t\textsubscript{1}} of an application needs to have a function type \texttt{Arr argTy retTy}, or throws a \texttt{NotFunction} 
 error. Another type error an application can encounter is \texttt{Mismatch} in which the argument type and the type expected by the function 
 are different. 

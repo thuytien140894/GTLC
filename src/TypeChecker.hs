@@ -24,7 +24,7 @@ module TypeChecker (
 
   -- typecheck a record field
   typeCheckField :: (Term, Type, Label) -> String -> Either TypeError (Term, Type, Label)
-  typeCheckField (_, TRec [], _) f                           = Left $ NotFound f 
+  typeCheckField (_, TRec [], _) f                           = Left $ InvalidLabel f 
   typeCheckField (Rec ((_, t1) : xs), TRec ((f1, ty1) : ys), l) f 
     | f1 == f                                                = Right (t1, ty1, l)
     | otherwise                                              = typeCheckField (Rec xs, TRec ys, l) f
@@ -65,7 +65,7 @@ module TypeChecker (
       Dyn         -> let (c1, l3) = (RefProj l2, increment l2)
                          (c2, l4) = coerce ty2 Dyn l3
                      in Right (Cast c1 t1 `Assign` Cast c2 t2, Dyn, l4)
-      _           -> Left $ NotRef e1
+      _           -> Left $ IllegalAssign e1
 
   -- typecheck an application
   typeCheckApp :: Term -> Term -> Label -> Either TypeError (Term, Type, Label)
@@ -140,7 +140,7 @@ module TypeChecker (
                               Dyn     -> let (c, l2) = (RefProj l1, increment l1)
                                          in Right (Deref $ Cast c t', Dyn, l2)
                               TRef s  -> Right (Deref t', s, l1)
-                              _       -> Left $ NotRef e' 
+                              _       -> Left $ IllegalDeref e' 
                               
     Assign e1 e2       -> typeCheckAssignment e1 e2 l                           -- (C-ASSIGN1 + C-ASSIGN2)
 
