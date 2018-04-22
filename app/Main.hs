@@ -27,4 +27,4 @@ module Main where
         input <- getInputLine "> "
         case input of
           Just "exit"  -> return ()
-          Just validIn -> liftIO (interpret validIn) >> loop
+          Just validIn -> lift (interpret validIn) >> loop
