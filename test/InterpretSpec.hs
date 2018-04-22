@@ -87,3 +87,10 @@ module InterpretSpec where
           let Right coerced = typeCheck expr 
           let Right res     = evaluate coerced
           res `shouldBe` Blame (Label 1)
+
+      context "(\\x. succ x) true" $ 
+        it "should be blame 1" $ do 
+          let Right expr    = parseExpr "(\\x. succ x) true"
+          let Right coerced = typeCheck expr 
+          let Right res     = evaluate coerced
+          res `shouldBe` Blame (Label 0)
