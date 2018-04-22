@@ -47,17 +47,12 @@ module EvalSpec where
       context "(\\x. succ <Nat?>x) <Bool!>true" $
         it "should be Fail 0" $
           evaluate (App (Lambda Dyn (Succ (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Cast (Inject Bool) Tru))
-          `shouldBe` Right (Blame (Label 0))
+          `shouldBe` Left (CastError Bool Nat)
 
       context "(\\x:Nat->Nat. x (x 0)) <Nat!->Iden>(\\x. (succ x))" $
         it "should be succ (succ 0)" $
           evaluate (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") (App (Var 0 (Arr Nat Nat) "x") Zero)) ["x"]) (Cast (Func (Inject Nat) (Iden Nat)) (Lambda Dyn (Succ (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"])))
           `shouldBe` Right (Succ (Succ Zero))
-
-      context "(\\x:Bool->Nat. succ 0) <Fail>(\\x:Nat. x)" $
-        it "should be Fail 0" $
-          evaluate (App (Lambda (Arr Bool Nat) (Succ Zero) ["x"]) (Cast (Fail (Arr Nat Nat) (Arr Bool Nat) (Label 0)) (Lambda Nat (Var 0 Nat "x") ["x"])))
-          `shouldBe` Right (Blame (Label 0))
 
       context "(\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Func?>m)) <Func!><Nat?->Nat!>(\\y:Nat. succ y)" $
         it "should be succ 0" $
@@ -72,17 +67,17 @@ module EvalSpec where
       context "(\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Func?>m)) <Func!><Nat?->Bool!>(\\y:Nat. iszero y)" $
         it "should be blame 1" $
           evaluate (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn) (Label 0)) (Func (Inject Nat) (Project Nat (Label 1)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Seq (Func (Project Nat (Label 2)) (Inject Bool)) (Inject (Arr Dyn Dyn))) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"])))
-          `shouldBe` Right (Blame (Label 1))
+          `shouldBe` Left (CastError Bool Nat)
 
       context "(\\m. ((\\x:Nat->Bool. (x 0)) <Nat!->Bool?><Func?>m)) <Func!><Nat?->Nat!>(\\y:Nat. succ y)" $
         it "should be blame 1" $
           evaluate (App (Lambda Dyn (App (Lambda (Arr Nat Bool) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn) (Label 0)) (Func (Inject Nat) (Project Bool (Label 1)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Seq (Func (Project Nat (Label 2)) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"])))
-          `shouldBe` Right (Blame (Label 1))
+          `shouldBe` Left (CastError Nat Bool)
 
       context "(\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Func?>m)) <Bool!>true" $
         it "should be blame 0" $
           evaluate (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn) (Label 0)) (Func (Inject Nat) (Project Nat (Label 1)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Inject Bool) Tru))
-          `shouldBe` Right (Blame (Label 0))
+          `shouldBe` Left (CastError Bool (Arr Dyn Dyn))
 
       context "if (\\x. iszero x) <Nat!>(succ 0) then <Nat!>0 else <Nat?>(\\x. <FuncProj>x <Nat!>0) <FuncInj><I->Nat!>(\\y. succ <Nat?>y)" $
         it "should be succ 0" $
@@ -92,7 +87,7 @@ module EvalSpec where
       context "((\\m. if (\\x. iszero <Nat?>x) m then (\\x. succ <Nat?>x) else (\\x. pred <Nat?>x)) <Nat!>0) <Bool!>true" $
         it "should be blame 1" $
           evaluate (App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Var 0 Dyn"m")) (Lambda Dyn (Succ (Cast (Project Nat (Label 1)) (Var 0 Dyn "x"))) ["x"]) (Lambda Dyn (Pred (Cast (Project Nat (Label 2)) (Var 0 Dyn "x"))) ["x"])) ["m"]) (Cast (Inject Nat) Zero)) (Cast (Inject Bool) Tru))
-          `shouldBe` Right (Blame (Label 1))
+          `shouldBe` Left (CastError Bool Nat)
       
       context "(\\n. (\\m. if (\\x. iszero <Nat?>x) n then <FuncProj>m <Nat!>0 else <FuncProj>m <Nat!>(succ 0)) <FuncInj><I->Nat!>(\\y. succ <Nat?>y)) <Nat!>succ 0" $
         it "should be succ (succ 0)" $
@@ -112,24 +107,24 @@ module EvalSpec where
       context "(\\m. ((\\x. (<Fun?>x <Nat!>(succ (succ 0))) m)) <Fun!><<Ref Nat! Nat?><Ref?>->Nat!>(\\y:Ref Nat. !y)" $
         it "should be blame" $
           evaluate (App (Lambda Dyn (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ (Succ Zero)))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (Func (Seq (Project (TRef Dyn) (Label 1)) (CRef (Inject Nat) (Project Nat (Label 2)))) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"])))
-          `shouldBe` Right (Blame (Label 1))
+          `shouldBe` Left (CastError Nat (TRef Dyn))
 
       context "<Fail2->Nat!><Fail1->Nat?>(succ 0)" $
         it "should be Fail2" $
           evaluate (Cast (Func (Fail Bool Nat (Label 2)) (Inject Nat)) (Cast (Func (Fail Bool Nat (Label 1)) (Project Nat (Label 1))) (Succ Zero)))
-          `shouldBe` Right (Blame (Label 1))
+          `shouldBe` Left (CastError Bool Nat)
 
       context "<Fail2><Int?><Bool!>true" $
         it "should be Fail 1" $
           evaluate (Cast (Fail Bool Nat (Label 2)) (Cast (Project Nat (Label 1)) (Cast (Inject Bool) Tru)))
-          `shouldBe` Right (Blame (Label 1))
+          `shouldBe` Left (CastError Bool Nat)
     
       context "<Fail2><Int?><Bool!>true" $
         it "should be Fail 1" $
           evaluate (Cast (Fail Bool Nat (Label 1)) (Cast (Func (Iden Bool) (Project Nat (Label 2))) (Cast (Func (Iden Bool) (Inject Bool)) Tru)))
-          `shouldBe` Right (Blame (Label 2))
+          `shouldBe` Left (CastError Bool Nat)
 
       context "<Fail2><Int?><Bool!>true" $
         it "should be Fail 1" $
           evaluate (Cast (Seq (Func (Iden Bool) (Inject Bool)) (Seq (Func (Iden Bool) (Project Nat (Label 2))) (Fail Bool Nat (Label 1)))) Tru)
-          `shouldBe` Right (Blame (Label 2))
+          `shouldBe` Left (CastError Bool Nat)

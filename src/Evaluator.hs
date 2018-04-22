@@ -76,21 +76,12 @@ module Evaluator (
   unbox :: Term -> StoreEnv -> Either RuntimeError Term
   unbox (Cast c v) store = case typeOf v store of 
     srcTy | srcTy `isConsistent` cstTy  -> Right v
-          | otherwise                   -> Left $ CastError srcTy cstTy 
+          | otherwise                   -> Left $ CastError srcTy cstTy
           where cstTy = snd $ getCoercionTypes c
 
   -- small-step evaluation
   evaluate' :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv)
   evaluate' (t, store) = case t of
-    -- Blame 
-    IsZero (Blame l)                   -> Right (Blame l, store)                      -- (E-BISZERO)
-    Succ (Blame l)                     -> Right (Blame l, store)                      -- (E-BSUCC)
-    Pred (Blame l)                     -> Right (Blame l, store)                      -- (E-BPRED)
-    If (Blame l) t1 t2                 -> Right (Blame l, store)                      -- (E-BIF)
-    App (Blame l) _                    -> Right (Blame l, store)                      -- (E-BAPP1)
-    App _ (Blame l)                    -> Right (Blame l, store)                      -- (E-BAPP2)
-    Cast _ (Blame l)                   -> Right (Blame l, store)                      -- (E-BCAST)
-
     -- Arithmetic
     Pred Zero                          -> Right (Zero, store)                         -- (E-PREDZERO)
     Pred (Succ nv) 
@@ -123,7 +114,7 @@ module Evaluator (
     Cast c (Cast d u)                  -> let t' = Seq d c `Cast` u                   -- (E-CCMP)
                                           in Right (t', store)             
     Cast (Iden _) u                    -> Right (u, store)                            -- (E-CID)
-    Cast (Fail _ _ l) u                -> Right (Blame l, store)                      -- (E-CFAIL)
+    Cast (Fail ty1 ty2 l) u            -> Left $ CastError ty1 ty2                    -- (E-CFAIL)
     Cast c u 
       | isNormalized c                 -> do                                          -- (E-CGROUND)
                                             t' <- unbox t store

@@ -31,8 +31,7 @@ module InterpretSpec where
         it "should be blame 1" $ do 
           let Right expr    = parseExpr "(\\m. ((\\x. (x (succ (succ 0)))) m)) (\\y:Ref Nat. !y)"
           let Right coerced = typeCheck expr 
-          let Right res     = evaluate coerced
-          res `shouldBe` Blame (Label 1)
+          evaluate coerced `shouldBe` Left (CastError Nat (TRef Dyn))
 
       context "(\\m. ((\\x. (x 0)) m)) (\\y:Nat. succ y)" $ 
         it "should be succ 0" $ do 
@@ -45,8 +44,7 @@ module InterpretSpec where
         it "should be blame 1" $ do 
           let Right expr    = parseExpr "(\\m. ((\\x:Nat->Bool. (x 0)) m)) (\\y:Nat. succ y)"
           let Right coerced = typeCheck expr 
-          let Right res     = evaluate coerced
-          res `shouldBe` Blame (Label 1)
+          evaluate coerced `shouldBe` Left (CastError Nat Bool)
 
       context "(\\x. (x 0)) (\\x:Nat. (succ x))" $ 
         it "should be succ 0" $ do 
@@ -71,26 +69,29 @@ module InterpretSpec where
         it "should be blame 1" $ do 
           let Right expr    = parseExpr "((\\m. if (\\x. iszero x) m then (\\x. succ x) else (\\x. pred x)) 0) true"
           let Right coerced = typeCheck expr 
-          let Right res     = evaluate coerced
-          res `shouldBe` Blame (Label 1)
+          evaluate coerced `shouldBe` Left (CastError Bool Nat)
 
       context "(\\x:Nat->Nat. x (x 0)) (\\x. (succ x))" $ 
         it "should be succ (succ 0)" $ do 
           let Right expr    = parseExpr "(\\x:Nat->Nat. x (x 0)) (\\x. (succ x))"
           let Right coerced = typeCheck expr 
-          let Right res     = evaluate coerced
+          let Right res     = evaluate coerced 
           res `shouldBe` Succ (Succ Zero)
 
       context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. iszero y)" $ 
         it "should be blame 1" $ do 
           let Right expr    = parseExpr "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. iszero y)"
           let Right coerced = typeCheck expr 
-          let Right res     = evaluate coerced
-          res `shouldBe` Blame (Label 1)
+          evaluate coerced `shouldBe` Left (CastError Bool Nat)
 
       context "(\\x. succ x) true" $ 
         it "should be blame 1" $ do 
           let Right expr    = parseExpr "(\\x. succ x) true"
           let Right coerced = typeCheck expr 
-          let Right res     = evaluate coerced
-          res `shouldBe` Blame (Label 0)
+          evaluate coerced `shouldBe` Left (CastError Bool Nat)
+
+      context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true" $ 
+        it "should be blame 0" $ do 
+          let Right expr    = parseExpr "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true"
+          let Right coerced = typeCheck expr 
+          evaluate coerced `shouldBe` Left (CastError Bool (Arr Dyn Dyn))

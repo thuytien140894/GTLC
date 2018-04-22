@@ -54,7 +54,6 @@ module Syntax where
     | Loc Int                                                     -- store location
     | Assign Term Term                                            -- assignment (t := t)
     | Cast Coercion Term                                          -- coercion (<c> t)
-    | Blame Label                                                 -- blame assignment
     deriving (Eq, Show) 
   
   data Coercion 
