@@ -57,6 +57,7 @@ module Prettier (
       Deref t'             -> PP.text "!" <> PP.parens (output t')
       Assign t1 t2         -> output t1 <+> PP.text ":=" <+> output t2
       Loc l                -> PP.text "0x" <> PP.int l
+      Cast c t'            -> PP.text "<" <> output c <> PP.text ">" <> output t'
       Lambda ty t' ctx     -> PP.text "\\" 
                               <+> PP.text (head ctx)
                               <+> PP.colon
@@ -71,6 +72,20 @@ module Prettier (
                                                   Lambda{}  -> PP.parens $ output t2
                                                   App _ _   -> PP.parens $ output t2
                                                   _         -> output t2
+
+  -- pretty printing for coercion 
+  instance Pretty Coercion where 
+    output c = case c of 
+      Iden ty            -> PP.text "I"
+      FuncProj l         -> PP.text "Fun?"
+      RefProj l          -> PP.text "Ref?"
+      Project ty l       -> output ty <> PP.text "?"
+      FuncInj            -> PP.text "Fun!"
+      RefInj             -> PP.text "Fun?"
+      Inject ty          -> output ty <> PP.text "!"
+      CRef c1 c2         -> PP.text "Ref" <+> output c1 <+> output c2
+      Func c1 c2         -> output c1 <> PP.text "->" <> output c2
+      Seq c1 c2          -> output c1 <> PP.semi <> output c2
 
   -- pretty printing for type                                            
   instance Pretty Type where 
@@ -110,11 +125,12 @@ module Prettier (
       InvalidLabel l                 -> PP.text "Non-existent label on record:" 
                                         <+> PP.text l
 
+  -- pretty printing for runtime errors
   instance Pretty RuntimeError where 
     output e = case e of 
       InvalidRef l               -> PP.text "Non-existent reference at location" <+> PP.int l
-      CastError srcTy cstTy      -> PP.text "Invalid cast exception:" 
-                                    <+> output srcTy 
+      CastError ty1 ty2          -> PP.text "Invalid cast exception: Unable to cast expression of type" 
+                                    <+> PP.quotes (output ty1) 
                                     <+> PP.text "to" 
-                                    <+> output cstTy
+                                    <+> PP.quotes (output ty2)
       Stuck                      -> PP.text "Evaluation is stuck"         
