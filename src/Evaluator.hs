@@ -7,9 +7,6 @@ module Evaluator (
   import Errors
   import Utils
   
-  import Data.Maybe
-  import Control.Applicative
-  import Data.Functor
   import Data.Either
 
   -- determine if a term is a value
