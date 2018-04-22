@@ -6,6 +6,7 @@ module Utils where
 
   import qualified Data.Map as Map 
   import Data.Maybe
+  import Control.Applicative ((<|>))
 
   -- get the type of a store
   getStoreType :: Store -> Type 
@@ -105,3 +106,38 @@ module Utils where
     Assign t1 t2     -> subs j s t1 `Assign` subs j s t2
     App t1 t2        -> subs j s t1 `App` subs j s t2
     _                -> t -- t is a constant
+
+  -- check if a coercion is to blame
+  blameCoercion :: Label -> Coercion -> Maybe Coercion
+  blameCoercion l c = case c of 
+    Project _ l' | l' == l   -> Just c
+    FuncProj l'
+      | l' == l              -> Just c
+    Fail _ _ l'   
+      | l' == l              -> Just c 
+    RefProj l'               
+      | l' == l              -> Just c 
+    Func c1 c2               -> blameCoercion l c1 <|> blameCoercion l c2
+    CRef c1 c2               -> blameCoercion l c1 <|> blameCoercion l c2
+    Seq c1 c2                -> blameCoercion l c1 <|> blameCoercion l c2
+    _                        -> Nothing 
+
+  -- find the coercion responsible for the blame 
+  blame :: Label -> Term -> Maybe (Coercion, Term)
+  blame l t = case t of 
+    Tru                  -> Nothing 
+    Fls                  -> Nothing 
+    Zero                 -> Nothing 
+    Var{}                -> Nothing
+    Succ t'              -> blame l t'
+    Pred t'              -> blame l t'
+    IsZero t'            -> blame l t'
+    If t1 t2 t3          -> blame l t1 <|> blame l t2 <|> blame l t3
+    Lambda _ t' _        -> blame l t'
+    App t1 t2            -> blame l t1 <|> blame l t2
+    Ref t'               -> blame l t'
+    Deref t'             -> blame l t'
+    Assign t1 t2         -> blame l t1 <|> blame l t2
+    Cast c t'            -> case blameCoercion l c of 
+                              Just c' -> Just (c', t') 
+                              Nothing -> blame l t'

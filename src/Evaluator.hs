@@ -40,7 +40,6 @@ module Evaluator (
     Lambda {}             -> True
     Rec ls                -> areAllVal ls
     Loc _                 -> True
-    Blame _               -> True
     _                     -> False
 
   -- determine if a term is a coerced value
