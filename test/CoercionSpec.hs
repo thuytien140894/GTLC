@@ -67,6 +67,10 @@ module CoercionSpec where
         it "should be (Arr Dyn Dyn, Arr Bool Nat)" $ 
           getCoercionTypes (Func (Inject Bool) (Project Nat (Label 0))) `shouldBe` (Arr Dyn Dyn, Arr Bool Nat)
 
+      context "CRef (Inject Nat) (Project Nat)" $ 
+        it "should be (Ref Dyn, Ref Nat)" $ 
+          getCoercionTypes (CRef (Inject Nat) (Project Nat (Label 0))) `shouldBe` (TRef Dyn,TRef Nat)
+
       context "Seq (Iden Bool) (Project Nat)" $ 
         it "should be (Bool, Nat)" $ 
           getCoercionTypes (Seq (Iden Bool) (Project Nat (Label 0))) `shouldBe` (Bool, Nat)

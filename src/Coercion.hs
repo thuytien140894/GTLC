@@ -134,6 +134,8 @@ module Coercion where
   getCoercionTypes (Func c1 c2)     = (Arr s1 s2, Arr t1 t2)
     where (t1, s1) = getCoercionTypes c1
           (s2, t2) = getCoercionTypes c2
+  getCoercionTypes (CRef _ c)       = (TRef s, TRef t)
+    where (s, t) = getCoercionTypes c
   getCoercionTypes (Seq c1 c2)      = (s1, t2)
     where (s1, s2) = getCoercionTypes c1
           (t1, t2) = getCoercionTypes c2
