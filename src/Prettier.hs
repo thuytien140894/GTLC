@@ -1,5 +1,6 @@
 module Prettier (
-  printPretty, printValid
+  printRes, 
+  printMsg
   ) where
   
   import Syntax
@@ -24,13 +25,26 @@ module Prettier (
                                       where optionalComma = case ys of 
                                                               []    -> PP.empty
                                                               _     -> PP.comma <> outputRcdTypes ys
-                                                               
+
+  -- format an exception message
+  renderException :: String -> Doc
+  renderException = PP.onred . PP.white . PP.bold . PP.text
+
   -- type class for pretty printing
   class Pretty a where 
     output :: a -> Doc
 
-    printPretty :: a -> String
-    printPretty = PP.render . output
+    -- format a valid result
+    renderValid :: a -> Doc 
+    renderValid = PP.green . PP.bold . output
+
+    -- print messages
+    printMsg :: a -> IO ()
+    printMsg = PP.putDoc . output
+
+    -- print a valid result
+    printRes :: a -> IO ()
+    printRes = PP.putDoc . renderValid
 
   -- pretty printing for term
   instance Pretty Term where 

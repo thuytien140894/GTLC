@@ -13,10 +13,14 @@ module Main where
     interpret line = case parseExpr line of 
       Right validExpr  -> case typeCheck validExpr of 
                             Right t  -> case evaluate t of 
-                                          Right res -> putStrLn $ printPretty res
-                                          Left err  -> putStrLn $ printPretty err
-                            Left err -> putStrLn $ printPretty err
+                                          Right res -> printRes res
+                                          Left err  -> printMsg err
+                            Left err -> printMsg err
       Left err         -> print err                       
+
+    -- print new line
+    printNewLine :: IO ()
+    printNewLine = putStrLn "\n"
 
     -- run a read-eval-print loop
     loop :: InputT IO ()
@@ -24,7 +28,7 @@ module Main where
       input <- getInputLine "GTLC> "
       case input of
         Just "exit"  -> return ()
-        Just validIn -> lift (interpret validIn) >> loop
+        Just validIn -> lift (interpret validIn) >> lift printNewLine >> loop
                             
     -- main method for the interpreter
     main :: IO ()
