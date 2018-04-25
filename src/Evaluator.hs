@@ -8,6 +8,7 @@ module Evaluator (
   import Utils
   
   import Data.Either
+  import Data.Maybe (fromJust)
 
   -- determine if a term is a value
   isVal :: Term -> Bool
@@ -73,7 +74,8 @@ module Evaluator (
   unbox :: Term -> StoreEnv -> Either RuntimeError Term
   unbox (Cast c v) store = case typeOf v store of 
     srcTy | srcTy `isConsistent` cstTy  -> Right v
-          | otherwise                   -> Left $ CastError srcTy cstTy
+          | otherwise                   -> let bres  = BlameRes None v
+                                           in Left $ CastError srcTy cstTy bres
           where cstTy = snd $ getCoercionTypes c
 
   -- small-step evaluation
@@ -111,7 +113,7 @@ module Evaluator (
     Cast c (Cast d u)                  -> let t' = Seq d c `Cast` u                   -- (E-CCMP)
                                           in Right (t', store)             
     Cast (Iden _) u                    -> Right (u, store)                            -- (E-CID)
-    Cast (Fail ty1 ty2 l) u            -> Left $ CastError ty1 ty2                    -- (E-CFAIL)
+    Cast (Fail ty1 ty2 l) u            -> Left $ Blame ty1 ty2 l Unit                 -- (E-CFAIL)
     Cast c u 
       | isNormalized c                 -> do                                          -- (E-CGROUND)
                                             t' <- unbox t store
@@ -181,14 +183,19 @@ module Evaluator (
   -- that cannot be evaluated further)
   evaluateToValue :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv)
   evaluateToValue x = case evaluate' x of
-    Right res  -> evaluateToValue res
-    Left Stuck -> Right x 
-    Left err   -> Left err
+    Right res                       -> evaluateToValue res
+    Left Stuck                      -> Right x      
+    Left (Blame ty1 ty2 l _)        -> let t = fst x
+                                       in Left $ Blame ty1 ty2 l t    
+    Left err                        -> Left err
   
   -- evaluate a term
   evaluate :: Term -> Either RuntimeError Term
   evaluate t = case evaluateToValue (t, emptyStore) of
     Right (res, _) 
-      | isUncoercedVal res -> Right res
-      | otherwise          -> Left Stuck -- term is "stuck"
-    Left err               -> Left err
+      | isUncoercedVal res    -> Right res
+      | otherwise             -> Left Stuck -- term is "stuck" 
+    Left (Blame ty1 ty2 l t') -> let cause = fromJust $ blame l t
+                                     bres  = BlameRes cause t'
+                                 in Left $ CastError ty1 ty2 bres  
+    Left err                  -> Left err

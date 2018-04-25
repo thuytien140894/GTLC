@@ -6,9 +6,11 @@ module Prettier (
   import Syntax
   import Types
   import Errors
+  import Utils (getFailedTerm, removeCasts)
 
   import Text.PrettyPrint.ANSI.Leijen (Doc, (<>), (<+>), (<$$>))
   import qualified Text.PrettyPrint.ANSI.Leijen as PP
+  import Data.Maybe (fromJust)
 
   -- format the list of entries in a record
   outputRcdEntries :: [(String, Term)] -> Doc
@@ -28,7 +30,7 @@ module Prettier (
 
   -- format an exception message
   renderException :: String -> Doc
-  renderException = PP.onred . PP.white . PP.bold . PP.text
+  renderException = PP.red . PP.bold . PP.text
 
   -- type class for pretty printing
   class Pretty a where 
@@ -91,10 +93,11 @@ module Prettier (
   instance Pretty Coercion where 
     output c = case c of 
       Iden ty            -> PP.text "I"
-      FuncProj l         -> PP.text "Fun?"
-      RefProj l          -> PP.text "Ref?"
-      Project ty l       -> output ty <> PP.text "?"
+      FuncProj _         -> PP.text "Fun?"
+      RefProj _          -> PP.text "Ref?"
+      Project ty _       -> output ty <> PP.text "?"
       FuncInj            -> PP.text "Fun!"
+      Fail{}             -> PP.text "CastError"
       RefInj             -> PP.text "Fun?"
       Inject ty          -> output ty <> PP.text "!"
       CRef c1 c2         -> PP.text "Ref" <+> output c1 <+> output c2
@@ -115,36 +118,60 @@ module Prettier (
   -- pretty printing for type error
   instance Pretty TypeError where 
     output e = case e of 
-      NotBound t                     -> PP.text "Variable not bound:" 
-                                        <+> output t
-      NotBool ty                     -> PP.text "Conditional expects boolean condition, but got:"
-                                        <+> output ty
-      NotNat ty                      -> PP.text "Numeric expression is expected, but got:"
-                                        <+> output ty
-      Difference ty1 ty2             -> PP.text "Type difference for conditional branches:" 
-                                        <+> output ty1 
-                                        <+> PP.text "vs" 
-                                        <+> output ty2 
-      Mismatch actualTy expectedTy   -> PP.text "Type mismatch for function argument" 
-                                        <$$> PP.nest 4 (PP.text "got:" <+> output actualTy)
-                                        <$$> PP.nest 4 (PP.text "but expected:" <+> output expectedTy)
-      NotFunction t                  -> PP.text "Couldn't apply to non-function expression:" 
-                                        <+> output t
-      IllegalAssign t                -> PP.text "Couldn't assign to non-reference" 
-                                        <+> output t
-      IllegalDeref t                 -> PP.text "Couldn't dereference non-reference"
-                                        <+> output t
-      NotRecord t                    -> PP.text "Couldn't perform projection on non-record expression:" 
-                                        <+> output t
-      InvalidLabel l                 -> PP.text "Non-existent label on record:" 
-                                        <+> PP.text l
+        NotBound t                     -> PP.text "Variable not in scope:" 
+                                          <+> output t
+        NotBool ty                     -> PP.text "Conditional expects boolean condition, but got:"
+                                          <+> output ty
+        NotNat ty                      -> PP.text "Numeric expression is expected, but got:"
+                                          <+> output ty
+        Difference ty1 ty2             -> PP.text "Type difference for conditional branches:" 
+                                          <+> output ty1 
+                                          <+> PP.text "vs" 
+                                          <+> output ty2 
+        Mismatch actualTy expectedTy   -> PP.text "Type mismatch for function argument" 
+                                          <+> PP.indent 4 (PP.text "got:" <+> output actualTy)
+                                          <+> PP.indent 4 (PP.text "but expected:" <+> output expectedTy)
+        NotFunction t                  -> PP.text "Couldn't apply to non-function expression:" 
+                                          <+> output t
+        IllegalAssign t                -> PP.text "Couldn't assign to non-reference" 
+                                          <+> output t
+        IllegalDeref t                 -> PP.text "Couldn't dereference non-reference"
+                                          <+> output t
+        NotRecord t                    -> PP.text "Couldn't perform projection on non-record expression:" 
+                                          <+> output t
+        InvalidLabel l                 -> PP.text "Non-existent label on record:" 
+                                          <+> PP.text l
+
+  instance Pretty BlameRes where 
+    output (BlameRes c t) = case c of 
+      FunArg      -> PP.text "In function argument for expression"
+                     <+> PP.squotes (output t') <+> context
+      FunRet      -> PP.text "In function return value for expression"
+                     <+> PP.squotes (output t') <+> context
+      RefRead     -> PP.text "In reference read for expression"
+                     <+> PP.squotes (output t') <+> context
+      RefWrite    -> PP.text "In reference write for expression"
+                     <+> PP.squotes (output t') <+> context
+      Function    -> PP.text "Converting expression" 
+                     <+> PP.squotes (output t') 
+                     <+> PP.text "to a function type" <+> context
+      Reference   -> PP.text "Converting expression" 
+                     <+> PP.squotes (output t') 
+                     <+> PP.text "to a reference type" <+> context
+      None        -> PP.text "For expression"
+                     <+> PP.squotes (output t') <+> context
+      where t'  = fromJust $ getFailedTerm t
+            context = PP.linebreak <> PP.text "When evaluating" 
+                      <+> PP.squotes (output $ removeCasts t)
 
   -- pretty printing for runtime errors
   instance Pretty RuntimeError where 
     output e = case e of 
       InvalidRef l               -> PP.text "Non-existent reference at location" <+> PP.int l
-      CastError ty1 ty2          -> PP.text "Invalid cast exception: Unable to cast expression of type" 
-                                    <+> PP.quotes (output ty1) 
+      CastError ty1 ty2 res      -> renderException "Invalid runtime cast exception:"
+                                    <+> PP.text "Unable to cast expression of type" 
+                                    <+> PP.squotes (output ty1) 
                                     <+> PP.text "to" 
-                                    <+> PP.quotes (output ty2)
+                                    <+> PP.squotes (output ty2)
+                                    <$$> PP.indent 4 (output res)
       Stuck                      -> PP.text "Evaluation is stuck"         

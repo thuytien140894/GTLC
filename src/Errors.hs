@@ -3,6 +3,19 @@ module Errors where
   import Syntax
   import Types
   
+  data Cause 
+    = FunArg
+    | FunRet
+    | RefRead 
+    | RefWrite
+    | Function 
+    | Reference
+    | None
+    deriving (Eq, Show)
+
+  data BlameRes = BlameRes Cause Term 
+    deriving (Eq, Show)
+
   data TypeError 
     = NotBound Term 
     | Difference Type Type
@@ -17,7 +30,8 @@ module Errors where
     deriving (Eq, Show)
 
   data RuntimeError 
-    = CastError Type Type
+    = CastError Type Type BlameRes
+    | Blame Type Type Label Term
     | InvalidRef Int
     | Stuck
     deriving (Eq, Show)

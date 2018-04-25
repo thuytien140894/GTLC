@@ -7,7 +7,7 @@ module Utils where
   import qualified Data.Map as Map 
   import Data.Maybe
   import Control.Applicative ((<|>))
-
+  
   -- get the type of a store
   getStoreType :: Store -> Type 
   getStoreType (Store (_, ty)) = ty
@@ -106,3 +106,67 @@ module Utils where
     Assign t1 t2     -> subs j s t1 `Assign` subs j s t2
     App t1 t2        -> subs j s t1 `App` subs j s t2
     _                -> t -- t is a constant
+
+  -- retrieve the term with a failed cast
+  getFailedTerm :: Term -> Maybe Term 
+  getFailedTerm t = case t of 
+    Cast Fail{} t'    -> Just t'
+    Succ t'           -> getFailedTerm t'
+    Pred t'           -> getFailedTerm t'
+    IsZero t'         -> getFailedTerm t'
+    If t1 t2 t3       -> getFailedTerm t1 <|> getFailedTerm t2 <|> getFailedTerm t3
+    Lambda _ t' _     -> getFailedTerm t'
+    App t1 t2         -> getFailedTerm t1 <|> getFailedTerm t2
+    Ref t'            -> getFailedTerm t'
+    Deref t'          -> getFailedTerm t'
+    Assign t1 t2      -> getFailedTerm t1 <|> getFailedTerm t2
+    Cast c t'         -> getFailedTerm t'
+    _                 -> Nothing
+
+  -- remove casts from an expression
+  removeCasts :: Term -> Term 
+  removeCasts t = case t of 
+    Cast c t'        -> removeCasts t'
+    Succ t'          -> Succ $ removeCasts t'
+    Pred t'          -> Pred $ removeCasts t'
+    IsZero t'        -> IsZero $ removeCasts t'
+    If t1 t2 t3      -> let t1' = removeCasts t1
+                            t2' = removeCasts t2 
+                            t3' = removeCasts t3
+                        in If t1' t2' t3'
+    Lambda ty t' ctx -> Lambda ty (removeCasts t') ctx
+    Ref t'           -> Ref $ removeCasts t'
+    Deref t'         -> Deref $ removeCasts t'
+    Assign t1 t2     -> removeCasts t1 `Assign` removeCasts t2
+    App t1 t2        -> removeCasts t1 `App` removeCasts t2
+    _                -> t -- t is a constant
+
+  -- check if a coercion is to blame
+  blameCoercion :: Label -> Coercion -> Cause -> Maybe Cause
+  blameCoercion l c cause = case c of 
+    FuncProj l'
+      | l' == l              -> Just Function
+    Fail _ _ l'   
+      | l' == l              -> Just cause
+    RefProj l'               
+      | l' == l              -> Just Reference
+    Project _ l' | l' == l   -> Just cause
+    Func c1 c2               -> blameCoercion l c1 FunArg <|> blameCoercion l c2 FunRet
+    CRef c1 c2               -> blameCoercion l c1 RefRead <|> blameCoercion l c2 RefWrite
+    Seq c1 c2                -> blameCoercion l c1 cause <|> blameCoercion l c2 cause
+    _                        -> Nothing 
+
+  -- find the coercion responsible for the blame 
+  blame :: Label -> Term -> Maybe Cause
+  blame l t = case t of 
+    Succ t'              -> blame l t'
+    Pred t'              -> blame l t'
+    IsZero t'            -> blame l t'
+    If t1 t2 t3          -> blame l t1 <|> blame l t2 <|> blame l t3
+    Lambda _ t' _        -> blame l t'
+    App t1 t2            -> blame l t1 <|> blame l t2
+    Ref t'               -> blame l t'
+    Deref t'             -> blame l t'
+    Assign t1 t2         -> blame l t1 <|> blame l t2
+    Cast c t'            -> blameCoercion l c None <|> blame l t'
+    _                    -> Nothing
