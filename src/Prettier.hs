@@ -6,7 +6,7 @@ module Prettier (
   import Syntax
   import Types
   import Errors
-  import Utils (getFailedTerm, removeCasts)
+  import Utils (getFailedTerm, removeCasts, isSingular)
 
   import Text.PrettyPrint.ANSI.Leijen (Doc, (<>), (<+>), (<$$>))
   import qualified Text.PrettyPrint.ANSI.Leijen as PP
@@ -51,43 +51,46 @@ module Prettier (
   -- pretty printing for term
   instance Pretty Term where 
     output t = case t of 
-      Zero                 -> PP.text "0"
-      Tru                  -> PP.text "true"
-      Fls                  -> PP.text "false"
-      Var _ _ varName      -> PP.text varName
-      Succ Zero            -> PP.text "succ" <+> output Zero
-      Succ t'              -> PP.text "succ" <+> PP.parens (output t')
-      Pred Zero            -> PP.text "pred" <+> output Zero
-      Pred t'              -> PP.text "pred" <+> PP.parens (output t') 
-      IsZero Zero          -> PP.text "iszero" <+> output Zero
-      IsZero t'            -> PP.text "iszero" <+> PP.parens (output t') 
-      If t1 t2 t3          -> PP.text "if" 
-                              <+> output t1  
-                              <+> PP.text "then"
-                              <+> output t2
-                              <+> PP.text "else"
-                              <+> output t3
-      Rec ls               -> PP.braces (outputRcdEntries ls)
-      Proj rcd l           -> output rcd <> PP.text "." <> PP.text l
-      Ref t'               -> PP.text "*" <> PP.parens (output t')
-      Deref t'             -> PP.text "!" <> PP.parens (output t')
-      Assign t1 t2         -> output t1 <+> PP.text ":=" <+> output t2
-      Loc l                -> PP.text "0x" <> PP.int l
-      Cast c t'            -> PP.angles (output c) <> output t'
-      Lambda ty t' ctx     -> PP.text "\\" 
-                              <+> PP.text (head ctx)
-                              <+> PP.colon
-                              <+> output ty
-                              <+> PP.text "."
-                              <+> output t'
-      App t1 t2            -> case t1 of 
-                                Lambda {} -> PP.parens (output t1) <+> sndTerm
-                                App _ _   -> PP.parens (output t1) <+> sndTerm
-                                _         -> output t1 <+> sndTerm
-                                where sndTerm = case t2 of 
-                                                  Lambda{}  -> PP.parens $ output t2
-                                                  App _ _   -> PP.parens $ output t2
-                                                  _         -> output t2
+      Zero                         -> PP.text "0"
+      Tru                          -> PP.text "true"
+      Fls                          -> PP.text "false"
+      Var _ _ varName              -> PP.text varName
+      Succ t' | isSingular t'      -> PP.text "succ" <+> output t'
+      Succ t'                      -> PP.text "succ" <+> PP.parens (output t')
+      Pred t' | isSingular t'      -> PP.text "pred" <+> output t'
+      Pred t'                      -> PP.text "pred" <+> PP.parens (output t') 
+      IsZero t' | isSingular t'    -> PP.text "iszero" <+> output t'
+      IsZero t'                    -> PP.text "iszero" <+> PP.parens (output t') 
+      If t1 t2 t3                  -> PP.text "if" 
+                                      <+> output t1  
+                                      <+> PP.text "then"
+                                      <+> output t2
+                                      <+> PP.text "else"
+                                      <+> output t3
+      Rec ls                       -> PP.braces (outputRcdEntries ls)
+      Proj rcd l                   -> output rcd <> PP.text "." <> PP.text l
+      Ref t' | isSingular t'       -> PP.text "ref" <+> output t'
+      Ref t'                       -> PP.text "ref" <> PP.parens (output t')
+      Deref t' | isSingular t'     -> PP.text "!" <> output t'
+      Deref t'                     -> PP.text "!" <> PP.parens (output t')
+      Assign t1 t2                 -> output t1 <+> PP.text ":=" <+> output t2
+      Loc l                        -> PP.text "0x" <> PP.int l
+      Cast c t' | isSingular t'    -> PP.angles (output c) <> output t'
+      Cast c t'                    -> PP.angles (output c) <> PP.parens (output t')
+      Lambda ty t' ctx             -> PP.text "\\" 
+                                      <> PP.text (head ctx)
+                                      <> PP.colon
+                                      <> output ty
+                                      <> PP.text "."
+                                      <+> output t'
+      App t1 t2                    -> case t1 of 
+                                       Lambda {} -> PP.parens (output t1) <+> sndTerm
+                                       App _ _   -> PP.parens (output t1) <+> sndTerm
+                                       _         -> output t1 <+> sndTerm
+                                       where sndTerm = case t2 of 
+                                                         Lambda{}  -> PP.parens $ output t2
+                                                         App _ _   -> PP.parens $ output t2
+                                                         _         -> output t2
 
   -- pretty printing for coercion 
   instance Pretty Coercion where 
@@ -117,7 +120,7 @@ module Prettier (
 
   -- pretty printing for type error
   instance Pretty TypeError where 
-    output e = case e of 
+    output e = renderException "Type error:" <+> case e of 
         NotBound t                     -> PP.text "Variable not in scope:" 
                                           <+> output t
         NotBool ty                     -> PP.text "Conditional expects boolean condition, but got:"
@@ -129,15 +132,15 @@ module Prettier (
                                           <+> PP.text "vs" 
                                           <+> output ty2 
         Mismatch actualTy expectedTy   -> PP.text "Type mismatch for function argument" 
-                                          <+> PP.indent 4 (PP.text "got:" <+> output actualTy)
-                                          <+> PP.indent 4 (PP.text "but expected:" <+> output expectedTy)
-        NotFunction t                  -> PP.text "Couldn't apply to non-function expression:" 
+                                          <$$> PP.indent 4 (PP.text "got:" <+> output actualTy)
+                                          <$$> PP.indent 4 (PP.text "but expected:" <+> output expectedTy)
+        NotFunction t                  -> PP.text "Cannot apply to non-function expression:" 
                                           <+> output t
-        IllegalAssign t                -> PP.text "Couldn't assign to non-reference" 
+        IllegalAssign t                -> PP.text "Cannot assign to non-reference expression:" 
                                           <+> output t
-        IllegalDeref t                 -> PP.text "Couldn't dereference non-reference"
+        IllegalDeref t                 -> PP.text "Cannot dereference non-reference expression:"
                                           <+> output t
-        NotRecord t                    -> PP.text "Couldn't perform projection on non-record expression:" 
+        NotRecord t                    -> PP.text "Cannot perform projection on non-record expression:" 
                                           <+> output t
         InvalidLabel l                 -> PP.text "Non-existent label on record:" 
                                           <+> PP.text l
@@ -145,33 +148,36 @@ module Prettier (
   instance Pretty BlameRes where 
     output (BlameRes c t) = case c of 
       FunArg      -> PP.text "In function argument for expression"
-                     <+> PP.squotes (output t') <+> context
+                     <+> blamed <+> context
       FunRet      -> PP.text "In function return value for expression"
-                     <+> PP.squotes (output t') <+> context
+                     <+> blamed <+> context
       RefRead     -> PP.text "In reference read for expression"
-                     <+> PP.squotes (output t') <+> context
+                     <+> blamed <+> context
       RefWrite    -> PP.text "In reference write for expression"
-                     <+> PP.squotes (output t') <+> context
+                     <+> blamed <+> context
       Function    -> PP.text "Converting expression" 
-                     <+> PP.squotes (output t') 
+                     <+> blamed
                      <+> PP.text "to a function type" <+> context
       Reference   -> PP.text "Converting expression" 
-                     <+> PP.squotes (output t') 
+                     <+> blamed
                      <+> PP.text "to a reference type" <+> context
       None        -> PP.text "For expression"
-                     <+> PP.squotes (output t') <+> context
-      where t'  = fromJust $ getFailedTerm t
+                     <+> blamed <+> context
+      where t'      = fromJust $ getFailedTerm t
+            blamed  = PP.squotes (output t') 
             context = PP.linebreak <> PP.text "When evaluating" 
                       <+> PP.squotes (output $ removeCasts t)
 
   -- pretty printing for runtime errors
   instance Pretty RuntimeError where 
     output e = case e of 
-      InvalidRef l               -> PP.text "Non-existent reference at location" <+> PP.int l
-      CastError ty1 ty2 res      -> renderException "Invalid runtime cast exception:"
+      InvalidRef l               -> renderException "Exception:" 
+                                    <+> PP.text "Non-existent reference at location" 
+                                    <+> PP.int l
+      CastError ty1 ty2 res      -> renderException "Invalid cast exception:"
                                     <+> PP.text "Unable to cast expression of type" 
                                     <+> PP.squotes (output ty1) 
                                     <+> PP.text "to" 
                                     <+> PP.squotes (output ty2)
                                     <$$> PP.indent 4 (output res)
-      Stuck                      -> PP.text "Evaluation is stuck"         
+      Stuck                      -> renderException "Exception:" <+> PP.text "Evaluation is stuck"         

@@ -107,6 +107,14 @@ module Utils where
     App t1 t2        -> subs j s t1 `App` subs j s t2
     _                -> t -- t is a constant
 
+  -- check if a term is singular (constants and variables)
+  isSingular :: Term -> Bool
+  isSingular Var{} = True
+  isSingular Zero  = True
+  isSingular Tru   = True 
+  isSingular Fls   = True
+  isSingular _     = False 
+
   -- retrieve the term with a failed cast
   getFailedTerm :: Term -> Maybe Term 
   getFailedTerm t = case t of 
