@@ -1,13 +1,13 @@
 module Prettier (
-  printPretty
+  printPretty, printValid
   ) where
   
   import Syntax
   import Types
   import Errors
 
-  import Text.PrettyPrint (Doc, (<>), (<+>), ($$))
-  import qualified Text.PrettyPrint as PP
+  import Text.PrettyPrint.ANSI.Leijen (Doc, (<>), (<+>), (<$$>))
+  import qualified Text.PrettyPrint.ANSI.Leijen as PP
 
   -- format the list of entries in a record
   outputRcdEntries :: [(String, Term)] -> Doc
@@ -57,7 +57,7 @@ module Prettier (
       Deref t'             -> PP.text "!" <> PP.parens (output t')
       Assign t1 t2         -> output t1 <+> PP.text ":=" <+> output t2
       Loc l                -> PP.text "0x" <> PP.int l
-      Cast c t'            -> PP.text "<" <> output c <> PP.text ">" <> output t'
+      Cast c t'            -> PP.angles (output c) <> output t'
       Lambda ty t' ctx     -> PP.text "\\" 
                               <+> PP.text (head ctx)
                               <+> PP.colon
@@ -112,8 +112,8 @@ module Prettier (
                                         <+> PP.text "vs" 
                                         <+> output ty2 
       Mismatch actualTy expectedTy   -> PP.text "Type mismatch for function argument" 
-                                        $$ PP.nest 4 (PP.text "got:" <+> output actualTy)
-                                        $$ PP.nest 4 (PP.text "but expected:" <+> output expectedTy)
+                                        <$$> PP.nest 4 (PP.text "got:" <+> output actualTy)
+                                        <$$> PP.nest 4 (PP.text "but expected:" <+> output expectedTy)
       NotFunction t                  -> PP.text "Couldn't apply to non-function expression:" 
                                         <+> output t
       IllegalAssign t                -> PP.text "Couldn't assign to non-reference" 
