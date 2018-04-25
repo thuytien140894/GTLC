@@ -12,7 +12,7 @@ module TypeChecker (
   -- two types are compatible if either they are subtypes of one another or 
   -- consistent
   isCompatible :: Type -> Type -> Bool
-  isCompatible ty1 ty2 = isSubtype ty1 ty2 || isConsistent ty1 ty2 
+  isCompatible s t = isSubtype s t || isConsistent s t 
 
   -- find the type for a record
   typeCheckRcd :: Term -> Label -> Either TypeError (Term, Type, Label)
@@ -25,8 +25,8 @@ module TypeChecker (
   -- typecheck a record field
   typeCheckField :: (Term, Type, Label) -> String -> Either TypeError (Term, Type, Label)
   typeCheckField (_, TRec [], _) f                           = Left $ InvalidLabel f 
-  typeCheckField (Rec ((_, t1) : xs), TRec ((f1, ty1) : ys), l) f 
-    | f1 == f                                                = Right (t1, ty1, l)
+  typeCheckField (Rec ((_, t1) : xs), TRec ((f1, s1) : ys), l) f 
+    | f1 == f                                                = Right (t1, s1, l)
     | otherwise                                              = typeCheckField (Rec xs, TRec ys, l) f
 
   -- typecheck a conditional
@@ -57,13 +57,13 @@ module TypeChecker (
   -- typecheck an assignment 
   typeCheckAssignment :: Term -> Term -> Label -> Either TypeError (Term, Type, Label)
   typeCheckAssignment e1 e2 l = do
-    (t1, ty1, l1) <- typeCheck' e1 l
-    (t2, ty2, l2) <- typeCheck' e2 l1
-    case ty1 of 
-      TRef s      -> let (c, l3) = coerce ty2 s l2
+    (t1, s1, l1) <- typeCheck' e1 l
+    (t2, s2, l2) <- typeCheck' e2 l1
+    case s1 of 
+      TRef s      -> let (c, l3) = coerce s2 s l2
                      in Right (t1 `Assign` Cast c t2, s, l3)
       Dyn         -> let (c1, l3) = (RefProj l2, increment l2)
-                         (c2, l4) = coerce ty2 Dyn l3
+                         (c2, l4) = coerce s2 Dyn l3
                      in Right (Cast c1 t1 `Assign` Cast c2 t2, Dyn, l4)
       _           -> Left $ IllegalAssign e1
 

@@ -23,7 +23,7 @@ module Prettier (
   -- format the list of entry types in a record                                                           
   outputRcdTypes :: [(String, Type)] -> Doc
   outputRcdTypes []                 = PP.empty
-  outputRcdTypes ((l1, ty1) : ys)   = PP.text l1 <> PP.colon <> output ty1 <> optionalComma
+  outputRcdTypes ((l1, s1) : ys)    = PP.text l1 <> PP.colon <> output s1 <> optionalComma
                                       where optionalComma = case ys of 
                                                               []    -> PP.empty
                                                               _     -> PP.comma <> outputRcdTypes ys
@@ -115,7 +115,7 @@ module Prettier (
       Nat                 -> PP.text "Nat"
       Bool                -> PP.text "Bool"
       TRef ty'            -> PP.text "Ref" <+> output ty'
-      Arr ty1 ty2         -> output ty1 <> PP.text "->" <> output ty2
+      Arr s1 s2           -> output s1 <> PP.text "->" <> output s2
       TRec ls             -> PP.braces $ outputRcdTypes ls
 
   -- pretty printing for type error
@@ -127,10 +127,10 @@ module Prettier (
                                           <+> output ty
         NotNat ty                      -> PP.text "Numeric expression is expected, but got:"
                                           <+> output ty
-        Difference ty1 ty2             -> PP.text "Type difference for conditional branches:" 
-                                          <+> output ty1 
+        Difference s1 s2               -> PP.text "Type difference for conditional branches:" 
+                                          <+> output s1 
                                           <+> PP.text "vs" 
-                                          <+> output ty2 
+                                          <+> output s2 
         Mismatch actualTy expectedTy   -> PP.text "Type mismatch for function argument" 
                                           <$$> PP.indent 4 (PP.text "got:" <+> output actualTy)
                                           <$$> PP.indent 4 (PP.text "but expected:" <+> output expectedTy)
@@ -174,10 +174,10 @@ module Prettier (
       InvalidRef l               -> renderException "Exception:" 
                                     <+> PP.text "Non-existent reference at location" 
                                     <+> PP.int l
-      CastError ty1 ty2 res      -> renderException "Invalid cast exception:"
+      CastError s1 s2 res        -> renderException "Invalid cast exception:"
                                     <+> PP.text "Unable to cast expression of type" 
-                                    <+> PP.squotes (output ty1) 
+                                    <+> PP.squotes (output s1) 
                                     <+> PP.text "to" 
-                                    <+> PP.squotes (output ty2)
+                                    <+> PP.squotes (output s2)
                                     <$$> PP.indent 4 (output res)
       Stuck                      -> renderException "Exception:" <+> PP.text "Evaluation is stuck"         

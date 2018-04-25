@@ -33,7 +33,7 @@ module Utils where
   -- update the value at a store location
   updateStore :: StoreEnv -> Int -> Term -> Either RuntimeError (Term, StoreEnv) 
   updateStore store l t = case store `lookUp` l of 
-                            Just (Store (_, ty)) -> let v = Store (t, ty) 
+                            Just (Store (_, s))  -> let v = Store (t, s) 
                                                     in Right (t, insertRef store l v) 
                             Nothing              -> Left $ InvalidRef l
 

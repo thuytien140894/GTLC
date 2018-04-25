@@ -113,7 +113,7 @@ module Evaluator (
     Cast c (Cast d u)                  -> let t' = Seq d c `Cast` u                   -- (E-CCMP)
                                           in Right (t', store)             
     Cast (Iden _) u                    -> Right (u, store)                            -- (E-CID)
-    Cast (Fail ty1 ty2 l) u            -> Left $ Blame ty1 ty2 l Unit                 -- (E-CFAIL)
+    Cast (Fail s1 s2 l) u              -> Left $ Blame s1 s2 l Unit                 -- (E-CFAIL)
     Cast c u 
       | isNormalized c                 -> do                                          -- (E-CGROUND)
                                             t' <- unbox t store
@@ -185,8 +185,7 @@ module Evaluator (
   evaluateToValue x = case evaluate' x of
     Right res                       -> evaluateToValue res
     Left Stuck                      -> Right x      
-    Left (Blame ty1 ty2 l _)        -> let t = fst x
-                                       in Left $ Blame ty1 ty2 l t    
+    Left (Blame s1 s2 l _)          -> Left $ Blame s1 s2 l $ fst x    
     Left err                        -> Left err
   
   -- evaluate a term
@@ -195,7 +194,7 @@ module Evaluator (
     Right (res, _) 
       | isUncoercedVal res    -> Right res
       | otherwise             -> Left Stuck -- term is "stuck" 
-    Left (Blame ty1 ty2 l t') -> let cause = fromJust $ blame l t
+    Left (Blame s1 s2 l t')   -> let cause = fromJust $ blame l t
                                      bres  = BlameRes cause t'
-                                 in Left $ CastError ty1 ty2 bres  
+                                 in Left $ CastError s1 s2 bres  
     Left err                  -> Left err

@@ -26,9 +26,9 @@ module Subtype (
   isSubset :: [TEntry] -> [TEntry] -> Bool
   isSubset _ []                               = True
   isSubset [] _                               = False
-  isSubset ((l1, ty1) : xs) ((l2, ty2) : ys) 
-    | l1 == l2                                = ty1 `isSubtype` ty2 && xs `isSubset` ys
-    | otherwise                               = xs `isSubset` ((l2, ty2) : ys)
+  isSubset ((l1, s1) : xs) ((l2, s2) : ys) 
+    | l1 == l2                                = s1 `isSubtype` s2 && xs `isSubset` ys
+    | otherwise                               = xs `isSubset` ((l2, s2) : ys)
   
   -- check if a type is a subtype of another
   isSubtype :: Type -> Type -> Bool
