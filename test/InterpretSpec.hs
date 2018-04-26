@@ -65,7 +65,7 @@ module InterpretSpec where
       context "(\\x:Nat->Bool. x 0) (\\x:Nat. x)" $ 
         it "should be Type Mismatch" $ do 
           let Right expr    = parseExpr "(\\x:Nat->Bool. x 0) (\\x:Nat. x)"
-          typeCheck expr `shouldBe` Left (FunMismatch (Arr Nat Nat) (Arr Nat Bool))
+          typeCheck expr `shouldBe` Left (FunMismatch (Arr Nat Nat) (Arr Nat Bool) (App (Lambda (Arr Nat Bool) (App (Var 0 (Arr Nat Bool) "x") Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])))
 
       context "((\\m. if (\\x. iszero x) m then (\\x. succ x) else (\\x. pred x)) 0) true" $ 
         it "should be blame 1" $ do 
