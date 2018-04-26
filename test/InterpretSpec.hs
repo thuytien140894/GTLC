@@ -103,8 +103,15 @@ module InterpretSpec where
           err `shouldBe` CastError Bool (Arr Dyn Dyn) (BlameRes Function (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Fail Bool (Arr Dyn Dyn) (Label 0)) Tru)))
       
       context "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Bool. !y)" $ 
-        it "should be CastError Bool Fun?" $ do 
+        it "should be CastError" $ do 
           let Right expr    = parseExpr "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Bool. !y)"
           let Right coerced = typeCheck expr 
           let Left err      = evaluate coerced
           err `shouldBe` CastError (TRef Bool) (TRef Nat) (BlameRes RefWrite (Cast (Inject Bool) (App (Lambda (TRef Bool) (Deref (Var 0 (TRef Bool) "y")) ["y"]) (Cast (Fail (TRef Bool) (TRef Nat) (Label 1)) (Loc 0)))))
+
+      context "(\\m. ((\\x. x := succ 0) m)) ref true" $ 
+        it "should be 0" $ do 
+          let Right expr    = parseExpr "(\\m. ((\\x. x := succ 0) m)) ref true"
+          let Right coerced = typeCheck expr 
+          let Left err      = evaluate coerced
+          err `shouldBe` CastError Nat Bool (BlameRes RefWrite (Cast (Inject Bool) (Assign (Loc 0) (Cast (Fail Nat Bool (Label 1)) (Succ Zero)))))

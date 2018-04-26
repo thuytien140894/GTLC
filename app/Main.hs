@@ -43,6 +43,15 @@ module Main where
       test "(\\x. x:=succ 0) ref 0"
       test "(\\x:Ref Bool. !x) ref 0"
       test "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Bool. !y)"
+      test "(\\m. ((\\x. (ref (succ (succ 0))) := x) m)) 0"
+      test "(\\m. ((\\x. (ref (succ (succ 0))) := x) m)) true"
+      test "(\\m. ((\\x. x := succ 0) m)) ref 0"
+      test "(\\m. ((\\x. x := true) m)) ref 0"
+      test "(\\m. ((\\x. x := succ 0) m)) ref true"
+      test "(\\m. ((\\x:Ref Nat. x := succ 0) m)) ref true"
+      test "(\\m. ((\\x. !x) m)) ref true"
+      test "(\\m. ((\\x. !x) m)) 0"
+      test "(\\y. (\\x:Ref Bool. x := 0) ref (iszero y)) 0"
 
     -- print new line
     newLine :: InputT IO ()
