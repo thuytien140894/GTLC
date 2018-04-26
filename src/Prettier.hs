@@ -177,7 +177,7 @@ module Prettier (
       CastError s1 s2 res        -> renderException "Invalid cast exception:"
                                     <+> PP.text "Unable to cast expression of type" 
                                     <+> PP.squotes (output s1) 
-                                    <+> PP.text "to" 
+                                    <+> PP.text "to type" 
                                     <+> PP.squotes (output s2)
                                     <$$> PP.indent 4 (output res)
       Stuck                      -> renderException "Exception:" <+> PP.text "Evaluation is stuck"         

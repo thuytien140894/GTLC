@@ -160,7 +160,7 @@ module Utils where
       | l' == l              -> Just Reference
     Project _ l' | l' == l   -> Just cause
     Func c1 c2               -> blameCoercion l c1 FunArg <|> blameCoercion l c2 FunRet
-    CRef c1 c2               -> blameCoercion l c1 RefRead <|> blameCoercion l c2 RefWrite
+    CRef c1 c2               -> blameCoercion l c1 RefWrite <|> blameCoercion l c2 RefRead
     Seq c1 c2                -> blameCoercion l c1 cause <|> blameCoercion l c2 cause
     _                        -> Nothing 
 
