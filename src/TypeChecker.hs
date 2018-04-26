@@ -64,7 +64,7 @@ module TypeChecker (
         | s2 == s                 -> Right (t1 `Assign` t2, s, l2)
         | s2 `isConsistent` s     -> let (c, l3) = coerce s2 s l2
                                      in Right (t1 `Assign` Cast c t2, s, l3)
-        | otherwise               -> Left $ AssignMismatch s2 s
+        | otherwise               -> Left $ AssignMismatch s2 s (Assign e1 e2)
       Dyn                         -> let (c1, l3) = (RefProj l2, increment l2)
                                          (c2, l4) = coerce s2 Dyn l3
                                      in Right (Cast c1 t1 `Assign` Cast c2 t2, Dyn, l4)
@@ -83,7 +83,7 @@ module TypeChecker (
         | argTy `isSubtype` paramTy    -> Right (App t1 t2, retTy, l2)
         | argTy `isConsistent` paramTy -> let (c, l3) = coerce argTy paramTy l2 
                                           in Right (App t1 $ Cast c t2, retTy, l3)
-        | otherwise                    -> Left $ FunMismatch argTy paramTy
+        | otherwise                    -> Left $ FunMismatch argTy paramTy (App e1 e2)
       _                                -> Left $ NotFunction e1                                                   
 
   -- typecheck the source term and insert cast if needed

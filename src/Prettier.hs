@@ -122,7 +122,7 @@ module Prettier (
   instance Pretty TypeError where 
     output e = renderException "Type error:" <+> case e of 
         NotBound t                           -> PP.text "Variable not in scope:" 
-                                                <+> output t
+                                                <+> PP.squotes (output t)
         NotBool ty                           -> PP.text "Conditional expects boolean condition, but got:"
                                                 <+> output ty
         NotNat ty                            -> PP.text "Numeric expression is expected, but got:"
@@ -131,22 +131,24 @@ module Prettier (
                                                 <+> output s1 
                                                 <+> PP.text "vs" 
                                                 <+> output s2 
-        FunMismatch actualTy expectedTy      -> PP.text "Type mismatch for function argument" 
+        FunMismatch actualTy expectedTy t    -> PP.text "Type mismatch for function application:" 
+                                                <+> PP.squotes (output t) 
                                                 <$$> PP.indent 4 (PP.text "got:" <+> output actualTy)
                                                 <$$> PP.indent 4 (PP.text "but expected:" <+> output expectedTy)
         NotFunction t                        -> PP.text "Cannot apply to non-function expression:" 
-                                                <+> output t
+                                                <+> PP.squotes (output t)
         IllegalAssign t                      -> PP.text "Cannot assign to non-reference expression:" 
-                                                <+> output t
-        AssignMismatch actualTy expectedTy   -> PP.text "Type mismatch for assignment" 
+                                                <+> PP.squotes (output t)
+        AssignMismatch actualTy expectedTy t -> PP.text "Type mismatch for assignment:" 
+                                                <+> PP.squotes (output t) 
                                                 <$$> PP.indent 4 (PP.text "got:" <+> output actualTy)
                                                 <$$> PP.indent 4 (PP.text "but expected:" <+> output expectedTy)
         IllegalDeref t                       -> PP.text "Cannot dereference non-reference expression:"
-                                                <+> output t
+                                                <+> PP.squotes (output t)
         NotRecord t                          -> PP.text "Cannot perform projection on non-record expression:" 
-                                                <+> output t
+                                                <+> PP.squotes (output t)
         InvalidLabel l                       -> PP.text "Non-existent label on record:" 
-                                                <+> PP.text l
+                                                <+> PP.squotes (PP.text l)
 
   instance Pretty BlameRes where 
     output (BlameRes c t) = case c of 

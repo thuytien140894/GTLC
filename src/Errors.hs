@@ -19,12 +19,12 @@ module Errors where
   data TypeError 
     = NotBound Term 
     | Difference Type Type
-    | FunMismatch Type Type
+    | FunMismatch Type Type Term
     | NotBool Type
     | NotNat Type
     | NotFunction Term
     | IllegalAssign Term
-    | AssignMismatch Type Type
+    | AssignMismatch Type Type Term
     | IllegalDeref Term
     | NotRecord Term
     | InvalidLabel String
