@@ -1,7 +1,5 @@
 module Lexer where
   
-  import Syntax
-
   import Text.Parsec
   import Text.Parsec.String (Parser)
   import Text.Parsec.Language (emptyDef)
