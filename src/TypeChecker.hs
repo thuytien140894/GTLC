@@ -55,21 +55,24 @@ module TypeChecker (
       _                          -> Left $ NotBool cond
 
   -- typecheck an assignment 
-  typeCheckAssignment :: Term -> Term -> Label -> Either TypeError (Term, Type, Label)
-  typeCheckAssignment e1 e2 l = do
+  typeCheckAssignment :: Term -> Label -> Either TypeError (Term, Type, Label)
+  typeCheckAssignment (Assign e1 e2) l = do
     (t1, s1, l1) <- typeCheck' e1 l
     (t2, s2, l2) <- typeCheck' e2 l1
     case s1 of 
-      TRef s      -> let (c, l3) = coerce s2 s l2
-                     in Right (t1 `Assign` Cast c t2, s, l3)
-      Dyn         -> let (c1, l3) = (RefProj l2, increment l2)
-                         (c2, l4) = coerce s2 Dyn l3
-                     in Right (Cast c1 t1 `Assign` Cast c2 t2, Dyn, l4)
-      _           -> Left $ IllegalAssign e1
+      TRef s 
+        | s2 == s                 -> Right (t1 `Assign` t2, s, l2)
+        | s2 `isConsistent` s     -> let (c, l3) = coerce s2 s l2
+                                     in Right (t1 `Assign` Cast c t2, s, l3)
+        | otherwise               -> Left $ AssignMismatch s2 s
+      Dyn                         -> let (c1, l3) = (RefProj l2, increment l2)
+                                         (c2, l4) = coerce s2 Dyn l3
+                                     in Right (Cast c1 t1 `Assign` Cast c2 t2, Dyn, l4)
+      _                           -> Left $ IllegalAssign e1
 
   -- typecheck an application
-  typeCheckApp :: Term -> Term -> Label -> Either TypeError (Term, Type, Label)
-  typeCheckApp e1 e2 l = do                                            
+  typeCheckApp :: Term -> Label -> Either TypeError (Term, Type, Label)
+  typeCheckApp (App e1 e2) l = do                                            
     (t1, funcTy, l1)  <- typeCheck' e1 l  
     (t2, argTy, l2)   <- typeCheck' e2 l1
     case funcTy of 
@@ -80,8 +83,7 @@ module TypeChecker (
         | argTy `isSubtype` paramTy    -> Right (App t1 t2, retTy, l2)
         | argTy `isConsistent` paramTy -> let (c, l3) = coerce argTy paramTy l2 
                                           in Right (App t1 $ Cast c t2, retTy, l3)
-        | otherwise                    -> Left $ Mismatch argTy paramTy
-        where (c, l3) = coerce argTy paramTy l2
+        | otherwise                    -> Left $ FunMismatch argTy paramTy
       _                                -> Left $ NotFunction e1                                                   
 
   -- typecheck the source term and insert cast if needed
@@ -142,13 +144,13 @@ module TypeChecker (
                               TRef s  -> Right (Deref t', s, l1)
                               _       -> Left $ IllegalDeref e' 
                               
-    Assign e1 e2       -> typeCheckAssignment e1 e2 l                           -- (C-ASSIGN1 + C-ASSIGN2)
+    Assign e1 e2       -> typeCheckAssignment e l                               -- (C-ASSIGN1 + C-ASSIGN2)
 
     Lambda ty e' ctx   -> do                                                    -- (C-ABS)
                             (t', retTy, l') <- typeCheck' e' l           
                             Right (Lambda ty t' ctx, Arr ty retTy, l')  
 
-    App e1 e2          -> typeCheckApp e1 e2 l                                  -- (C-APP1 + C-APP2)
+    App e1 e2          -> typeCheckApp e l                                      -- (C-APP1 + C-APP2)
         
   -- insert casts into a term
   typeCheck :: Term -> Either TypeError Term 

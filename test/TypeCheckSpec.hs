@@ -33,12 +33,12 @@ module TypeCheckSpec where
       context "(\\x:Bool->Nat. succ 0) (\\x:Nat. x)" $
         it "should be (\\x:Bool->Nat. succ <Identity>0) <Fail>(\\x:Nat. x)" $
           typeCheck (App (Lambda (Arr Bool Nat) (Succ Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])) `shouldBe` 
-          Left (Mismatch (Arr Nat Nat) (Arr Bool Nat))
+          Left (FunMismatch (Arr Nat Nat) (Arr Bool Nat))
 
       context "(\\x:Bool. x) 0" $
         it "should be Mismatch" $
           typeCheck (App (Lambda Bool (Var 0 Bool "x") ["x"]) Zero)
-          `shouldBe` Left (Mismatch Nat Bool)
+          `shouldBe` Left (FunMismatch Nat Bool)
 
       context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. succ y)" $
         it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Fun?>m)) <Fun!><Nat?->Nat!>(\\y:Nat. succ y)" $
