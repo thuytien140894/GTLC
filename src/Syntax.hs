@@ -2,66 +2,71 @@
 
 module Syntax where
 
-  import Types
+    import Type
 
-  import Data.Map (Map)
-  import qualified Data.Map as Map (null, empty)
+    import Data.Map (Map)
+    import qualified Data.Map as Map (null, empty)
 
-  type Entry = (String, Term)
+    -- | Entry in a record.
+    type Entry = (String, Term)
 
-  newtype Label = Label Int
-    deriving (Eq, Show)
+    -- | Blame label.
+    newtype Label = Label Int
+                    deriving (Eq, Show)
 
-  newtype Store = Store (Term, Type)
-    deriving (Eq, Show)
+    -- | Entry in a store environment.
+    newtype Store = Store (Term, Type)
+                    deriving (Eq, Show)
 
-  newtype StoreEnv = StoreEnv (Map Int Store)
-    deriving (Eq, Show)
+    -- | Store environement.
+    newtype StoreEnv = StoreEnv (Map Int Store)
+                       deriving (Eq, Show)
 
-  emptyStore :: StoreEnv
-  emptyStore = StoreEnv Map.empty
+    -- | Empty store environment.
+    emptyStore :: StoreEnv
+    emptyStore = StoreEnv Map.empty
 
-  pattern FuncInj :: Coercion 
-  pattern FuncInj = Inject (Arr Dyn Dyn)
+    -- | Fun!
+    pattern FuncInj :: Coercion 
+    pattern FuncInj = Inject (Arr Dyn Dyn)
 
-  pattern FuncProj :: Label -> Coercion 
-  pattern FuncProj l = Project (Arr Dyn Dyn) l
+    -- | Fun?
+    pattern FuncProj :: Label -> Coercion 
+    pattern FuncProj l = Project (Arr Dyn Dyn) l
 
-  pattern RefInj :: Coercion
-  pattern RefInj = Inject (TRef Dyn)
+    -- | Ref!
+    pattern RefInj :: Coercion
+    pattern RefInj = Inject (TRef Dyn)
 
-  pattern RefProj :: Label -> Coercion
-  pattern RefProj l = Project (TRef Dyn) l
-  
-  data Term 
-    = Unit                                                        -- identity term 
-    | Zero                                                        -- 0
-    | Tru                                                         -- true
-    | Fls                                                         -- false
-    -- | Var {index :: Int, ty :: Type, name :: String}              -- variable
-    | Var Int Type String
-    | If Term Term Term                                           -- if t then t else t
-    | Succ Term                                                   -- succ t 
-    | Pred Term                                                   -- pred t
-    | IsZero Term                                                 -- iszero t
-    | Rec [Entry]                                                 -- record
-    | Proj Term String                                            -- projection
-    -- | Lambda {varTy :: Type, body :: Term, boundVars :: [String]} -- abstraction
-    | Lambda Type Term [String]
-    | App Term Term                                               -- application 
-    | Ref Term                                                    -- reference creation
-    | Deref Term                                                  -- dereference (!t)
-    | Loc Int                                                     -- store location
-    | Assign Term Term                                            -- assignment (t := t)
-    | Cast Coercion Term                                          -- coercion (<c> t)
-    deriving (Eq, Show) 
-  
-  data Coercion 
-    = Iden Type                                                   -- Identity 
-    | Project Type Label                                          -- type projection (B?)
-    | Inject Type                                                 -- type injection (B!)
-    | CRef Coercion Coercion                                      -- reference coercion
-    | Func Coercion Coercion                                      -- function coercion
-    | Seq Coercion Coercion                                       -- coercion sequence (c;c)
-    | Fail Type Type Label                                        -- fail
-    deriving (Eq, Show)
+    -- | Ref?
+    pattern RefProj :: Label -> Coercion
+    pattern RefProj l = Project (TRef Dyn) l
+    
+    data Term = Unit                       -- ^ unit 
+              | Zero                       -- ^ 0
+              | Tru                        -- ^ true
+              | Fls                        -- ^ false
+              | Var Int Type String        -- ^ Variable {bruijn index, type, name}
+              | If Term Term Term          -- ^ if t then t else t
+              | Succ Term                  -- ^ succ t 
+              | Pred Term                  -- ^ pred t
+              | IsZero Term                -- ^ iszero t
+              | Rec [Entry]                -- ^ Record
+              | Proj Term String           -- ^ Projection
+              | Lambda Type Term [String]  -- ^ Abstraction {type, body, bound variables}
+              | App Term Term              -- ^ Application 
+              | Ref Term                   -- ^ Reference creation
+              | Deref Term                 -- ^ Dereference (!t)
+              | Loc Int                    -- ^ Store location
+              | Assign Term Term           -- ^ Assignment (t := t)
+              | Cast Coercion Term         -- ^ Coercion (<c> t)
+                deriving (Eq, Show) 
+    
+    data Coercion = Iden Type               -- ^ Identity 
+                  | Project Type Label      -- ^ Projection (B?)
+                  | Inject Type             -- ^ Injection (B!)
+                  | CRef Coercion Coercion  -- ^ Reference coercion
+                  | Func Coercion Coercion  -- ^ Function coercion
+                  | Seq Coercion Coercion   -- ^ Coercion sequence (c;c)
+                  | Fail Type Type Label    -- ^ Fail
+                    deriving (Eq, Show)
