@@ -1,6 +1,6 @@
 module EvalSpec where
 
-    import Errors
+    import Error
     import Evaluator
     import Parser
     import Subtype

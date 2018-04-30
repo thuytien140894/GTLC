@@ -3,7 +3,7 @@ module Prettier
     , printMsg
     ) where
     
-    import Errors
+    import Error
     import Syntax
     import Type
     import Utils (getFailedTerm, removeCasts, isSingular)

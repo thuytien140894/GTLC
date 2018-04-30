@@ -1,9 +1,9 @@
-module Errors where 
+module Error where 
     
     import Syntax
     import Type
     
-    -- | 
+    -- | Blame result.
     data BlameRes = BlameRes Cause Term 
                     deriving (Eq, Show)
 

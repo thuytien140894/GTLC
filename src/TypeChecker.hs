@@ -3,7 +3,7 @@ module TypeChecker
     ) where
 
     import Coercion
-    import Errors
+    import Error
     import Subtype
     import Syntax
     import Type

@@ -1,6 +1,6 @@
 module InterpretSpec where 
  
-    import Errors
+    import Error
     import Evaluator
     import Parser
     import Syntax

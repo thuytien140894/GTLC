@@ -3,7 +3,7 @@ module Evaluator
     ) where
 
     import Coercion 
-    import Errors
+    import Error
     import Syntax
     import Utils
     

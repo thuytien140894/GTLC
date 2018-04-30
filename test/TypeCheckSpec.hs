@@ -1,6 +1,6 @@
 module TypeCheckSpec where
 
-    import Errors
+    import Error
     import Parser
     import Syntax
     import Type

@@ -1,6 +1,6 @@
 module Utils where
 
-    import Errors
+    import Error
     import Syntax
     import Type
 
