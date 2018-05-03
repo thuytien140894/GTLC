@@ -28,7 +28,7 @@ module TypeChecker
     --     | otherwise                  = typeCheckField (Rec xs, TRec ys, l) f
 
     -- | Typecheck a conditional.
-    typeCheckCond :: Term -> GlobalState (Term, Type)
+    typeCheckCond :: Term -> TCheckState (Term, Type)
     typeCheckCond (If e1 e2 e3) = do
         (t1, cond) <- typeCheck' e1 
         (t2, fst)  <- typeCheck' e2 
@@ -57,7 +57,7 @@ module TypeChecker
             _                            -> throwError $ NotBool cond
 
     -- | Typecheck an assignment. 
-    typeCheckAssignment :: Term -> GlobalState (Term, Type)
+    typeCheckAssignment :: Term -> TCheckState (Term, Type)
     typeCheckAssignment (Assign e1 e2) = do
         (t1, s1) <- typeCheck' e1 
         (t2, s2) <- typeCheck' e2 
@@ -73,7 +73,7 @@ module TypeChecker
             _                         -> throwError $ IllegalAssign e1
 
     -- | Typecheck an application.
-    typeCheckApp :: Term -> GlobalState (Term, Type)
+    typeCheckApp :: Term -> TCheckState (Term, Type)
     typeCheckApp (App e1 e2) = do                                            
         (t1, funcTy) <- typeCheck' e1   
         (t2, argTy)  <- typeCheck' e2
@@ -89,7 +89,7 @@ module TypeChecker
             _                                  -> throwError $ NotFunction e1                                                   
 
     -- | Typecheck the source term and insert cast if needed
-    typeCheck' :: Term -> GlobalState (Term, Type)
+    typeCheck' :: Term -> TCheckState (Term, Type)
     typeCheck' e = case e of 
         -- | Constants
         Unit              -> return (Unit, TUnit)                                
@@ -156,7 +156,7 @@ module TypeChecker
             
     -- | Typecheck an initial label. Return an AST or an error.
     typeCheck :: Term -> Either TypeError Term 
-    typeCheck e = case runSession $ typeCheck' e of 
+    typeCheck e = case runTypeChecking $ typeCheck' e of 
         (res, _) -> case res of 
             Right (t, _) -> Right t 
             Left err     -> Left err

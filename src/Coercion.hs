@@ -64,7 +64,7 @@ module Coercion where
     isIdentity _        = False
 
     -- | Coercion type system.
-    coerce :: Type -> Type -> GlobalState Coercion
+    coerce :: Type -> Type -> TCheckState Coercion
     coerce s1 s2  
         | s1 == s2           = return $ Iden s1                        -- ^ (C-ID)
     coerce (Arr s t) Dyn     = do c <- coerce (Arr s t) (Arr Dyn Dyn)  -- ^ (C-FUN!) 

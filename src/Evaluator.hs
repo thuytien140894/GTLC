@@ -106,7 +106,7 @@ module Evaluator
             | not (isVal t')              -> do (t'', store') <- evaluate' (t', store)
                                                 Right (Cast c t'', store')
         Cast c (Cast d u)                 -> let t' = Seq d c `Cast` u                   
-                                            in Right (t', store)             
+                                             in Right (t', store)             
         Cast (Iden _) u                   -> Right (u, store)                           
         Cast (Fail s1 s2 l) u             -> Left $ Blame s1 s2 l Unit                 
         Cast c u 
