@@ -4,10 +4,6 @@ module Coercion where
     import Syntax
     import Type
 
-    -- | Increment the label index.
-    increment :: Label -> Label
-    increment (Label l) = Label $ l + 1
-
     -- | Consistency rules.
     isConsistent :: Type -> Type -> Bool
     isConsistent Dyn _                             = True
