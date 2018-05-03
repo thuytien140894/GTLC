@@ -19,11 +19,3 @@ module GlobalState where
         n <- get 
         put $ n + 1
         return $ Label n
-        
-
-
-    
-
-    
-
-    
