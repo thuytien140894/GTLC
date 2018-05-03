@@ -156,7 +156,6 @@ module TypeChecker
             
     -- | Typecheck an initial label. Return an AST or an error.
     typeCheck :: Term -> Either TypeError Term 
-    typeCheck e = case runTypeChecking $ typeCheck' e of 
-        (res, _) -> case res of 
-            Right (t, _) -> Right t 
-            Left err     -> Left err
+    typeCheck e = case runTypeChecking $ typeCheck' e of
+        Right (t, _) -> Right t 
+        Left err     -> Left err
