@@ -4,27 +4,12 @@ module Syntax where
 
     import Type
 
-    import Data.Map (Map)
-    import qualified Data.Map as Map (null, empty)
-
     -- | Entry in a record.
     type Entry = (String, Term)
 
     -- | Blame label.
     newtype Label = Label Int
                     deriving (Eq, Show)
-
-    -- | Entry in a store environment.
-    newtype Store = Store (Term, Type)
-                    deriving (Eq, Show)
-
-    -- | Store environement.
-    newtype StoreEnv = StoreEnv (Map Int Store)
-                       deriving (Eq, Show)
-
-    -- | Empty store environment.
-    emptyStore :: StoreEnv
-    emptyStore = StoreEnv Map.empty
 
     -- | Fun!
     pattern FuncInj :: Coercion 

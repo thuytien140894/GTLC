@@ -8,7 +8,7 @@ module TypeChecker
     import Subtype
     import Syntax
     import Type
-    import Utils (addField, addType)
+    -- import Utils (addField, addType)
 
     import Control.Monad.Except (throwError)
 
@@ -156,6 +156,6 @@ module TypeChecker
             
     -- | Typecheck an initial label. Return an AST or an error.
     typeCheck :: Term -> Either TypeError Term 
-    typeCheck e = case runTypeChecking $ typeCheck' e of
+    typeCheck e = case runTyCheck $ typeCheck' e of
         Right (t, _) -> Right t 
         Left err     -> Left err
