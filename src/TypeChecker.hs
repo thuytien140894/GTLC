@@ -2,13 +2,12 @@ module TypeChecker
     ( typeCheck
     ) where
 
-    import Coercion
+    import Coercion (coerce, isConsistent)
     import Error
     import GlobalState
     import Subtype
     import Syntax
     import Type
-    -- import Utils (addField, addType)
 
     import Control.Monad.Except (throwError)
 

@@ -1,12 +1,9 @@
 module Utils where
 
-    import Error
-    import StoreEnv
+    import Error 
     import Syntax
-    import Type
 
     import Control.Applicative ((<|>))
-    import Data.Maybe
 
     -- -- | Add new entry to the record.
     -- addField :: Term -> (String, Term) -> Term

@@ -2,7 +2,7 @@ module GlobalState where
 
     import Error
     import StoreEnv
-    import Syntax
+    import Syntax 
 
     import Control.Monad.Except (ExceptT, runExceptT, throwError)
     import Control.Monad.State

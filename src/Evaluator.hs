@@ -9,9 +9,8 @@ module Evaluator
     import Syntax
     import Utils
     
-    import Control.Monad.Except 
-    import Control.Monad.State 
-    import Data.Either
+    import Control.Monad.Except (throwError)
+    import Control.Monad.State (get)
     import Data.Maybe (fromJust)
 
     -- | Determine if a term is a value.
