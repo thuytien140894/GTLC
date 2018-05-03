@@ -1,5 +1,6 @@
 module Coercion where 
 
+    import GlobalState
     import Syntax
     import Type
 
@@ -67,34 +68,32 @@ module Coercion where
     isIdentity _        = False
 
     -- | Coercion type system.
-    coerce :: Type -> Type -> Label -> (Coercion, Label)
-    coerce s1 s2 l 
-        | s1 == s2                           = (Iden s1, l)                 -- ^ (C-ID)
-    coerce (Arr s t) Dyn l                   = (Seq c FuncInj, l')          -- ^ (C-FUN!)                                                  -- (C-B!)
+    coerce :: Type -> Type -> GlobalState Coercion
+    coerce s1 s2  
+        | s1 == s2           = return $ Iden s1                        -- ^ (C-ID)
+    coerce (Arr s t) Dyn     = do c <- coerce (Arr s t) (Arr Dyn Dyn)  -- ^ (C-FUN!) 
+                                  return $ Seq c FuncInj        
+    coerce (TRef s) Dyn      = do c <- coerce (TRef s) (TRef Dyn)      -- ^ (C-REF!) 
+                                  return $ Seq c RefInj
+    coerce ty Dyn            = return $ Inject ty                      -- ^ (C-B!)
+    coerce Dyn (Arr s t)     = do c <- coerce (Arr Dyn Dyn) (Arr s t)  -- ^ (C-FUN?)
+                                  l <- newLabel
+                                  return $ Seq (FuncProj l) c  
+    coerce Dyn (TRef s)      = do c <- coerce (TRef Dyn) (TRef s)      -- ^ (C-REF?)
+                                  l <- newLabel
+                                  return $ Seq (RefProj l) c  
+    coerce Dyn ty            = Project ty <$> newLabel                 -- ^ (C-B?)
+    coerce (Arr s1 s2) (Arr t1 t2)                                     -- ^ (C-FUN)
+        | areConsistent      = do c <- coerce t1 s1
+                                  d <- coerce s2 t2 
+                                  return $ Func c d  
       where 
-        (c, l') = coerce (Arr s t) (Arr Dyn Dyn) l 
-    coerce (TRef s) Dyn l                    = (Seq c RefInj, l')           -- ^ (C-REF!)
-      where 
-        (c, l') = coerce (TRef s) (TRef Dyn) l
-    coerce ty Dyn l                          = (Inject ty, l)               -- ^ (C-B!)
-    coerce Dyn (Arr s t) l                   = (Seq (FuncProj l) c, l')     -- ^ (C-FUN?)
-      where 
-        (c, l') = coerce (Arr Dyn Dyn) (Arr s t) (increment l)
-    coerce Dyn (TRef s) l                    = (Seq (RefProj l) c, l')      -- ^ (C-REF?)
-      where 
-        (c, l') = coerce (TRef Dyn) (TRef s) (increment l)
-    coerce Dyn ty l                          = (Project ty l, increment l)  -- ^ (C-B?)
-    coerce (Arr s1 s2) (Arr t1 t2) l 
-        | Arr s1 s2 `isConsistent` Arr t1 t2 = (Func c d, l2)               -- ^ (C-FUN)
-      where 
-        (c, l1) = coerce t1 s1 l
-        (d, l2) = coerce s2 t2 l1
-    coerce (TRef s) (TRef t) l
-        | s `isConsistent` t                 = (CRef c d, l2)               -- ^ (C-REF)
-      where 
-        (c, l1) = coerce t s l
-        (d, l2) = coerce s t l1
-    coerce s1 s2 l                           = (Fail s1 s2 l, increment l)  -- ^ (C-FAIL)
+        areConsistent = Arr s1 s2 `isConsistent` Arr t1 t2
+    coerce (TRef s) (TRef t)                                           -- ^ (C-REF)
+        | s `isConsistent` t = do c <- coerce t s
+                                  d <- coerce s t 
+                                  return $ CRef c d  
+    coerce s1 s2             = Fail s1 s2 <$> newLabel                 -- ^ (C-FAIL)
 
     -- | Reduce a coercion (single-step).
     reduceCoercion :: Coercion -> Coercion

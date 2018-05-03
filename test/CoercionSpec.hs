@@ -8,32 +8,6 @@ module CoercionSpec where
 
     spec :: Spec
     spec = do
-        describe "coerces" $ do
-            context "Bool to Dynamic" $
-                it "should be Bool!" $
-                coerce Bool Dyn (Label 0) 
-                `shouldBe` (Inject Bool,Label 0)
-
-            context "Dynamic to Nat" $
-                it "should be Nat?" $
-                coerce Dyn Nat (Label 0) 
-                `shouldBe` (Project Nat (Label 0),Label 1)
-
-            context "Bool to Bool" $
-                it "should be Identity" $
-                coerce Bool Bool (Label 0) 
-                `shouldBe` (Iden Bool,Label 0)
-
-            context "Dynamic to Bool->Nat" $
-                it "should be Bool!->Nat?" $
-                coerce Dyn (Arr Bool Nat) (Label 0) 
-                `shouldBe` (Seq (Project (Arr Dyn Dyn) (Label 0)) (Func (Inject Bool) (Project Nat (Label 1))),Label 2)
-
-            context "Bool->Nat to Dynamic" $
-                it "should be Bool?->Nat!" $
-                coerce (Arr Bool Nat) Dyn (Label 0) 
-                `shouldBe` (Seq (Func (Project Bool (Label 0)) (Inject Nat)) (Inject (Arr Dyn Dyn)),Label 1)
-
         describe "reduces coercion" $ do 
             context "Identity; Bool!" $
                 it "should be Bool!" $
@@ -52,7 +26,7 @@ module CoercionSpec where
 
             context "Nat?->Bool!; Nat!->Bool?" $
                 it "should be Iden->Iden" $
-                normalize (Seq (Func (Project Nat (Label 0)) (Inject Bool)) (Func (Inject Nat) (Project Bool (Label 0)))) 
+                normalize (Seq (Func (Project Nat (Label 0)) (Inject Bool)) (Func (Inject Nat) (Project Bool (Label 1)))) 
                 `shouldBe` Iden Nat
             
         describe "get coercion types" $ do

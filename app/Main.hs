@@ -7,6 +7,7 @@ module Main where
 
     import Control.Monad.Trans
     import System.Console.Haskeline
+    import Control.Monad.State
 
     -- | Interpret a line input, either printing out the result or error.
     interpret :: String -> IO ()
