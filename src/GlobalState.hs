@@ -21,19 +21,25 @@ module GlobalState where
         put $ n + 1
         return $ Label n
 
-    -- | Monad for handling runtime errors and updating the store environment.
-    type EvalState a = ExceptT RuntimeError (State StoreEnv) a
+    -- | Monad for handling runtime errors and updating 
+    -- the store environment during small-step evaluation.
+    type SEvalState a = ExceptT RuntimeError (State StoreEnv) a
 
     -- | Create a global state for small-step evaluation.
-    runEval' :: EvalState a -> StoreEnv -> (Either RuntimeError a, StoreEnv)
-    runEval' g = runState (runExceptT g)
+    runSEval :: SEvalState a -> StoreEnv -> (Either RuntimeError a, StoreEnv)
+    runSEval g = runState (runExceptT g)
+
+    -- | Monad for handling runtime errors and updating
+    -- the most recently evaluated expression during big-step 
+    -- evaluation.
+    type BEvalState a = ExceptT RuntimeError (State Term) a
 
     -- | Unwrap monads for big-step evaluation.
-    runEval :: EvalState a -> Either RuntimeError a
-    runEval g = evalState (runExceptT g) emptyStore
+    runBEval :: BEvalState a -> (Either RuntimeError a, Term)
+    runBEval g = runState (runExceptT g) Unit
 
     -- | Allocate a new store.
-    allocateStoreEnv :: Term -> EvalState Term 
+    allocateStoreEnv :: Term -> SEvalState Term 
     allocateStoreEnv t = do 
         storeEnv <- get 
         let (t', newStoreEnv) = allocate storeEnv t
@@ -41,7 +47,7 @@ module GlobalState where
         return t'
 
     -- | Update the value of an existing store.
-    updateStoreEnv :: Int -> Term -> EvalState Term
+    updateStoreEnv :: Int -> Term -> SEvalState Term
     updateStoreEnv l t = do 
         storeEnv <- get 
         case storeEnv `lookUp` l of 
@@ -51,7 +57,7 @@ module GlobalState where
             Nothing             -> throwError $ InvalidRef l
 
     -- | Look up a reference.
-    peekStoreEnv :: Int -> EvalState Term
+    peekStoreEnv :: Int -> SEvalState Term
     peekStoreEnv l = do 
         storeEnv <- get 
         case storeEnv `lookUp` l of 

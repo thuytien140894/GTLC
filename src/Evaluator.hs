@@ -10,7 +10,7 @@ module Evaluator
     import Utils
     
     import Control.Monad.Except (throwError)
-    import Control.Monad.State (get)
+    import Control.Monad.State (get, put)
     import Data.Maybe (fromJust)
 
     -- | Determine if a term is a value.
@@ -72,7 +72,7 @@ module Evaluator
 
     -- | Remove an enclosing coercion from a value 
     -- if the run-time type matches the target type.
-    unbox :: Term -> EvalState Term
+    unbox :: Term -> SEvalState Term
     unbox (Cast c v) = do 
         storeEnv <- get
         case typeOf v storeEnv of 
@@ -84,7 +84,7 @@ module Evaluator
                 cstTy = snd $ getCoercionTypes c
 
     -- | Small-step evaluation.
-    evaluate' :: Term -> EvalState Term
+    evaluate' :: Term -> SEvalState Term
     evaluate' t = case t of
         -- | Arithmetic
         Pred Zero                         -> return Zero                         
@@ -107,7 +107,7 @@ module Evaluator
             | not (isVal t')              -> Cast c <$> evaluate' t'
         Cast c (Cast d u)                 -> return $ Seq d c `Cast` u            
         Cast (Iden _) u                   -> return u                        
-        Cast (Fail s1 s2 l) u             -> throwError $ Blame s1 s2 l Unit                 
+        Cast (Fail s1 s2 l) u             -> throwError $ Blame s1 s2 l                 
         Cast c u 
             | isNormalized c              -> unbox t                              
         Cast c u                          -> return $ reduceCoercion c `Cast` u
@@ -155,22 +155,24 @@ module Evaluator
     -- | Big-step evaluation
     -- (apply evaluate' repeatedly until a value is reached or we're left with 
     -- an expression that cannot be evaluated further).
-    evaluateToValue :: Term -> StoreEnv -> EvalState Term
+    evaluateToValue :: Term -> StoreEnv -> BEvalState Term
     evaluateToValue t storeEnv = do 
-        let (res, newStoreEnv) = runEval' (evaluate' t) storeEnv
+        put t
+        let (res, newStoreEnv) = runSEval (evaluate' t) storeEnv
         case res of 
-            Right t'               -> evaluateToValue t' newStoreEnv
-            Left Stuck             -> return t     
-            Left (Blame s1 s2 l _) -> throwError $ Blame s1 s2 l t    
-            Left err               -> throwError err
+            Right t'   -> evaluateToValue t' newStoreEnv
+            Left Stuck -> return t     
+            Left err   -> throwError err
     
     -- | Evaluate a term.
     evaluate :: Term -> Either RuntimeError Term
-    evaluate t = case runEval $ evaluateToValue t emptyStore of
-        Right t 
-            | isUncoercedVal t  -> Right t
-            | otherwise         -> Left Stuck 
-        Left (Blame s1 s2 l t') -> let cause = fromJust $ blame l t
-                                       bres  = BlameRes cause t'
-                                   in Left $ CastError s1 s2 bres  
-        Left err                -> Left err 
+    evaluate t = 
+        let (res, t') = runBEval $ evaluateToValue t emptyStore
+        in case res of
+               Right t'' 
+                   | isUncoercedVal t'' -> Right t''
+                   | otherwise          -> Left Stuck 
+               Left (Blame s1 s2 l)     -> let cause = fromJust $ blame l t
+                                               bres  = BlameRes cause t'
+                                           in Left $ CastError s1 s2 bres  
+               Left err                 -> Left err 
