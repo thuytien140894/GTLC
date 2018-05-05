@@ -10,17 +10,17 @@ module GlobalState where
     import Control.Monad.State
 
     -- | Monad for handling type errors and labeling.
-    type TCheckState a = ExceptT TypeError (State Int) a
+    type TCheckState a = ExceptT TypeError (State Label) a
 
     -- | Create a global state for typechecking.
     runTyCheck :: TCheckState a -> Either TypeError a
-    runTyCheck g = evalState (runExceptT g) 0
+    runTyCheck g = evalState (runExceptT g) (Label 0)
 
     -- | Generate a new label.
     newLabel :: TCheckState Label 
     newLabel = do 
-        n <- get 
-        put $ n + 1
+        Label n <- get 
+        put $ Label $ n + 1
         return $ Label n
 
     -- | Monad for handling runtime errors and updating 
