@@ -4,10 +4,16 @@ module Evaluator
 
     import Coercion 
     import Error
+    import GlobalState (SEvalState, BEvalState)
+    import StoreEnv (StoreEnv)
     import Syntax
     import Utils
+
+    import qualified GlobalState as GlobalS
+    import qualified StoreEnv 
     
-    import Data.Either
+    import Control.Monad.Except (throwError)
+    import Control.Monad.State (get, put)
     import Data.Maybe (fromJust)
 
     -- | Determine if a term is a value.
@@ -35,7 +41,7 @@ module Evaluator
         Tru               -> True
         Fls               -> True
         t' | isNumeric t' -> True
-        Lambda {}         -> True
+        Lambda{}          -> True
         Rec ls            -> areAllVal ls
         Loc _             -> True
         _                 -> False
@@ -50,139 +56,126 @@ module Evaluator
     subsFromTop :: Term -> Term -> Term
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
 
-    -- | Get the value for the specified field.
-    getVal :: Term -> String -> Either RuntimeError Term
-    getVal (Rec []) _ = Left Stuck
-    getVal (Rec ((l1, t1) : ys)) l 
-        | l1 == l     = Right t1
-        | otherwise   = Rec ys `getVal` l
+    -- -- | Get the value for the specified field.
+    -- getVal :: Term -> String -> Either RuntimeError Term
+    -- getVal (Rec []) _ = Left Stuck
+    -- getVal (Rec ((l1, t1) : ys)) l 
+    --     | l1 == l     = Right t1
+    --     | otherwise   = Rec ys `getVal` l
 
-    -- | Evaluate a record.
-    evalRecord :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv) 
-    evalRecord (Rec [], store) = Right (Rec [], store)
-    evalRecord (Rec ((l1, t1) : ys), store) 
-        | isVal t1             = do (rd, store') <- evalRecord (Rec ys, store)
-                                    Right (rd `addEntry` (l1, t1), store')
-        | otherwise            = do (t1', store') <- evaluate' (t1, store) 
-                                    (rd, store'') <- evalRecord (Rec ys, store')
-                                    Right (rd `addEntry` (l1, t1'), store'')
+    -- -- | Evaluate a record.
+    -- evalRecord :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv) 
+    -- evalRecord (Rec [], store) = Right (Rec [], store)
+    -- evalRecord (Rec ((l1, t1) : ys), store) 
+    --     | isVal t1             = do (rd, store') <- evalRecord (Rec ys, store)
+    --                                 Right (rd `addEntry` (l1, t1), store')
+    --     | otherwise            = do (t1', store') <- evaluate' (t1, store) 
+    --                                 (rd, store'') <- evalRecord (Rec ys, store')
+    --                                 Right (rd `addEntry` (l1, t1'), store'')
 
     -- | Remove an enclosing coercion from a value 
     -- if the run-time type matches the target type.
-    unbox :: Term -> StoreEnv -> Either RuntimeError Term
-    unbox (Cast c v) store = case typeOf v store of 
-        srcTy 
-            | srcTy `isConsistent` cstTy  -> Right v
-            | otherwise                   -> let bres  = BlameRes None v
-                                             in Left $ CastError srcTy cstTy bres
-          where 
-            cstTy = snd $ getCoercionTypes c
+    unbox :: Term -> SEvalState Term
+    unbox (Cast c v) = do 
+        env <- get
+        case StoreEnv.typeOf v env of 
+            srcTy 
+                | srcTy `isConsistent` cstTy  -> return v
+                | otherwise                   -> let bres = BlameRes None v
+                                                 in throwError $ CastError srcTy cstTy bres
+              where 
+                cstTy = snd $ getCoercionTypes c
 
     -- | Small-step evaluation.
-    evaluate' :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv)
-    evaluate' (t, store) = case t of
+    evaluate' :: Term -> SEvalState Term
+    evaluate' t = case t of
         -- | Arithmetic
-        Pred Zero                         -> Right (Zero, store)                         
+        Pred Zero                         -> return Zero                         
         Pred (Succ nv) 
-            | isNumeric nv                -> Right (nv, store)                           
-        Pred t'                           -> do (t'', store') <- evaluate' (t', store)
-                                                Right (Pred t'', store')
-        IsZero Zero                       -> Right (Tru, store)                          
+            | isNumeric nv                -> return nv                       
+        Pred t'                           -> Pred <$> evaluate' t'
+        IsZero Zero                       -> return Tru                        
         IsZero (Succ nv) 
-            | isNumeric nv                -> Right (Fls, store)                         
-        IsZero t'                         -> do (t'', store') <- evaluate' (t', store)
-                                                Right (IsZero t'', store')
-        Succ t'                           -> do (t'', store') <- evaluate' (t', store)
-                                                Right (Succ t'', store')
+            | isNumeric nv                -> return Fls                     
+        IsZero t'                         -> IsZero <$> evaluate' t'
+        Succ t'                           -> Succ <$> evaluate' t'
 
         -- | Conditional
-        If Tru t2 t3                      -> Right (t2, store)                           
-        If Fls t2 t3                      -> Right (t3, store)                           
-        If t1 t2 t3                       -> do (t1', store') <- evaluate' (t1, store)
-                                                Right (If t1' t2 t3, store')
+        If Tru t2 t3                      -> return t2                        
+        If Fls t2 t3                      -> return t3                         
+        If t1 t2 t3                       -> (\t1' -> If t1' t2 t3) <$> evaluate' t1
 
         -- | Cast
         Cast c t' 
-            | not (isVal t')              -> do (t'', store') <- evaluate' (t', store)
-                                                Right (Cast c t'', store')
-        Cast c (Cast d u)                 -> let t' = Seq d c `Cast` u                   
-                                            in Right (t', store)             
-        Cast (Iden _) u                   -> Right (u, store)                           
-        Cast (Fail s1 s2 l) u             -> Left $ Blame s1 s2 l Unit                 
+            | not (isVal t')              -> Cast c <$> evaluate' t'
+        Cast c (Cast d u)                 -> return $ Seq d c `Cast` u            
+        Cast (Iden _) u                   -> return u                        
+        Cast (Fail s1 s2 l) u             -> throwError $ Blame s1 s2 l                 
         Cast c u 
-            | isNormalized c              -> do t' <- unbox t store
-                                                Right (t', store)                               
-        Cast c u                          -> let t' = reduceCoercion c `Cast` u          
-                                             in Right (t', store)    
-        Deref (Cast (CRef c d) (Loc l))   -> let t' = Cast d $ Deref (Loc l)             
-                                             in Right (t', store)       
+            | isNormalized c              -> unbox t                              
+        Cast c u                          -> return $ reduceCoercion c `Cast` u
+        Deref (Cast (CRef c d) (Loc l))   -> return $ Cast d $ Deref (Loc l)      
         Assign (Cast (CRef c d) (Loc l)) v                                                
-            | isVal v                     -> let t' = Cast d $ Loc l `Assign` Cast c v
-                                             in Right (t', store)    
+            | isVal v                     -> return $ Cast d $ Loc l `Assign` Cast c v 
         App (Cast (Func c d) u) v 
-            | isUncoercedVal u && isVal v -> let t' = Cast d $ u `App` Cast c v          
-                                             in Right (t', store)                        
+            | isUncoercedVal u && isVal v -> return $ Cast d $ u `App` Cast c v                        
 
         -- | Reference
         Ref v     
-            | isVal v                     -> Right $ allocate store v                                   
-        Ref t'                            -> do (t'', store') <- evaluate' (t', store)
-                                                Right (Ref t'', store')
-        Deref (Loc l)                     -> case store `lookUp` l of                      
-                                                 Just (Store (v, _)) -> Right (v, store)
-                                                 Nothing             -> Left $ InvalidRef l
+            | isVal v                     -> GlobalS.allocate v                             
+        Ref t'                            -> Ref <$> evaluate' t'
+        Deref (Loc l)                     -> GlobalS.peek l
 
         -- | Dereference
-        Deref t'                          -> do (t'', store') <- evaluate' (t', store)
-                                                Right (Deref t'', store')
+        Deref t'                          -> Deref <$> evaluate' t'
                                             
         -- | Assignment
         Assign (Loc l) v
-            | isVal v                     -> updateStore store l v                       
+            | isVal v                     -> GlobalS.update l v                       
         Assign v1 t2 
-            | isVal v1                    -> do (t2', store') <- evaluate' (t2, store)
-                                                Right (Assign v1 t2', store')
-        Assign t1 t2                      -> do (t1', store') <- evaluate' (t1, store)
-                                                Right (Assign t1' t2, store')
+            | isVal v1                    -> Assign v1 <$> evaluate' t2
+        Assign t1 t2                      -> (`Assign` t2) <$> evaluate' t1
 
         -- | Application
         App (Lambda _ t1 _) v2 
-            | isVal v2                    -> Right (subsFromTop v2 t1, store)            
+            | isVal v2                    -> return $ subsFromTop v2 t1          
         App v1 t2 
-            | isVal v1                    -> do (t2', store') <- evaluate' (t2, store)
-                                                Right (App v1 t2', store')              
-        App t1 t2                         -> do (t1', store') <- evaluate' (t1, store)
-                                                Right (App t1' t2, store')              
+            | isVal v1                    -> App v1 <$> evaluate' t2
+        App t1 t2                         -> (`App` t2) <$> evaluate' t1             
 
-        -- | Records
-        Proj (Rec ls) l 
-            | isVal $ Rec ls              -> do t' <- Rec ls `getVal` l                 
-                                                Right (t', store)
-        Proj (Rec ls) l                   -> do (t', store') <- evaluate' (Rec ls, store)
-                                                Right (Proj t' l, store')            
-        Rec ls 
-            | not $ isVal $ Rec ls        -> evalRecord (t, store)                      
+        -- -- | Records
+        -- Proj (Rec ls) l 
+        --     | isVal $ Rec ls              -> do t' <- Rec ls `getVal` l                 
+        --                                         Right (t', store)
+        -- Proj (Rec ls) l                   -> do (t', store') <- evaluate' (Rec ls, store)
+        --                                         Right (Proj t' l, store')            
+        -- Rec ls 
+        --     | not $ isVal $ Rec ls        -> evalRecord (t, store)                      
                         
         -- | No rules applied
-        _                                 -> Left Stuck                                  
+        _                                 -> throwError Stuck                                  
 
     -- | Big-step evaluation
     -- (apply evaluate' repeatedly until a value is reached or we're left with 
     -- an expression that cannot be evaluated further).
-    evaluateToValue :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv)
-    evaluateToValue x = case evaluate' x of
-        Right res              -> evaluateToValue res
-        Left Stuck             -> Right x      
-        Left (Blame s1 s2 l _) -> Left $ Blame s1 s2 l $ fst x    
-        Left err               -> Left err
+    evaluateToValue :: Term -> StoreEnv -> BEvalState Term
+    evaluateToValue t env = do 
+        put t
+        let (res, newEnv) = GlobalS.runSEval (evaluate' t) env
+        case res of 
+            Right t'   -> evaluateToValue t' newEnv
+            Left Stuck -> return t     
+            Left err   -> throwError err
     
     -- | Evaluate a term.
     evaluate :: Term -> Either RuntimeError Term
-    evaluate t = case evaluateToValue (t, emptyStore) of
-        Right (res, _) 
-            | isUncoercedVal res -> Right res
-            | otherwise          -> Left Stuck  -- Term is "stuck". 
-        Left (Blame s1 s2 l t')  -> let cause = fromJust $ blame l t
-                                        bres  = BlameRes cause t'
-                                    in Left $ CastError s1 s2 bres  
-        Left err                 -> Left err
+    evaluate t = 
+        let (res, t') = GlobalS.runBEval $ evaluateToValue t StoreEnv.empty
+        in case res of
+               Right t'' 
+                   | isUncoercedVal t'' -> Right t''
+                   | otherwise          -> Left Stuck 
+               Left (Blame s1 s2 l)     -> let cause = fromJust $ blame l t
+                                               bres  = BlameRes cause t'
+                                           in Left $ CastError s1 s2 bres  
+               Left err                 -> Left err 

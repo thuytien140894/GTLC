@@ -33,7 +33,7 @@ module Error where
 
     -- | Errors during evaluation.
     data RuntimeError = CastError Type Type BlameRes  -- ^ Cast error 
-                      | Blame Type Type Label Term    -- ^ Blame assignment
+                      | Blame Type Type Label         -- ^ Blame assignment
                       | InvalidRef Int                -- ^ Nonexistent reference
                       | Stuck                         -- ^ Stuck evaluation
                         deriving (Eq, Show)

@@ -3,6 +3,7 @@ module Lexer where
     import Text.Parsec
     import Text.Parsec.Language (emptyDef)
     import Text.Parsec.String (Parser)
+    
     import qualified Text.Parsec.Token as Tok
 
     -- | Language definition.

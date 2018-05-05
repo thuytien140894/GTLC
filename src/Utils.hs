@@ -1,74 +1,29 @@
 module Utils where
 
-    import Error
+    import Error 
     import Syntax
-    import Type
 
     import Control.Applicative ((<|>))
-    import qualified Data.Map as Map 
-    import Data.Maybe
-    
-    -- | Get the type of a store.
-    getStoreType :: Store -> Type 
-    getStoreType (Store (_, ty)) = ty
 
-    -- | Allocate a new store.
-    allocate :: StoreEnv -> Term -> (Term, StoreEnv) 
-    allocate store t = (Loc l, insertRef store l v)
-      where 
-        l = sizeOf store
-        v = Store (t, typeOf t store)
+    -- -- | Add new entry to the record.
+    -- addField :: Term -> (String, Term) -> Term
+    -- addField (Rec ls) newField = Rec (newField : ls)
 
-    -- | Return the number of stores. 
-    sizeOf :: StoreEnv -> Int 
-    sizeOf (StoreEnv s) = Map.size s
+    -- -- | Add new entry to the record type.
+    -- addType :: Type -> (String, Type) -> Type
+    -- addType (TRec ls) newType = TRec (newType : ls)
 
-    -- | Look up the store at a location.
-    lookUp :: StoreEnv -> Int -> Maybe Store
-    lookUp (StoreEnv s) l = Map.lookup l s
+    -- -- | Add new entry to the record.
+    -- addEntry :: Term -> Entry -> Term
+    -- addEntry (Rec ls) newElem = Rec (newElem : ls)
 
-    -- | Insert a new reference or replace an existing one.
-    insertRef :: StoreEnv -> Int -> Store -> StoreEnv 
-    insertRef (StoreEnv s) l t = StoreEnv $ Map.insert l t s 
-
-    -- | Update the value at a store location.
-    updateStore :: StoreEnv -> Int -> Term -> Either RuntimeError (Term, StoreEnv) 
-    updateStore store l t = case store `lookUp` l of 
-        Just (Store (_, s)) -> let v = Store (t, s) 
-                               in Right (t, insertRef store l v) 
-        Nothing             -> Left $ InvalidRef l  -- Reference not found.
-
-    -- | Add new entry to the record.
-    addField :: Term -> (String, Term) -> Term
-    addField (Rec ls) newField = Rec (newField : ls)
-
-    -- | Add new entry to the record type.
-    addType :: Type -> (String, Type) -> Type
-    addType (TRec ls) newType = TRec (newType : ls)
-
-    -- | Add new entry to the record.
-    addEntry :: Term -> Entry -> Term
-    addEntry (Rec ls) newElem = Rec (newElem : ls)
-
-    -- | Find the type for a record.
-    rcdTypeOf :: Term -> StoreEnv -> Type
-    rcdTypeOf (Rec []) store              = TRec []
-    rcdTypeOf (Rec ((l1, t1) : ys)) store = rcdTy `addType` (l1, ty)
-      where 
-        rcdTy = rcdTypeOf (Rec ys) store
-        ty    = typeOf t1 store
-        
-    -- | Find the type for a term. 
-    typeOf :: Term -> StoreEnv -> Type
-    typeOf t store = case t of 
-        Unit           -> TUnit                                        
-        Tru            -> Bool                                          
-        Fls            -> Bool                                         
-        Zero           -> Nat                                           
-        Succ _         -> Nat                                           
-        Rec _          -> rcdTypeOf t store        
-        Loc l          -> getStoreType $ fromJust $ store `lookUp` l                                                  
-        Lambda ty t' _ -> Arr ty $ typeOf t' store 
+    -- -- | Find the type for a record.
+    -- rcdTypeOf :: Term -> StoreEnv -> Type
+    -- rcdTypeOf (Rec []) store              = TRec []
+    -- rcdTypeOf (Rec ((l1, t1) : ys)) store = rcdTy `addType` (l1, ty)
+    --   where 
+    --     rcdTy = rcdTypeOf (Rec ys) store
+    --     ty    = typeOf t1 store
 
     -- | Renumber the indices of free variables in a term by
     -- maintaining the "cutoff" parameter c that controls which 

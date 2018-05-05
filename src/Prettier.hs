@@ -10,6 +10,7 @@ module Prettier
 
     import Data.Maybe (fromJust)
     import Text.PrettyPrint.ANSI.Leijen (Doc, (<>), (<+>), (<$$>))
+    
     import qualified Text.PrettyPrint.ANSI.Leijen as PP
 
     -- | Format the list of entries in a record.
