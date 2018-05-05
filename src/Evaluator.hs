@@ -4,10 +4,13 @@ module Evaluator
 
     import Coercion 
     import Error
-    import GlobalState
-    import StoreEnv
+    import GlobalState (SEvalState, BEvalState)
+    import StoreEnv (StoreEnv)
     import Syntax
     import Utils
+
+    import qualified GlobalState as GlobalS
+    import qualified StoreEnv 
     
     import Control.Monad.Except (throwError)
     import Control.Monad.State (get, put)
@@ -74,8 +77,8 @@ module Evaluator
     -- if the run-time type matches the target type.
     unbox :: Term -> SEvalState Term
     unbox (Cast c v) = do 
-        storeEnv <- get
-        case typeOf v storeEnv of 
+        env <- get
+        case StoreEnv.typeOf v env of 
             srcTy 
                 | srcTy `isConsistent` cstTy  -> return v
                 | otherwise                   -> let bres = BlameRes None v
@@ -119,16 +122,16 @@ module Evaluator
 
         -- | Reference
         Ref v     
-            | isVal v                     -> allocateStoreEnv v                             
+            | isVal v                     -> GlobalS.allocate v                             
         Ref t'                            -> Ref <$> evaluate' t'
-        Deref (Loc l)                     -> peekStoreEnv l
+        Deref (Loc l)                     -> GlobalS.peek l
 
         -- | Dereference
         Deref t'                          -> Deref <$> evaluate' t'
                                             
         -- | Assignment
         Assign (Loc l) v
-            | isVal v                     -> updateStoreEnv l v                       
+            | isVal v                     -> GlobalS.update l v                       
         Assign v1 t2 
             | isVal v1                    -> Assign v1 <$> evaluate' t2
         Assign t1 t2                      -> (`Assign` t2) <$> evaluate' t1
@@ -156,18 +159,18 @@ module Evaluator
     -- (apply evaluate' repeatedly until a value is reached or we're left with 
     -- an expression that cannot be evaluated further).
     evaluateToValue :: Term -> StoreEnv -> BEvalState Term
-    evaluateToValue t storeEnv = do 
+    evaluateToValue t env = do 
         put t
-        let (res, newStoreEnv) = runSEval (evaluate' t) storeEnv
+        let (res, newEnv) = GlobalS.runSEval (evaluate' t) env
         case res of 
-            Right t'   -> evaluateToValue t' newStoreEnv
+            Right t'   -> evaluateToValue t' newEnv
             Left Stuck -> return t     
             Left err   -> throwError err
     
     -- | Evaluate a term.
     evaluate :: Term -> Either RuntimeError Term
     evaluate t = 
-        let (res, t') = runBEval $ evaluateToValue t emptyStore
+        let (res, t') = GlobalS.runBEval $ evaluateToValue t StoreEnv.empty
         in case res of
                Right t'' 
                    | isUncoercedVal t'' -> Right t''

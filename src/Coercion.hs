@@ -1,8 +1,10 @@
 module Coercion where 
 
-    import GlobalState
+    import GlobalState (TCheckState)
     import Syntax
     import Type
+
+    import qualified GlobalState as GlobalS (newLabel)
 
     -- | Consistency rules.
     isConsistent :: Type -> Type -> Bool
@@ -73,12 +75,12 @@ module Coercion where
                                   return $ Seq c RefInj
     coerce ty Dyn            = return $ Inject ty                      -- ^ (C-B!)
     coerce Dyn (Arr s t)     = do c <- coerce (Arr Dyn Dyn) (Arr s t)  -- ^ (C-FUN?)
-                                  l <- newLabel
+                                  l <- GlobalS.newLabel
                                   return $ Seq (FuncProj l) c  
     coerce Dyn (TRef s)      = do c <- coerce (TRef Dyn) (TRef s)      -- ^ (C-REF?)
-                                  l <- newLabel
+                                  l <- GlobalS.newLabel
                                   return $ Seq (RefProj l) c  
-    coerce Dyn ty            = Project ty <$> newLabel                 -- ^ (C-B?)
+    coerce Dyn ty            = Project ty <$> GlobalS.newLabel                 -- ^ (C-B?)
     coerce (Arr s1 s2) (Arr t1 t2)                                     -- ^ (C-FUN)
         | areConsistent      = do c <- coerce t1 s1
                                   d <- coerce s2 t2 
@@ -89,7 +91,7 @@ module Coercion where
         | s `isConsistent` t = do c <- coerce t s
                                   d <- coerce s t 
                                   return $ CRef c d  
-    coerce s1 s2             = Fail s1 s2 <$> newLabel                 -- ^ (C-FAIL)
+    coerce s1 s2             = Fail s1 s2 <$> GlobalS.newLabel                 -- ^ (C-FAIL)
 
     -- | Reduce a coercion (single-step).
     reduceCoercion :: Coercion -> Coercion

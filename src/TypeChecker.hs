@@ -4,7 +4,8 @@ module TypeChecker
 
     import Coercion (coerce, isConsistent)
     import Error
-    import GlobalState
+    import GlobalState (TCheckState)
+    import qualified GlobalState as GlobalS (runTyCheck, newLabel)
     import Subtype
     import Syntax
     import Type
@@ -66,7 +67,7 @@ module TypeChecker
                 | s2 `isConsistent` s -> do c <- coerce s2 s
                                             return (t1 `Assign` Cast c t2, s)
                 | otherwise           -> throwError $ AssignMismatch s2 s (Assign e1 e2)
-            Dyn                       -> do l  <- newLabel
+            Dyn                       -> do l  <- GlobalS.newLabel
                                             c2 <- coerce s2 Dyn 
                                             return (Cast (RefProj l) t1 `Assign` Cast c2 t2, Dyn)
             _                         -> throwError $ IllegalAssign e1
@@ -77,7 +78,7 @@ module TypeChecker
         (t1, funcTy) <- typeCheck' e1   
         (t2, argTy)  <- typeCheck' e2
         case funcTy of 
-            Dyn                                -> do l  <- newLabel 
+            Dyn                                -> do l  <- GlobalS.newLabel 
                                                      c2 <- coerce argTy Dyn   
                                                      return (Cast (FuncProj l) t1 `App` Cast c2 t2, Dyn)
             Arr paramTy retTy 
@@ -138,7 +139,7 @@ module TypeChecker
         -- | Dereference
         Deref e'          -> do (t', ty) <- typeCheck' e' 
                                 case ty of 
-                                    Dyn    -> do l <- newLabel
+                                    Dyn    -> do l <- GlobalS.newLabel
                                                  return (Deref $ Cast (RefProj l) t', Dyn)
                                     TRef s -> return (Deref t', s)
                                     _      -> throwError $ IllegalDeref e' 
@@ -155,6 +156,6 @@ module TypeChecker
             
     -- | Typecheck an initial label. Return an AST or an error.
     typeCheck :: Term -> Either TypeError Term 
-    typeCheck e = case runTyCheck $ typeCheck' e of
+    typeCheck e = case GlobalS.runTyCheck $ typeCheck' e of
         Right (t, _) -> Right t 
         Left err     -> Left err

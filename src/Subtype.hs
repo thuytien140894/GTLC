@@ -6,7 +6,7 @@ module Subtype
     import Type
 
     import Data.Function (on)
-    import Data.List (sortBy)
+    import qualified Data.List as List (sortBy)
 
     -- | Check the subtype relation of two records.
     isRcdSubtype :: [TEntry] -> [TEntry] -> Bool
@@ -19,7 +19,7 @@ module Subtype
                         
     -- | Sort an array of (field, type) by the field names.                                   
     sortFields :: [TEntry] -> [TEntry]
-    sortFields = sortBy (compare `on` fst)
+    sortFields = List.sortBy (compare `on` fst)
 
     -- | Check if one record is a subset of another.
     -- The first list is always at least longer than the second one.

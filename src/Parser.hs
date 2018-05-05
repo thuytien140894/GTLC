@@ -10,8 +10,9 @@ module Parser
 
     import Data.Functor.Identity
     import Text.Parsec
-    import qualified Text.Parsec.Expr as Ex
     import Text.Parsec.String (Parser)
+
+    import qualified Text.Parsec.Expr as Ex
     
     -- | Make sure a non-projection term should not be followed by '.'.
     notProjection :: Parser ()

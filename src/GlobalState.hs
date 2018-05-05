@@ -1,8 +1,10 @@
 module GlobalState where 
 
     import Error
-    import StoreEnv
+    import StoreEnv (StoreEnv, Store(Store))
     import Syntax 
+
+    import qualified StoreEnv
 
     import Control.Monad.Except (ExceptT, runExceptT, throwError)
     import Control.Monad.State
@@ -39,27 +41,27 @@ module GlobalState where
     runBEval g = runState (runExceptT g) Unit
 
     -- | Allocate a new store.
-    allocateStoreEnv :: Term -> SEvalState Term 
-    allocateStoreEnv t = do 
-        storeEnv <- get 
-        let (t', newStoreEnv) = allocate storeEnv t
-        put newStoreEnv
+    allocate :: Term -> SEvalState Term 
+    allocate t = do 
+        env <- get 
+        let (t', newEnv) = StoreEnv.allocate env t
+        put newEnv
         return t'
 
     -- | Update the value of an existing store.
-    updateStoreEnv :: Int -> Term -> SEvalState Term
-    updateStoreEnv l t = do 
-        storeEnv <- get 
-        case storeEnv `lookUp` l of 
+    update :: Int -> Term -> SEvalState Term
+    update l t = do 
+        env <- get 
+        case env `StoreEnv.lookUp` l of 
             Just (Store (_, s)) -> do let v = Store (t, s)
-                                      put $ insertRef storeEnv l v
+                                      put $ StoreEnv.insert env l v
                                       return t
             Nothing             -> throwError $ InvalidRef l
 
     -- | Look up a reference.
-    peekStoreEnv :: Int -> SEvalState Term
-    peekStoreEnv l = do 
-        storeEnv <- get 
-        case storeEnv `lookUp` l of 
+    peek :: Int -> SEvalState Term
+    peek l = do 
+        env <- get 
+        case env `StoreEnv.lookUp` l of 
             Just (Store (v, _)) -> return v
             Nothing             -> throwError $ InvalidRef l

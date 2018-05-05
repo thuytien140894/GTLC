@@ -17,8 +17,8 @@ module StoreEnv where
                        deriving (Eq, Show)
 
     -- | Empty store environment.
-    emptyStore :: StoreEnv
-    emptyStore = StoreEnv Map.empty
+    empty :: StoreEnv
+    empty = StoreEnv Map.empty
 
     -- | Get the type of a store.
     getStoreType :: Store -> Type 
@@ -26,7 +26,7 @@ module StoreEnv where
 
     -- | Allocate a new store.
     allocate :: StoreEnv -> Term -> (Term, StoreEnv) 
-    allocate store t = (Loc l, insertRef store l v)
+    allocate store t = (Loc l, insert store l v)
       where 
         l = sizeOf store
         v = Store (t, typeOf t store)
@@ -40,8 +40,8 @@ module StoreEnv where
     lookUp (StoreEnv s) l = Map.lookup l s
 
     -- | Insert a new reference or replace an existing one.
-    insertRef :: StoreEnv -> Int -> Store -> StoreEnv 
-    insertRef (StoreEnv s) l t = StoreEnv $ Map.insert l t s 
+    insert :: StoreEnv -> Int -> Store -> StoreEnv 
+    insert (StoreEnv s) l t = StoreEnv $ Map.insert l t s 
 
     -- | Find the type for a term. 
     typeOf :: Term -> StoreEnv -> Type
