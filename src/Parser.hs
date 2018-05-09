@@ -32,7 +32,7 @@ module Parser
     -- | Parse an abstraction.
     lambda :: Parser Term
     lambda = do
-        reservedOp "\\" >> whiteSpace
+        reservedOp "\\" 
         arg <- identifier
         -- | If there is type specified, parse it; else return Dyn.
         ty <- option Dyn $ try colon >> types  

@@ -88,7 +88,7 @@ module TypeChecker
                 | otherwise                    -> throwError $ FunMismatch argTy paramTy (App e1 e2)
             _                                  -> throwError $ NotFunction e1                                                   
 
-    -- | Typecheck the source term and insert cast if needed
+    -- | Typecheck the source term and insert cast if needed.
     typeCheck' :: Term -> TCheckState (Term, Type)
     typeCheck' e = case e of 
         -- | Constants
