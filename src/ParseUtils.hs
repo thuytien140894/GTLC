@@ -59,23 +59,23 @@ module ParseUtils where
     -- | Update the typing environment for nested lambdas when new 
     --bound variables are introduced.
     updateVarType :: Term -> String -> Type -> Term
-    updateVarType t x ty = case t of 
+    updateVarType t x newTy = case t of 
         Var k _ id 
-            | id == x    -> Var k ty id
-        Succ t'          -> Succ $ updateVarType t' x ty
-        Pred t'          -> Pred $ updateVarType t' x ty
-        IsZero t'        -> IsZero $ updateVarType t' x ty
-        If t1 t2 t3      -> let t1' = updateVarType t1 x ty
-                                t2' = updateVarType t2 x ty
-                                t3' = updateVarType t3 x ty
+            | id == x    -> Var k newTy id
+        Succ t'          -> Succ $ updateVarType t' x newTy
+        Pred t'          -> Pred $ updateVarType t' x newTy
+        IsZero t'        -> IsZero $ updateVarType t' x newTy
+        If t1 t2 t3      -> let t1' = updateVarType t1 x newTy
+                                t2' = updateVarType t2 x newTy
+                                t3' = updateVarType t3 x newTy
                             in If t1' t2' t3'
-        Ref t'           -> Ref $ updateVarType t' x ty
-        Deref t'         -> Deref $ updateVarType t' x ty
-        Assign t1 t2     -> let t1' = updateVarType t1 x ty
-                                t2' = updateVarType t2 x ty
+        Ref t'           -> Ref $ updateVarType t' x newTy
+        Deref t'         -> Deref $ updateVarType t' x newTy
+        Assign t1 t2     -> let t1' = updateVarType t1 x newTy
+                                t2' = updateVarType t2 x newTy
                             in Assign t1' t2'
-        Lambda ty t' ctx -> Lambda ty (updateVarType t' x ty) ctx 
-        App t1 t2        -> updateVarType t1 x ty `App` updateVarType t2 x ty
+        Lambda ty t' ctx -> Lambda ty (updateVarType t' x newTy) ctx 
+        App t1 t2        -> updateVarType t1 x newTy `App` updateVarType t2 x newTy
         _                -> t
 
     -- | Retrieve the binding context of an abstraction.
