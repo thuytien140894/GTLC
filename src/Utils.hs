@@ -5,26 +5,6 @@ module Utils where
 
     import Control.Applicative ((<|>))
 
-    -- -- | Add new entry to the record.
-    -- addField :: Term -> (String, Term) -> Term
-    -- addField (Rec ls) newField = Rec (newField : ls)
-
-    -- -- | Add new entry to the record type.
-    -- addType :: Type -> (String, Type) -> Type
-    -- addType (TRec ls) newType = TRec (newType : ls)
-
-    -- -- | Add new entry to the record.
-    -- addEntry :: Term -> Entry -> Term
-    -- addEntry (Rec ls) newElem = Rec (newElem : ls)
-
-    -- -- | Find the type for a record.
-    -- rcdTypeOf :: Term -> StoreEnv -> Type
-    -- rcdTypeOf (Rec []) store              = TRec []
-    -- rcdTypeOf (Rec ((l1, t1) : ys)) store = rcdTy `addType` (l1, ty)
-    --   where 
-    --     rcdTy = rcdTypeOf (Rec ys) store
-    --     ty    = typeOf t1 store
-
     -- | Renumber the indices of free variables in a term by
     -- maintaining the "cutoff" parameter c that controls which 
     -- variables should be shifted. i.e. Variables with indices less 

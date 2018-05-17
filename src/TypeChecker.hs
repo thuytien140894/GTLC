@@ -12,21 +12,6 @@ module TypeChecker
 
     import Control.Monad.Except (throwError)
 
-    -- -- | Find the type for a record.
-    -- typeCheckRcd :: Term -> Label -> Either TypeError (Term, Type, Label)
-    -- typeCheckRcd (Rec []) l              = Right (Rec [], TRec [], l)
-    -- typeCheckRcd (Rec ((f1, t1) : ys)) l = do 
-    --     (t1', ty, l1) <- typeCheck' t1 l
-    --     (rcd, rcdTy, l2) <- typeCheckRcd (Rec ys) l1 
-    --     return (rcd `addField` (f1, t1'), rcdTy `addType` (f1, ty), l2)
-
-    -- -- | Typecheck a record field.
-    -- typeCheckField :: (Term, Type, Label) -> String -> Either TypeError (Term, Type, Label)
-    -- typeCheckField (_, TRec [], _) f = Left $ InvalidLabel f 
-    -- typeCheckField (Rec ((_, t1) : xs), TRec ((f1, s1) : ys), l) f 
-    --     | f1 == f                    = Right (t1, s1, l)
-    --     | otherwise                  = typeCheckField (Rec xs, TRec ys, l) f
-
     -- | Typecheck a conditional.
     typeCheckCond :: Term -> TCheckState (Term, Type)
     typeCheckCond (If e1 e2 e3) = do
@@ -118,14 +103,7 @@ module TypeChecker
                                     _   -> throwError $ NotNat ty
 
         -- | Conditional
-        If e1 e2 e3       -> typeCheckCond e                                      
-                 
-        -- -- | Records
-        -- Rec ls            -> typeCheckRcd e l
-        -- Proj e' f         -> case e' of                                            
-        --                          Rec _ -> do res <- typeCheck' e' l 
-        --                                      typeCheckField res f 
-        --                          _     -> Left $ NotRecord e'
+        If e1 e2 e3       -> typeCheckCond e                   
            
         -- | Variables
         Var _ ty _        -> case ty of                                            

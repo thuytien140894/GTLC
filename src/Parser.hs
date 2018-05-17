@@ -132,9 +132,7 @@ module Parser
           <|> var
           <|> lambda
           <|> conditional
-          -- | "Look ahead" and see if an expression is a projection, 
-          -- if not, then move on.
-          <|> try projection 
+          <|> try projection  -- "look ahead" for a projection
           <|> record
           <|> dereference
 
