@@ -13,7 +13,7 @@ module Main where
     interpret :: String -> IO ()
     interpret line = case parseExpr line of 
         Right validExpr -> case typeCheck validExpr of 
-                               Right t  -> case evaluate t of 
+                               Right t  -> printExp t >> case evaluate t of 
                                                Right res -> printRes res
                                                Left err  -> printMsg err
                                Left err -> printMsg err

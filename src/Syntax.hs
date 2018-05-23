@@ -27,6 +27,7 @@ module Syntax where
     pattern RefProj :: Label -> Coercion
     pattern RefProj l = Project (TRef Dyn) l
     
+    -- | Expressions
     data Term = Unit                       -- ^ unit 
               | Zero                       -- ^ 0
               | Tru                        -- ^ true
@@ -47,6 +48,7 @@ module Syntax where
               | Cast Coercion Term         -- ^ Coercion (<c> t)
                 deriving (Eq, Show) 
     
+    -- | Coercions
     data Coercion = Iden Type               -- ^ Identity 
                   | Project Type Label      -- ^ Projection (B?)
                   | Inject Type             -- ^ Injection (B!)

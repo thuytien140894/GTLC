@@ -1,7 +1,9 @@
 module Type where
 
+    -- | Alias for record entry
     type TEntry = (String, Type)
     
+    -- | Types
     data Type = TUnit          -- ^ Unit
               | Dyn            -- ^ Dynamic
               | Top            -- ^ Top
