@@ -106,9 +106,9 @@ module Evaluator
         Ref v     
             | isVal v                     -> GlobalS.allocate v                             
         Ref t'                            -> Ref <$> evaluate' t'
-        Deref (Loc l)                     -> GlobalS.peek l
 
         -- | Dereference
+        Deref (Loc l)                     -> GlobalS.peek l
         Deref t'                          -> Deref <$> evaluate' t'
                                             
         -- | Assignment
