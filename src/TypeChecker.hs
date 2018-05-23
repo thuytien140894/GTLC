@@ -22,17 +22,17 @@ module TypeChecker
             Dyn 
                 -- | Two branches have the same type, so 
                 -- there is no need for casting.
-                | fst == snd             -> do c1 <- coerce cond Bool
+                | fst == snd             -> do c1 <- coerce cond Boolean
                                                let t1' = Cast c1 t1
                                                return (If t1' t2 t3, fst)  
-                | fst `isConsistent` snd -> do c1 <- coerce cond Bool
+                | fst `isConsistent` snd -> do c1 <- coerce cond Boolean
                                                c2 <- coerce fst snd
                                                c3 <- coerce snd fst 
                                                let (t1', t2', t3') = (Cast c1 t1, Cast c2 t2, Cast c3 t3)
                                                return (If t1' t2' t3', Dyn)   
                 -- | Two branches have different types.
                 | otherwise              -> throwError $ Difference fst snd
-            Bool 
+            Boolean 
                 | fst == snd             -> return (If t1 t2 t3, fst) 
                 | fst `isConsistent` snd -> do c2 <- coerce fst snd 
                                                c3 <- coerce snd fst
@@ -78,8 +78,8 @@ module TypeChecker
     typeCheck' e = case e of 
         -- | Constants
         Unit              -> return (Unit, TUnit)                                
-        Tru               -> return (e, Bool)                                    
-        Fls               -> return (e, Bool)                                   
+        Tru               -> return (e, Boolean)                                    
+        Fls               -> return (e, Boolean)                                   
         Zero              -> return (e, Nat)                                     
         
         -- | Arithmetic
@@ -98,8 +98,8 @@ module TypeChecker
         IsZero e'         -> do (t', ty) <- typeCheck' e' 
                                 case ty of 
                                     Dyn -> do c <- coerce ty Nat
-                                              return (IsZero $ Cast c t', Bool)
-                                    Nat -> return (IsZero t', Bool)
+                                              return (IsZero $ Cast c t', Boolean)
+                                    Nat -> return (IsZero t', Boolean)
                                     _   -> throwError $ NotNat ty
 
         -- | Conditional

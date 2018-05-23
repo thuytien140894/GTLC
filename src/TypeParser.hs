@@ -9,10 +9,10 @@ module TypeParser where
 
     -- | Parse base types.
     boolean, nat, top, dynamic :: Parser Type
-    boolean = reserved "Bool" >> return Bool
-    nat     = reserved "Nat" >> return Nat
-    top     = reserved "Top" >> return Top
-    dynamic = reserved "Dyn" >> return Dyn
+    boolean = reserved "Bool" >> return Boolean
+    nat     = reserved "Nat"  >> return Nat
+    top     = reserved "Top"  >> return Top
+    dynamic = reserved "Dyn"  >> return Dyn
     
     -- | Parse reference types. 
     ref :: Parser Type 

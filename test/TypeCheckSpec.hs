@@ -12,9 +12,9 @@ module TypeCheckSpec where
     spec = 
         describe "casts" $ do
             context "(\\x. 0) True" $
-                it "should be (\\x. 0) <Bool!>True" $ 
+                it "should be (\\x. 0) <Boolean!>True" $ 
                 typeCheck (App (Lambda Dyn Zero ["x"]) Tru) 
-                `shouldBe` Right (App (Lambda Dyn Zero ["x"]) (Cast (Inject Bool) Tru))
+                `shouldBe` Right (App (Lambda Dyn Zero ["x"]) (Cast (Inject Boolean) Tru))
 
             context "(\\x. (x 0)) (\\x:Nat. (succ x))" $
                 it "should be (\\x. (<Fun?>x <Nat!>0)) <Fun!><Nat?->Nat!>(\\x:Nat. (succ x))" $ 
@@ -27,19 +27,19 @@ module TypeCheckSpec where
                 `shouldBe` Right (App (Lambda (Arr Dyn Nat) (App (Var 0 (Arr Dyn Nat) "x") (Cast (Inject Nat) Zero)) ["x"]) (Cast (Func (Project Nat (Label 0)) (Iden Nat)) (Lambda Nat (Var 0 Nat "x") ["x"])))
 
             context "(\\x. succ x) true" $
-                it "should be (\\x. succ <Nat?>x) <Bool!>true" $
+                it "should be (\\x. succ <Nat?>x) <Boolean!>true" $
                 typeCheck (App (Lambda Dyn (Succ (Var 0 Dyn "x")) ["x"]) Tru)  
-                `shouldBe` Right (App (Lambda Dyn (Succ (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Cast (Inject Bool) Tru))
+                `shouldBe` Right (App (Lambda Dyn (Succ (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Cast (Inject Boolean) Tru))
 
-            context "(\\x:Bool->Nat. succ 0) (\\x:Nat. x)" $
-                it "should be (\\x:Bool->Nat. succ <Identity>0) <Fail>(\\x:Nat. x)" $
-                typeCheck (App (Lambda (Arr Bool Nat) (Succ Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])) 
-                `shouldBe` Left (FunMismatch (Arr Nat Nat) (Arr Bool Nat) (App (Lambda (Arr Bool Nat) (Succ Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])))
+            context "(\\x:Boolean->Nat. succ 0) (\\x:Nat. x)" $
+                it "should be (\\x:Boolean->Nat. succ <Identity>0) <Fail>(\\x:Nat. x)" $
+                typeCheck (App (Lambda (Arr Boolean Nat) (Succ Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])) 
+                `shouldBe` Left (FunMismatch (Arr Nat Nat) (Arr Boolean Nat) (App (Lambda (Arr Boolean Nat) (Succ Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])))
 
-            context "(\\x:Bool. x) 0" $
+            context "(\\x:Boolean. x) 0" $
                 it "should be Mismatch" $
-                typeCheck (App (Lambda Bool (Var 0 Bool "x") ["x"]) Zero)
-                `shouldBe` Left (FunMismatch Nat Bool (App (Lambda Bool (Var 0 Bool "x") ["x"]) Zero))
+                typeCheck (App (Lambda Boolean (Var 0 Boolean "x") ["x"]) Zero)
+                `shouldBe` Left (FunMismatch Nat Boolean (App (Lambda Boolean (Var 0 Boolean "x") ["x"]) Zero))
 
             context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. succ y)" $
                 it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Fun?>m)) <Fun!><Nat?->Nat!>(\\y:Nat. succ y)" $
@@ -47,14 +47,14 @@ module TypeCheckSpec where
                 `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn)(Label 1)) (Func (Inject Nat) (Project Nat (Label 0)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Seq (Func (Project Nat (Label 2)) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"])))
 
             context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. iszero y)" $
-                it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Fun?>m)) <Fun!><Nat?->Bool!>(\\y:Nat. iszero y)" $
+                it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Fun?>m)) <Fun!><Nat?->Boolean!>(\\y:Nat. iszero y)" $
                 typeCheck (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"]))
-                `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn)(Label 1)) (Func (Inject Nat) (Project Nat (Label 0)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Seq (Func (Project Nat (Label 2)) (Inject Bool)) (Inject (Arr Dyn Dyn))) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"])))
+                `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn)(Label 1)) (Func (Inject Nat) (Project Nat (Label 0)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Seq (Func (Project Nat (Label 2)) (Inject Boolean)) (Inject (Arr Dyn Dyn))) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"])))
 
             context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true" $
-                it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Fun?>m)) <Bool!>true" $
+                it "should be (\\m. ((\\x:Nat->Nat. (x 0)) <Nat!->Nat?><Fun?>m)) <Boolean!>true" $
                 typeCheck (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Var 0 Dyn "m")) ["m","x"]) Tru)
-                `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn)(Label 1)) (Func (Inject Nat) (Project Nat (Label 0)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Inject Bool) Tru))
+                `shouldBe` Right (App (Lambda Dyn (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Seq (Project (Arr Dyn Dyn)(Label 1)) (Func (Inject Nat) (Project Nat (Label 0)))) (Var 0 Dyn "m"))) ["m","x"]) (Cast (Inject Boolean) Tru))
             
             context "(\\m. ((\\x. (x 0)) m)) (\\y:Nat. succ y)" $
                 it "should be (\\m. ((\\x. (<Fun?>x <Nat!>0)) m)) <Fun!><Nat?->Nat!>(\\y:Nat. succ y)" $
@@ -72,9 +72,9 @@ module TypeCheckSpec where
                 `shouldBe` Right (If (App (Lambda Dyn (IsZero (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Cast (Inject Nat) (Succ Zero)))(Cast (Inject Nat) Zero) (Cast (Project Nat (Label 3)) (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 1)) (Var 0 Dyn "x")) (Cast(Inject Nat) Zero)) ["x"]) (Cast (Seq (Func (Iden Dyn) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda Dyn (Succ (Cast (Project Nat (Label 2)) (Var 0 Dyn "y"))) ["y"])))))
 
             context "((\\m. if (\\x. iszero x) m then (\\x. succ x) else (\\x. pred x)) 0) true" $
-                it "should be if ((\\m. if (\\x. iszero <Nat?>x) m then (\\x. succ <Nat?>x) else (\\x. pred <Nat?>x)) <Nat!>0) <Bool!>true" $
+                it "should be if ((\\m. if (\\x. iszero <Nat?>x) m then (\\x. succ <Nat?>x) else (\\x. pred <Nat?>x)) <Nat!>0) <Boolean!>true" $
                 typeCheck (App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Var 0 Dyn "x")) ["x"]) (Var 0 Dyn "m")) (Lambda Dyn (Succ (Var 0Dyn "x")) ["x"]) (Lambda Dyn (Pred (Var 0 Dyn "x")) ["x"])) ["m"]) Zero) Tru)
-                `shouldBe` Right (App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Var 0 Dyn"m")) (Lambda Dyn (Succ (Cast (Project Nat (Label 1)) (Var 0 Dyn "x"))) ["x"]) (Lambda Dyn (Pred (Cast (Project Nat (Label 2)) (Var 0 Dyn "x"))) ["x"])) ["m"]) (Cast (Inject Nat) Zero)) (Cast (Inject Bool) Tru))
+                `shouldBe` Right (App (App (Lambda Dyn (If (App (Lambda Dyn (IsZero (Cast (Project Nat (Label 0)) (Var 0 Dyn "x"))) ["x"]) (Var 0 Dyn"m")) (Lambda Dyn (Succ (Cast (Project Nat (Label 1)) (Var 0 Dyn "x"))) ["x"]) (Lambda Dyn (Pred (Cast (Project Nat (Label 2)) (Var 0 Dyn "x"))) ["x"])) ["m"]) (Cast (Inject Nat) Zero)) (Cast (Inject Boolean) Tru))
 
             context "(\\n. (\\m. if (\\x. iszero x) n then m 0 else m (succ 0)) (\\y. succ y)) 0" $
                 it "should be (\\n. (\\m. if (\\x. iszero <Nat?>x) n then <Fun?>m <Nat!>0 else <Fun?>m <Nat!>(succ 0)) <Fun!><I->Nat!>(\\y. succ <Nat?>y)) <Nat!>0" $
@@ -97,6 +97,6 @@ module TypeCheckSpec where
                 `shouldBe` Right (App (Lambda Dyn (App (Lambda Dyn (App (Cast (Project (Arr Dyn Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ (Succ Zero)))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (Func (Seq (Project (TRef Dyn) (Label 2)) (CRef (Inject Nat) (Project Nat (Label 1)))) (Inject Nat)) (Inject (Arr Dyn Dyn))) (Lambda (TRef Nat) (Deref (Var 0 (TRef Nat) "y")) ["y"])))
 
             context "(\\m. ((\\x. x := succ 0) m)) ref true" $
-                it "should be (\\m. ((\\x. <Ref?>x := <Nat!>succ 0) m)) <Ref!><CRef Bool? Bool!>ref true" $
+                it "should be (\\m. ((\\x. <Ref?>x := <Nat!>succ 0) m)) <Ref!><CRef Boolean? Boolean!>ref true" $
                 typeCheck (App (Lambda Dyn (App (Lambda Dyn (Assign (Var 0 Dyn "x") (Succ Zero)) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Ref Tru))
-                `shouldBe` Right (App (Lambda Dyn (App (Lambda Dyn (Assign (Cast (Project (TRef Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ Zero))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (CRef (Project Bool (Label 1)) (Inject Bool)) (Inject (TRef Dyn))) (Ref Tru)))
+                `shouldBe` Right (App (Lambda Dyn (App (Lambda Dyn (Assign (Cast (Project (TRef Dyn) (Label 0)) (Var 0 Dyn "x")) (Cast (Inject Nat) (Succ Zero))) ["x"]) (Var 0 Dyn "m")) ["m","x"]) (Cast (Seq (CRef (Project Boolean (Label 1)) (Inject Boolean)) (Inject (TRef Dyn))) (Ref Tru)))

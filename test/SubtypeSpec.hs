@@ -19,22 +19,22 @@ module SubtypeSpec where
                 sortFields [("b",Nat),("a",Nat)]
                 `shouldBe` [("a",Nat),("b",Nat)]
 
-            context "{x:Nat,a:Bool,b:Bool} and {x:Nat,y:Nat}" $ 
+            context "{x:Nat,a:Boolean,b:Boolean} and {x:Nat,y:Nat}" $ 
                 it "should be false" $ 
-                isSubtype (TRec [("x", Nat), ("a", Bool), ("b", Bool)]) (TRec [("x", Nat), ("y", Nat)]) 
+                isSubtype (TRec [("x", Nat), ("a", Boolean), ("b", Boolean)]) (TRec [("x", Nat), ("y", Nat)]) 
                 `shouldBe` False
 
-            context "{a:Bool,y:Nat,x:Nat} and {x:Nat,y:Nat}" $ 
+            context "{a:Boolean,y:Nat,x:Nat} and {x:Nat,y:Nat}" $ 
                 it "should be true" $ 
-                isSubtype (TRec [("a", Bool), ("y", Nat), ("x", Nat)]) (TRec [("x", Nat), ("y", Nat)]) 
+                isSubtype (TRec [("a", Boolean), ("y", Nat), ("x", Nat)]) (TRec [("x", Nat), ("y", Nat)]) 
                 `shouldBe` True
 
-            context "{z:Bool} and {z:Bool}" $ 
+            context "{z:Boolean} and {z:Boolean}" $ 
                 it "should be true" $ 
-                isSubtype (TRec [("z", Bool)]) (TRec [("z", Bool)])
+                isSubtype (TRec [("z", Boolean)]) (TRec [("z", Boolean)])
                 `shouldBe` True 
                         
-            context "{y:Nat}->{z:Bool} and {x:Nat,y:Nat}->{z:Bool}" $ 
+            context "{y:Nat}->{z:Boolean} and {x:Nat,y:Nat}->{z:Boolean}" $ 
                 it "should be true" $ 
-                isSubtype (Arr (TRec [("y",Nat)]) (TRec [("z", Bool)])) (Arr (TRec [("x",Nat),("y",Nat)]) (TRec [("z", Bool)]))
+                isSubtype (Arr (TRec [("y",Nat)]) (TRec [("z", Boolean)])) (Arr (TRec [("x",Nat),("y",Nat)]) (TRec [("z", Boolean)]))
                 `shouldBe` True

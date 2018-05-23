@@ -47,7 +47,7 @@ module InterpretSpec where
                 let Right expr    = parseExpr "(\\m. ((\\x:Nat->Bool. (x 0)) m)) (\\y:Nat. succ y)"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError Nat Bool (BlameRes FunRet (App (Lambda (Arr Nat Bool) (App (Var 0 (Arr Nat Bool) "x") Zero) ["x"]) (Cast (Fail Nat Bool (Label 0)) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"]))))
+                err `shouldBe` CastError Nat Boolean (BlameRes FunRet (App (Lambda (Arr Nat Boolean) (App (Var 0 (Arr Nat Boolean) "x") Zero) ["x"]) (Cast (Fail Nat Boolean (Label 0)) (Lambda Nat (Succ (Var 0 Nat "y")) ["y"]))))
             
             context "(\\x. (x 0)) (\\x:Nat. (succ x))" $ 
                 it "should be succ 0" $ do 
@@ -66,14 +66,14 @@ module InterpretSpec where
             context "(\\x:Nat->Bool. x 0) (\\x:Nat. x)" $ 
                 it "should be Type Mismatch" $ do 
                 let Right expr    = parseExpr "(\\x:Nat->Bool. x 0) (\\x:Nat. x)"
-                typeCheck expr `shouldBe` Left (FunMismatch (Arr Nat Nat) (Arr Nat Bool) (App (Lambda (Arr Nat Bool) (App (Var 0 (Arr Nat Bool) "x") Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])))
+                typeCheck expr `shouldBe` Left (FunMismatch (Arr Nat Nat) (Arr Nat Boolean) (App (Lambda (Arr Nat Boolean) (App (Var 0 (Arr Nat Boolean) "x") Zero) ["x"]) (Lambda Nat (Var 0 Nat "x") ["x"])))
 
             context "((\\m. if (\\x. iszero x) m then (\\x. succ x) else (\\x. pred x)) 0) true" $ 
                 it "should be CastError" $ do 
                 let Right expr    = parseExpr "((\\m. if (\\x. iszero x) m then (\\x. succ x) else (\\x. pred x)) 0) true"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError Bool Nat (BlameRes None (Succ (Cast (Fail Bool Nat (Label 1)) Tru)))
+                err `shouldBe` CastError Boolean Nat (BlameRes None (Succ (Cast (Fail Boolean Nat (Label 1)) Tru)))
 
             context "(\\x:Nat->Nat. x (x 0)) (\\x. (succ x))" $ 
                 it "should be succ (succ 0)" $ do 
@@ -87,27 +87,27 @@ module InterpretSpec where
                 let Right expr    = parseExpr "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. iszero y)"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError Bool Nat (BlameRes FunRet (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Fail Bool Nat(Label 0)) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"]))))
+                err `shouldBe` CastError Boolean Nat (BlameRes FunRet (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Fail Boolean Nat(Label 0)) (Lambda Nat (IsZero (Var 0 Nat "y")) ["y"]))))
             context "(\\x. succ x) true" $ 
                 it "should be CastError" $ do 
                 let Right expr    = parseExpr "(\\x. succ x) true"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError Bool Nat (BlameRes None (Succ (Cast (Fail Bool Nat (Label 0)) Tru)))
+                err `shouldBe` CastError Boolean Nat (BlameRes None (Succ (Cast (Fail Boolean Nat (Label 0)) Tru)))
 
             context "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true" $ 
                 it "should be CastError" $ do 
                 let Right expr    = parseExpr "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError Bool (Arr Dyn Dyn) (BlameRes Function (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Fail Bool (Arr Dyn Dyn) (Label 1)) Tru)))
+                err `shouldBe` CastError Boolean (Arr Dyn Dyn) (BlameRes Function (App (Lambda (Arr Nat Nat) (App (Var 0 (Arr Nat Nat) "x") Zero) ["x"]) (Cast (Fail Boolean (Arr Dyn Dyn) (Label 1)) Tru)))
             
             context "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Bool. !y)" $ 
                 it "should be CastError" $ do 
                 let Right expr    = parseExpr "(\\m. ((\\x. (x ref (succ (succ 0)))) m)) (\\y:Ref Bool. !y)"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError (TRef Bool) (TRef Nat) (BlameRes RefWrite (Cast (Inject Bool) (App (Lambda (TRef Bool) (Deref (Var 0 (TRef Bool) "y")) ["y"]) (Cast (Fail (TRef Bool) (TRef Nat) (Label 1)) (Loc 0)))))
+                err `shouldBe` CastError (TRef Boolean) (TRef Nat) (BlameRes RefWrite (Cast (Inject Boolean) (App (Lambda (TRef Boolean) (Deref (Var 0 (TRef Boolean) "y")) ["y"]) (Cast (Fail (TRef Boolean) (TRef Nat) (Label 1)) (Loc 0)))))
 
             context "((\\y. (\\x:Ref Bool. x := y)) true) ref false" $ 
                 it "should be true" $ do 
@@ -121,7 +121,7 @@ module InterpretSpec where
                 let Right expr    = parseExpr "((\\y. (\\x. x := y)) 0) ref false"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError Nat Bool (BlameRes RefWrite (Cast (Inject Bool) (Assign (Loc 0) (Cast (Fail Nat Bool (Label 1)) Zero))))
+                err `shouldBe` CastError Nat Boolean (BlameRes RefWrite (Cast (Inject Boolean) (Assign (Loc 0) (Cast (Fail Nat Boolean (Label 1)) Zero))))
 
             context "((\\y. (\\x. ref x := y)) 0) false" $ 
                 it "should be 0" $ do 
@@ -135,7 +135,7 @@ module InterpretSpec where
                 let Right expr    = parseExpr "(\\m. ((\\x. x := succ 0) m)) ref true"
                 let Right coerced = typeCheck expr 
                 let Left err      = evaluate coerced
-                err `shouldBe` CastError Nat Bool (BlameRes RefWrite (Cast (Inject Bool) (Assign (Loc 0) (Cast (Fail Nat Bool (Label 1)) (Succ Zero)))))
+                err `shouldBe` CastError Nat Boolean (BlameRes RefWrite (Cast (Inject Boolean) (Assign (Loc 0) (Cast (Fail Nat Boolean (Label 1)) (Succ Zero)))))
 
             context "(\\y. (\\x:Ref Nat. x := succ 0) ref y) true" $ 
                 it "should be succ 0" $ do 

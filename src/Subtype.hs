@@ -45,7 +45,7 @@ module Subtype
     isSubtypeUD :: Type -> Type -> Bool
     isSubtypeUD s t 
         | s == t                        = True
-    isSubtypeUD Bool Dyn                = True                                      
+    isSubtypeUD Boolean Dyn             = True                                      
     isSubtypeUD Nat Dyn                 = True                                      
     isSubtypeUD (Arr s1 s2) Dyn         = isSubtypeUD (Arr s1 s2) (Arr Dyn Dyn) 
     isSubtypeUD (Arr s1 s2) (Arr t1 t2) = t1 `isSubtypeUD` s1 && s2 `isSubtypeUD` t2

@@ -7,7 +7,7 @@ module Type where
     data Type = TUnit          -- ^ Unit
               | Dyn            -- ^ Dynamic
               | Top            -- ^ Top
-              | Bool           -- ^ Boolean
+              | Boolean        -- ^ Boolean
               | Nat            -- ^ Natural number
               | Arr Type Type  -- ^ Function type
               | TRec [TEntry]  -- ^ Record type

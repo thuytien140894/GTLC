@@ -134,7 +134,7 @@ module Prettier
             Top       -> PP.text "Top"
             Dyn       -> PP.text "?"
             Nat       -> PP.text "Nat"
-            Bool      -> PP.text "Bool"
+            Boolean   -> PP.text "Bool"
             TRef ty'  -> PP.text "Ref" <+> output ty'
             Arr s1 s2 -> output s1 <> PP.text "->" <> output s2
             TRec ls   -> PP.braces $ outputRcdTypes ls
