@@ -102,8 +102,8 @@ module Parser
     expr = app 
 
     -- | Prefix operators.
-    prefixTable :: Ex.OperatorTable String () Identity Term
-    prefixTable = 
+    operatorTable :: Ex.OperatorTable String () Identity Term
+    operatorTable = 
         [ [ Ex.Prefix $ reserved "succ"   >> return Succ
           , Ex.Prefix $ reserved "pred"   >> return Pred
           , Ex.Prefix $ reserved "iszero" >> return IsZero
@@ -114,7 +114,7 @@ module Parser
 
     -- | Parse an arithmetic expression such as succ, pred, and iszero.
     expr' :: Parser Term
-    expr' = Ex.buildExpressionParser prefixTable expr''
+    expr' = Ex.buildExpressionParser operatorTable expr''
 
     -- | Parse term enclosed in parenthesis.
     parenExpr :: Parser Term
