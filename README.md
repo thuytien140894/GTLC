@@ -31,9 +31,9 @@ installed on the system.
 
         stack exec GTLC-exe  
 
-### 3. How to use the program
+### 3. The Language Syntax
     
-   **Types**
+   #### Types
 
    Base types:
    
@@ -52,7 +52,7 @@ installed on the system.
    
         Nat->Bool
 
-   **Expressions**
+   #### Expressions
 
    Constants include boolean values and 0:
         
@@ -70,7 +70,7 @@ installed on the system.
 
    Assignments accept any expression on both sides of the symbol ":=". 
 
-        e<sub>1<\sub> := e<sub>2<\sub>
+        e1 := e2
 
    For lambda-abstraction λx:T. t, use "\" to denote λ. To specify the type of the bound variable, 
    insert a colon and a type after the variable name. The body expression is placed after a dot. For example, λx:Nat. x is written as:   
@@ -99,7 +99,7 @@ installed on the system.
         
    Conditionals:
    
-        if e<sub>1<\sub> then e<sub>2<\sub> else <sub>3<\sub>
+        if e1 then e2 else e3
         
 ### 4. How to exit the program
 
@@ -110,12 +110,13 @@ installed on the system.
         Type "test" at the command prompt.
 
    Note: There are 35 test cases. Each test case follows the following format:
-        
+
         Test> Input expression 
         ==> Modified expression with additional coercions 
         Result
 
    Results can be of three kinds: 
-   (1) a value, which is printed in green
-   (2) a static type error printed in red ("Type error")
-   (3) a runtime cast exception printed in red ("Invalid cast exception")
+   
+   1. a value, printed in green
+   2. a static type error, printed in red ("Type error")
+   3. a runtime cast exception, printed in red ("Invalid cast exception")

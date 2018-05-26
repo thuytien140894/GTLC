@@ -94,7 +94,7 @@ module Coercion where
         | s `isConsistent` t = do c <- coerce t s
                                   d <- coerce s t 
                                   return $ CRef c d  
-    coerce s1 s2             = Fail s1 s2 <$> GlobalS.newLabel                 -- ^ (C-FAIL)
+    coerce s1 s2             = Fail s1 s2 <$> GlobalS.newLabel         -- ^ (C-FAIL)
 
     -- | Reduce a coercion (single-step).
     reduceCoercion :: Coercion -> Coercion
