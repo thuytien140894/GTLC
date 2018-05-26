@@ -70,6 +70,14 @@ module Main where
     newLine :: InputT IO ()
     newLine = lift $ putStr "\n"
 
+    -- | Display the prompt options.
+    displayMenu :: IO ()
+    displayMenu = do 
+        putStrLn "  Commands available from the prompt:"
+        putStrLn "      test: run test cases for the GTLC"
+        putStrLn "      exit: exit the program"
+        putStrLn "      help: display this menu"
+
     -- | Run a read-eval-print loop.
     loop :: InputT IO ()
     loop = do
@@ -77,10 +85,12 @@ module Main where
         case input of
             Just "exit"  -> return ()
             Just "test"  -> lift runTests >> loop
+            Just "help"  -> lift displayMenu >> loop
             Just validIn -> lift (interpret validIn) >> newLine >> loop
                             
     -- | Main method for the interpreter.
     main :: IO ()
     main = do 
-        putStrLn "Gradually Typed Lambda Calculus, verion 1.0.0: https://github.com/thuytien140894/GTLC"
+        putStrLn "Gradually-Typed Lambda Calculus (GTLC), verion 1.0.0: https://github.com/thuytien140894/GTLC"
+        putStrLn "Type \"help\" for more information."
         runInputT defaultSettings loop
