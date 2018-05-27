@@ -40,15 +40,11 @@ module Prettier
 
     -- | Format an exception message.
     renderException :: String -> Doc
-    renderException = PP.red . PP.bold . PP.text
+    renderException = PP.red . PP.text
 
     -- | Type class to print pretty.
     class Pretty a where 
         output :: a -> Doc
-
-        -- | Format a valid result.
-        renderValid :: a -> Doc 
-        renderValid = PP.green . PP.bold . output
 
         -- | Print messages.
         printMsg :: a -> IO ()
@@ -56,11 +52,12 @@ module Prettier
 
         -- | Print a valid result.
         printRes :: a -> IO ()
-        printRes = PP.putDoc . renderValid
+        printRes a = PP.putDoc (PP.text "==>" <+> output a)
 
         -- | Print a casted expression.
         printExp :: a -> IO () 
-        printExp a = PP.putDoc $ PP.text "==>" <+> output a <> PP.linebreak
+        printExp a = PP.putDoc $ PP.green (PP.text "TypeChecked:") 
+                     <+> output a <> PP.linebreak
 
     -- | Print pretty for terms.
     instance Pretty Term where 
