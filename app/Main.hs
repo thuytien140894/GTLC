@@ -30,6 +30,16 @@ module Main where
     -- | Run all the test cases. 
     runTests :: IO ()
     runTests = do 
+        test "(\\x. x) (\\x. x)"
+        test "\\x. y"
+        test "(\\x. x 0) true"
+        test "(\\x:Nat. x 0) true"
+        test "(\\x:Nat. !x) 0"
+        test "(\\x. !x) 0"
+        test "(\\x:Nat. x := pred (succ 0)) 0"
+        test "(\\x. x := pred (succ 0)) 0"
+        test "if true then succ 0 else false"
+        test "if 0 then succ 0 else succ (succ 0)"
         test "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true" 
         test "(\\x. succ x) true"
         test "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. iszero y)"

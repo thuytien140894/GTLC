@@ -109,14 +109,20 @@ installed on the system.
 
         Type "test" at the command prompt.
 
-   Note: There are 35 test cases. Each test case follows the following format:
+   **Note**: There are 45 test cases. A well-typed test case either evaluates to a value:
 
-        Test> Input expression 
-        ==> Modified expression with additional coercions 
-        Result
+        Test> "Input expression" 
+        TypeChecked: "Modified expression with additional coercions" 
+        ==> "value"
+ 
+   or results in a cast error:
 
-   Results can be of three kinds: 
-   
-   1. a value, printed in green
-   2. a static type error, printed in red ("Type error")
-   3. a runtime cast exception, printed in red ("Invalid cast exception")
+        Test> "Input expression" 
+        TypeChecked: "Modified expression with additional coercions" 
+        Invalid cast exception: "error message"
+
+   On the other hand, an ill-typed expression fails the typechecking procedure and 
+   results immediately in a type error.
+
+        Test> "Input expression" 
+        Type error: "error message"
