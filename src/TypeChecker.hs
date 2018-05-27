@@ -12,21 +12,6 @@ module TypeChecker
 
     import Control.Monad.Except (throwError)
 
-    -- -- | Find the type for a record.
-    -- typeCheckRcd :: Term -> Label -> Either TypeError (Term, Type, Label)
-    -- typeCheckRcd (Rec []) l              = Right (Rec [], TRec [], l)
-    -- typeCheckRcd (Rec ((f1, t1) : ys)) l = do 
-    --     (t1', ty, l1) <- typeCheck' t1 l
-    --     (rcd, rcdTy, l2) <- typeCheckRcd (Rec ys) l1 
-    --     return (rcd `addField` (f1, t1'), rcdTy `addType` (f1, ty), l2)
-
-    -- -- | Typecheck a record field.
-    -- typeCheckField :: (Term, Type, Label) -> String -> Either TypeError (Term, Type, Label)
-    -- typeCheckField (_, TRec [], _) f = Left $ InvalidLabel f 
-    -- typeCheckField (Rec ((_, t1) : xs), TRec ((f1, s1) : ys), l) f 
-    --     | f1 == f                    = Right (t1, s1, l)
-    --     | otherwise                  = typeCheckField (Rec xs, TRec ys, l) f
-
     -- | Typecheck a conditional.
     typeCheckCond :: Term -> TCheckState (Term, Type)
     typeCheckCond (If e1 e2 e3) = do
@@ -37,17 +22,17 @@ module TypeChecker
             Dyn 
                 -- | Two branches have the same type, so 
                 -- there is no need for casting.
-                | fst == snd             -> do c1 <- coerce cond Bool
+                | fst == snd             -> do c1 <- coerce cond Boolean
                                                let t1' = Cast c1 t1
                                                return (If t1' t2 t3, fst)  
-                | fst `isConsistent` snd -> do c1 <- coerce cond Bool
+                | fst `isConsistent` snd -> do c1 <- coerce cond Boolean
                                                c2 <- coerce fst snd
                                                c3 <- coerce snd fst 
                                                let (t1', t2', t3') = (Cast c1 t1, Cast c2 t2, Cast c3 t3)
                                                return (If t1' t2' t3', Dyn)   
                 -- | Two branches have different types.
                 | otherwise              -> throwError $ Difference fst snd
-            Bool 
+            Boolean 
                 | fst == snd             -> return (If t1 t2 t3, fst) 
                 | fst `isConsistent` snd -> do c2 <- coerce fst snd 
                                                c3 <- coerce snd fst
@@ -88,13 +73,13 @@ module TypeChecker
                 | otherwise                    -> throwError $ FunMismatch argTy paramTy (App e1 e2)
             _                                  -> throwError $ NotFunction e1                                                   
 
-    -- | Typecheck the source term and insert cast if needed
+    -- | Typecheck the source term and insert cast if needed.
     typeCheck' :: Term -> TCheckState (Term, Type)
     typeCheck' e = case e of 
         -- | Constants
         Unit              -> return (Unit, TUnit)                                
-        Tru               -> return (e, Bool)                                    
-        Fls               -> return (e, Bool)                                   
+        Tru               -> return (e, Boolean)                                    
+        Fls               -> return (e, Boolean)                                   
         Zero              -> return (e, Nat)                                     
         
         -- | Arithmetic
@@ -113,19 +98,12 @@ module TypeChecker
         IsZero e'         -> do (t', ty) <- typeCheck' e' 
                                 case ty of 
                                     Dyn -> do c <- coerce ty Nat
-                                              return (IsZero $ Cast c t', Bool)
-                                    Nat -> return (IsZero t', Bool)
+                                              return (IsZero $ Cast c t', Boolean)
+                                    Nat -> return (IsZero t', Boolean)
                                     _   -> throwError $ NotNat ty
 
         -- | Conditional
-        If e1 e2 e3       -> typeCheckCond e                                      
-                 
-        -- -- | Records
-        -- Rec ls            -> typeCheckRcd e l
-        -- Proj e' f         -> case e' of                                            
-        --                          Rec _ -> do res <- typeCheck' e' l 
-        --                                      typeCheckField res f 
-        --                          _     -> Left $ NotRecord e'
+        If e1 e2 e3       -> typeCheckCond e                   
            
         -- | Variables
         Var _ ty _        -> case ty of                                            

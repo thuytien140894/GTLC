@@ -42,7 +42,6 @@ module Evaluator
         Fls               -> True
         t' | isNumeric t' -> True
         Lambda{}          -> True
-        Rec ls            -> areAllVal ls
         Loc _             -> True
         _                 -> False
 
@@ -55,23 +54,6 @@ module Evaluator
     -- | Perform substitution from the beginning.
     subsFromTop :: Term -> Term -> Term
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
-
-    -- -- | Get the value for the specified field.
-    -- getVal :: Term -> String -> Either RuntimeError Term
-    -- getVal (Rec []) _ = Left Stuck
-    -- getVal (Rec ((l1, t1) : ys)) l 
-    --     | l1 == l     = Right t1
-    --     | otherwise   = Rec ys `getVal` l
-
-    -- -- | Evaluate a record.
-    -- evalRecord :: (Term, StoreEnv) -> Either RuntimeError (Term, StoreEnv) 
-    -- evalRecord (Rec [], store) = Right (Rec [], store)
-    -- evalRecord (Rec ((l1, t1) : ys), store) 
-    --     | isVal t1             = do (rd, store') <- evalRecord (Rec ys, store)
-    --                                 Right (rd `addEntry` (l1, t1), store')
-    --     | otherwise            = do (t1', store') <- evaluate' (t1, store) 
-    --                                 (rd, store'') <- evalRecord (Rec ys, store')
-    --                                 Right (rd `addEntry` (l1, t1'), store'')
 
     -- | Remove an enclosing coercion from a value 
     -- if the run-time type matches the target type.
@@ -124,9 +106,9 @@ module Evaluator
         Ref v     
             | isVal v                     -> GlobalS.allocate v                             
         Ref t'                            -> Ref <$> evaluate' t'
-        Deref (Loc l)                     -> GlobalS.peek l
 
         -- | Dereference
+        Deref (Loc l)                     -> GlobalS.peek l
         Deref t'                          -> Deref <$> evaluate' t'
                                             
         -- | Assignment
@@ -141,16 +123,7 @@ module Evaluator
             | isVal v2                    -> return $ subsFromTop v2 t1          
         App v1 t2 
             | isVal v1                    -> App v1 <$> evaluate' t2
-        App t1 t2                         -> (`App` t2) <$> evaluate' t1             
-
-        -- -- | Records
-        -- Proj (Rec ls) l 
-        --     | isVal $ Rec ls              -> do t' <- Rec ls `getVal` l                 
-        --                                         Right (t', store)
-        -- Proj (Rec ls) l                   -> do (t', store') <- evaluate' (Rec ls, store)
-        --                                         Right (Proj t' l, store')            
-        -- Rec ls 
-        --     | not $ isVal $ Rec ls        -> evalRecord (t, store)                      
+        App t1 t2                         -> (`App` t2) <$> evaluate' t1                        
                         
         -- | No rules applied
         _                                 -> throwError Stuck                                  

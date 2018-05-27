@@ -47,10 +47,9 @@ module StoreEnv where
     typeOf :: Term -> StoreEnv -> Type
     typeOf t store = case t of 
         Unit           -> TUnit                                        
-        Tru            -> Bool                                          
-        Fls            -> Bool                                         
+        Tru            -> Boolean                                          
+        Fls            -> Boolean                                         
         Zero           -> Nat                                           
-        Succ _         -> Nat                                           
-        -- Rec _          -> rcdTypeOf t store        
+        Succ _         -> Nat                         
         Loc l          -> getStoreType $ fromJust $ store `lookUp` l                                                  
         Lambda ty t' _ -> Arr ty $ typeOf t' store 

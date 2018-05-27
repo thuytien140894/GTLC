@@ -13,7 +13,7 @@ module Main where
     interpret :: String -> IO ()
     interpret line = case parseExpr line of 
         Right validExpr -> case typeCheck validExpr of 
-                               Right t  -> case evaluate t of 
+                               Right t  -> printExp t >> case evaluate t of 
                                                Right res -> printRes res
                                                Left err  -> printMsg err
                                Left err -> printMsg err
@@ -30,6 +30,16 @@ module Main where
     -- | Run all the test cases. 
     runTests :: IO ()
     runTests = do 
+        test "(\\x. x) (\\x. x)"
+        test "\\x. y"
+        test "(\\x. x 0) true"
+        test "(\\x:Nat. x 0) true"
+        test "(\\x:Nat. !x) 0"
+        test "(\\x. !x) 0"
+        test "(\\x:Nat. x := pred (succ 0)) 0"
+        test "(\\x. x := pred (succ 0)) 0"
+        test "if true then succ 0 else false"
+        test "if 0 then succ 0 else succ (succ 0)"
         test "(\\m. ((\\x:Nat->Nat. (x 0)) m)) true" 
         test "(\\x. succ x) true"
         test "(\\m. ((\\x:Nat->Nat. (x 0)) m)) (\\y:Nat. iszero y)"
@@ -54,10 +64,29 @@ module Main where
         test "(\\m. ((\\x. !x) m)) ref true"
         test "(\\m. ((\\x. !x) m)) 0"
         test "(\\y. (\\x:Ref Bool. x := 0) ref (iszero y)) 0"
+        test "(\\y. (\\x:Ref Bool. x := false) ref y) true"
+        test "(\\y. (\\x:Ref Nat. x := succ 0) ref y) true"
+        test "(\\y. (\\x:Ref Nat. x := succ 0) ref ((\\m:Bool. m) y)) true"
+        test "(\\x. ref x) true"
+        test "((\\y. (\\x:Ref Bool. x := y)) true) ref false"
+        test "((\\y. (\\x:Ref Bool. x := y)) 0) ref false"
+        test "((\\y. (\\x. x := y)) 0) ref false"
+        test "((\\y:Nat. (\\x. x := y)) 0) ref 0"
+        test "((\\y. (\\x. ref x := y)) 0) false"
+        test "((\\y. (\\x:Nat. ref x := y)) 0) false"
+        test "(\\z. ((\\y. (\\x:Nat. ref x := y)) 0) z) false"
 
     -- | Print new line.
     newLine :: InputT IO ()
     newLine = lift $ putStr "\n"
+
+    -- | Display the prompt options.
+    displayMenu :: IO ()
+    displayMenu = do 
+        putStrLn "  Commands available from the prompt:"
+        putStrLn "      test: run test cases for the GTLC"
+        putStrLn "      exit: exit the program"
+        putStrLn "      help: display this menu"
 
     -- | Run a read-eval-print loop.
     loop :: InputT IO ()
@@ -66,10 +95,12 @@ module Main where
         case input of
             Just "exit"  -> return ()
             Just "test"  -> lift runTests >> loop
+            Just "help"  -> lift displayMenu >> loop
             Just validIn -> lift (interpret validIn) >> newLine >> loop
                             
     -- | Main method for the interpreter.
     main :: IO ()
     main = do 
-        putStrLn "Gradually Typed Lambda Calculus, verion 1.0.0: https://github.com/thuytien140894/GTLC"
+        putStrLn "Gradually-Typed Lambda Calculus (GTLC), verion 1.0.0: https://github.com/thuytien140894/GTLC"
+        putStrLn "Type \"help\" for more information."
         runInputT defaultSettings loop

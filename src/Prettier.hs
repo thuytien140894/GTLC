@@ -1,6 +1,7 @@
 module Prettier 
-    ( printRes 
-    , printMsg
+    ( printExp
+    , printMsg 
+    , printRes
     ) where
     
     import Error
@@ -39,14 +40,11 @@ module Prettier
 
     -- | Format an exception message.
     renderException :: String -> Doc
-    renderException = PP.red . PP.bold . PP.text
+    renderException = PP.red . PP.text
 
+    -- | Type class to print pretty.
     class Pretty a where 
         output :: a -> Doc
-
-        -- | Format a valid result.
-        renderValid :: a -> Doc 
-        renderValid = PP.green . PP.bold . output
 
         -- | Print messages.
         printMsg :: a -> IO ()
@@ -54,8 +52,14 @@ module Prettier
 
         -- | Print a valid result.
         printRes :: a -> IO ()
-        printRes = PP.putDoc . renderValid
+        printRes a = PP.putDoc (PP.text "==>" <+> output a)
 
+        -- | Print a casted expression.
+        printExp :: a -> IO () 
+        printExp a = PP.putDoc $ PP.green (PP.text "TypeChecked:") 
+                     <+> output a <> PP.linebreak
+
+    -- | Print pretty for terms.
     instance Pretty Term where 
         output t = case t of 
             Zero                -> PP.text "0"
@@ -106,6 +110,7 @@ module Prettier
                                            App _ _  -> PP.parens $ output t2
                                            _        -> output t2
 
+    -- | Print pretty for coercions.
     instance Pretty Coercion where 
         output c = case c of 
             Iden ty      -> PP.text "I"
@@ -114,22 +119,24 @@ module Prettier
             Project ty _ -> output ty <> PP.text "?"
             FuncInj      -> PP.text "Fun!"
             Fail{}       -> PP.text "CastError"
-            RefInj       -> PP.text "Fun?"
+            RefInj       -> PP.text "Ref!"
             Inject ty    -> output ty <> PP.text "!"
             CRef c1 c2   -> PP.text "Ref" <+> output c1 <+> output c2
             Func c1 c2   -> output c1 <> PP.text "->" <> output c2
             Seq c1 c2    -> output c1 <> PP.semi <> output c2
 
+    -- | Print pretty for types.
     instance Pretty Type where 
         output ty = case ty of 
             Top       -> PP.text "Top"
-            Dyn       -> PP.text "Dynamic"
+            Dyn       -> PP.text "?"
             Nat       -> PP.text "Nat"
-            Bool      -> PP.text "Bool"
+            Boolean   -> PP.text "Bool"
             TRef ty'  -> PP.text "Ref" <+> output ty'
             Arr s1 s2 -> output s1 <> PP.text "->" <> output s2
             TRec ls   -> PP.braces $ outputRcdTypes ls
 
+    -- | Print pretty for type errors.
     instance Pretty TypeError where 
         output e = renderException "Type error:" <+> case e of 
             NotBound t             -> PP.text "Variable not in scope:" 
@@ -156,11 +163,8 @@ module Prettier
                                       <$$> PP.indent 4 (PP.text "but expected:" <+> output s2)
             IllegalDeref t         -> PP.text "Cannot dereference non-reference expression:"
                                       <+> PP.squotes (output t)
-            NotRecord t            -> PP.text "Cannot perform projection on non-record expression:" 
-                                      <+> PP.squotes (output t)
-            InvalidLabel l         -> PP.text "Non-existent label on record:" 
-                                      <+> PP.squotes (PP.text l)
 
+    -- | Print pretty for blame results.
     instance Pretty BlameRes where 
         output (BlameRes c t) = case c of 
             FunArg    -> PP.text "In function argument for expression"
@@ -185,6 +189,7 @@ module Prettier
             context = PP.linebreak <> PP.text "When evaluating" 
                       <+> PP.squotes (output $ removeCasts t)
 
+    -- | Print pretty for runtime errors.
     instance Pretty RuntimeError where 
         output e = case e of 
             InvalidRef l        -> renderException "Exception:" 
