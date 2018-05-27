@@ -166,10 +166,6 @@ module Prettier
                                       <$$> PP.indent 4 (PP.text "but expected:" <+> output s2)
             IllegalDeref t         -> PP.text "Cannot dereference non-reference expression:"
                                       <+> PP.squotes (output t)
-            NotRecord t            -> PP.text "Cannot perform projection on non-record expression:" 
-                                      <+> PP.squotes (output t)
-            InvalidLabel l         -> PP.text "Non-existent label on record:" 
-                                      <+> PP.squotes (PP.text l)
 
     -- | Print pretty for blame results.
     instance Pretty BlameRes where 

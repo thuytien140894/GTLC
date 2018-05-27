@@ -27,8 +27,6 @@ module Error where
                    | IllegalAssign Term             -- ^ Assigning to a non-reference
                    | AssignMismatch Type Type Term  -- ^ Different types on two sides of an assignment
                    | IllegalDeref Term              -- ^ Dereference a non-reference
-                   | NotRecord Term                 -- ^ Not a record term
-                   | InvalidLabel String            -- ^ Nonexistent record label
                      deriving (Eq, Show)
 
     -- | Errors during evaluation.
