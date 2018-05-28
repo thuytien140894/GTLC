@@ -12,7 +12,8 @@ module StoreEnv where
     newtype Store = Store (Term, Type)
                     deriving (Eq, Show)
 
-    -- | Store environement.
+    -- | Store environement based on a map of pairs of 
+    -- integers and store values.
     newtype StoreEnv = StoreEnv (Map Int Store)
                        deriving (Eq, Show)
 
@@ -45,11 +46,12 @@ module StoreEnv where
 
     -- | Find the type for a term. 
     typeOf :: Term -> StoreEnv -> Type
-    typeOf t store = case t of 
-        Unit           -> TUnit                                        
+    typeOf t store = case t of                                       
         Tru            -> Boolean                                          
         Fls            -> Boolean                                         
         Zero           -> Nat                                           
-        Succ _         -> Nat                         
+        Succ _         -> Nat            
+        -- since we do not have an operation to nullify 
+        -- a store location, it always exists.              
         Loc l          -> getStoreType $ fromJust $ store `lookUp` l                                                  
         Lambda ty t' _ -> Arr ty $ typeOf t' store 

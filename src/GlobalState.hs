@@ -12,7 +12,8 @@ module GlobalState where
     -- | Monad for handling type errors and labeling.
     type TCheckState a = ExceptT TypeError (State Label) a
 
-    -- | Create a global state for typechecking.
+    -- | Create a global state for typechecking 
+    -- with the initial label of 0.
     runTyCheck :: TCheckState a -> Either TypeError a
     runTyCheck g = evalState (runExceptT g) (Label 0)
 
@@ -36,7 +37,10 @@ module GlobalState where
     -- evaluation.
     type BEvalState a = ExceptT RuntimeError (State Term) a
 
-    -- | Unwrap monads for big-step evaluation.
+    -- | Create a global state for big-step evaluation 
+    -- with the initial trivial term of Unit. This term 
+    -- gets updated for every small step of evaluation to 
+    -- reflect the currently evaluated term.
     runBEval :: BEvalState a -> (Either RuntimeError a, Term)
     runBEval g = runState (runExceptT g) Unit
 
@@ -59,6 +63,7 @@ module GlobalState where
             Nothing             -> throwError $ InvalidRef l
 
     -- | Look up a reference.
+    -- Return an error for a non-existing reference.
     peek :: Int -> SEvalState Term
     peek l = do 
         env <- get 

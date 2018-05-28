@@ -5,10 +5,10 @@ module TypeChecker
     import Coercion (coerce, isConsistent)
     import Error
     import GlobalState (TCheckState)
-    import qualified GlobalState as GlobalS (runTyCheck, newLabel)
-    import Subtype
     import Syntax
     import Type
+
+    import qualified GlobalState as GlobalS (runTyCheck, newLabel)
 
     import Control.Monad.Except (throwError)
 
@@ -48,6 +48,8 @@ module TypeChecker
         (t2, s2) <- typeCheck' e2 
         case s1 of 
             TRef s 
+                -- | Two sides have the same type, so 
+                -- there is no need for casting.
                 | s2 == s             -> return (t1 `Assign` t2, s)
                 | s2 `isConsistent` s -> do c <- coerce s2 s
                                             return (t1 `Assign` Cast c t2, s)
@@ -67,7 +69,9 @@ module TypeChecker
                                                      c2 <- coerce argTy Dyn   
                                                      return (Cast (FuncProj l) t1 `App` Cast c2 t2, Dyn)
             Arr paramTy retTy 
-                | argTy `isSubtype` paramTy    -> return (App t1 t2, retTy)
+                -- | The argument type matches the parameter type, so 
+                -- there is no need for casting.
+                | argTy == paramTy             -> return (App t1 t2, retTy)
                 | argTy `isConsistent` paramTy -> do c <- coerce argTy paramTy  
                                                      return (App t1 $ Cast c t2, retTy)
                 | otherwise                    -> throwError $ FunMismatch argTy paramTy (App e1 e2)
@@ -132,7 +136,8 @@ module TypeChecker
         -- -- | Application
         App e1 e2        -> typeCheckApp e                                    
             
-    -- | Typecheck an initial label. Return an AST or an error.
+    -- | Typecheck an input program. 
+    -- Return a modified program with additional coercions or a type error.
     typeCheck :: Term -> Either TypeError Term 
     typeCheck e = case GlobalS.runTyCheck $ typeCheck' e of
         Right (t, _) -> Right t 

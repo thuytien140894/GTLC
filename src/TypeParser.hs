@@ -21,11 +21,12 @@ module TypeParser where
         ty <- types 
         return $ TRef ty
 
-    -- | Parse record types.
+    -- | Parse a record type.
     recordTy :: Parser Type
     recordTy = braces recordTy'
 
-    -- | Parse a record of many entries.
+    -- | Parse a record of many entries separated 
+    -- by a comma.
     recordTy' :: Parser Type
     recordTy' = do
         list <- sepBy1 entryTy comma
@@ -35,18 +36,18 @@ module TypeParser where
     entryTy :: Parser [TEntry]
     entryTy = do
         field <- identifier 
-        colon >> whiteSpace  -- Parse any spaces after the equal sign.
+        colon 
         ty <- types
         return [(field, ty)]
 
-    -- | Parse a function type which consists of a sequence of 
-    -- types separated by "->".
+    -- | Parse one or more types separated by "->" 
+    -- and apply them from right to left.
     types :: Parser Type
     types = do
         list <- sepBy1 types' arrowSep
         return $ arrowFromRight list
 
-    -- | Parse all types.
+    -- | Parse a type.
     types' :: Parser Type
     types' = parens types 
          <|> boolean

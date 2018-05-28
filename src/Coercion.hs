@@ -6,7 +6,7 @@ module Coercion where
 
     import qualified GlobalState as GlobalS (newLabel)
 
-    -- | Consistency rules.
+    -- | Check if two types are consistent. 
     isConsistent :: Type -> Type -> Bool
     isConsistent Dyn _                             = True
     isConsistent _ Dyn                             = True
@@ -19,7 +19,6 @@ module Coercion where
 
     -- | Check if a coercion is normalized (cannot be further reduced).
     isNormalized :: Coercion -> Bool
-
     -- | Base
     isNormalized (Inject _)                 = True
     isNormalized (Project _ _)              = True
@@ -53,11 +52,11 @@ module Coercion where
         | isNormalized c                    = True
     isNormalized (Seq (RefProj _) c)
         | isNormalized c                    = True
-
+        
     -- | Other
     isNormalized _                          = False
 
-    -- | Check if a coercion is regular (normalized and not Identity or Fail).
+    -- | Check if a coercion is regular (normalized and not Identity).
     isRegular :: Coercion -> Bool
     isRegular c 
         | isNormalized c && not (isIdentity c) = True
@@ -68,7 +67,7 @@ module Coercion where
     isIdentity (Iden _) = True
     isIdentity _        = False
 
-    -- | Coercion type system.
+    -- | Coerce two input types.
     coerce :: Type -> Type -> TCheckState Coercion
     coerce s1 s2  
         | s1 == s2           = return $ Iden s1                        -- ^ (C-ID)

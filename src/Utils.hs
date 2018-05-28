@@ -30,7 +30,7 @@ module Utils where
         _                -> t  -- t is a constant.
         
     -- | Perform substitution given a variable with bruijn index j, 
-    -- a body s, and a term t.
+    -- a substituting term s, and a body t.
     subs :: Int -> Term -> Term -> Term 
     subs j s t = case t of 
         Var k ty id      -> if k == j 
@@ -95,7 +95,7 @@ module Utils where
         App t1 t2        -> removeCasts t1 `App` removeCasts t2
         _                -> t  -- t is a constant.
 
-    -- | Check if a coercion is to blame.
+    -- | Check if a coercion is to blame given a blame label.
     blameCoercion :: Label -> Coercion -> Cause -> Maybe Cause
     blameCoercion l c cause = case c of 
         FuncProj l'

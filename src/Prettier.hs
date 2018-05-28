@@ -46,7 +46,7 @@ module Prettier
     class Pretty a where 
         output :: a -> Doc
 
-        -- | Print messages.
+        -- | Print error messages.
         printMsg :: a -> IO ()
         printMsg = PP.putDoc . output
 
@@ -54,7 +54,7 @@ module Prettier
         printRes :: a -> IO ()
         printRes a = PP.putDoc (PP.text "==>" <+> output a)
 
-        -- | Print a casted expression.
+        -- | Print a cast expression.
         printExp :: a -> IO () 
         printExp a = PP.putDoc $ PP.green (PP.text "TypeChecked:") 
                      <+> output a <> PP.linebreak
@@ -94,7 +94,7 @@ module Prettier
             Cast c t' 
                 | isSingular t' -> PP.angles (output c) <> output t'
             Cast c t'           -> PP.angles (output c) <> PP.parens (output t')
-            Lambda ty t' ctx    -> PP.text "\\" 
+            Lambda ty t' ctx    -> PP.backslash
                                    <> PP.text (head ctx)
                                    <> PP.colon
                                    <> output ty
