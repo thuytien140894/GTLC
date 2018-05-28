@@ -22,7 +22,7 @@ module Subtype
     sortFields = List.sortBy (compare `on` fst)
 
     -- | Check if one record is a subset of another.
-    -- The first list is always at least longer than the second one.
+    -- The first record is always at least longer than the second one.
     -- This method combines both S-RCDWIDTH and S-RCDDEPTH.
     isSubset :: [TEntry] -> [TEntry] -> Bool
     isSubset _ []   = True

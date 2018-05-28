@@ -12,8 +12,9 @@ module ParseUtils where
       where 
         freeIndex  = elemIndex id $ reverse freeVars
 
-    -- | Correct the bruijn index for a bound variable.
-    -- This function is called when parsing a Lambda term. 
+    -- | Correct the Bruijn index for a bound variable.
+    -- This function is called when parsing a Lambda term 
+    -- and a new bound variable is discovered.
     fixBinding :: Term -> String -> Int -> Term
     fixBinding t x b = case t of
         Var _ ty id 
@@ -34,7 +35,7 @@ module ParseUtils where
         App t1 t2        -> fixBinding t1 x b `App` fixBinding t2 x b
         _                -> t
 
-    -- | Fix Bruijn indices for free variables.
+    -- | Correct Bruijn indices for free variables.
     fixFreeBinding :: Term -> [String] -> [String] -> Term
     fixFreeBinding t freeVars boundVars = case t of
         Var _ ty id 
@@ -56,8 +57,7 @@ module ParseUtils where
                                     `App` fixFreeBinding t2 freeVars boundVars
         _                        -> t
 
-    -- | Update the typing environment for nested lambdas when new 
-    --bound variables are introduced.
+    -- | Update the type of a bound variable.
     updateVarType :: Term -> String -> Type -> Term
     updateVarType t x newTy = case t of 
         Var k _ id 
@@ -114,7 +114,7 @@ module ParseUtils where
                              else [id]
         _             -> []  
 
-    -- | Application.
+    -- | Apply two terms.
     apply :: Term -> Term -> Term
     apply Unit t2 = t2
     apply t1 t2   = App t1 t2
@@ -123,11 +123,11 @@ module ParseUtils where
     applyFromLeft :: [Term] -> Term
     applyFromLeft = foldl apply Unit
 
-    -- | "Arrow" two types.
+    -- | Construct a function type.
     arrow :: Type -> Type -> Type
     arrow t2 TUnit = t2
     arrow t1 t2    = Arr t1 t2
 
-    -- | Recursively "arrow" types from the right.
+    -- | Recursively construct function types from the right.
     arrowFromRight :: [Type] -> Type
     arrowFromRight = foldr arrow TUnit

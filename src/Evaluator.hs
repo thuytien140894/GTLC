@@ -37,7 +37,6 @@ module Evaluator
     -- | Determine if a term is an uncoerced value.
     isUncoercedVal :: Term -> Bool
     isUncoercedVal t = case t of 
-        Unit              -> True
         Tru               -> True
         Fls               -> True
         t' | isNumeric t' -> True
@@ -45,13 +44,18 @@ module Evaluator
         Loc _             -> True
         _                 -> False
 
-    -- | Determine if a term is a coerced value.
+    -- | Determine if a cast term is a value. 
+    -- This requires the inner term to be a simple 
+    -- value, and the coercion to be regular.
     isCoercedVal :: Term -> Bool
     isCoercedVal (Cast c v)  
         | isUncoercedVal v && isRegular c = True 
     isCoercedVal _                        = False
     
-    -- | Perform substitution from the beginning.
+    -- | Perform substitution at the top level.
+    -- s is the term to replace with, and t is the body 
+    -- of a function. Since we remove a binder after substitution, 
+    -- we shift the final expression down by 1.
     subsFromTop :: Term -> Term -> Term
     subsFromTop s t = shift 0 (-1) (subs 0 (shift 0 1 s) t)
 
@@ -128,9 +132,9 @@ module Evaluator
         -- | No rules applied
         _                                 -> throwError Stuck                                  
 
-    -- | Big-step evaluation
-    -- (apply evaluate' repeatedly until a value is reached or we're left with 
-    -- an expression that cannot be evaluated further).
+    -- | Perform the big-step evaluation 
+    -- by applying the small-step evaluation repeatedly until 
+    -- we get stuck or encounter a runtime error.
     evaluateToValue :: Term -> StoreEnv -> BEvalState Term
     evaluateToValue t env = do 
         put t
@@ -140,7 +144,8 @@ module Evaluator
             Left Stuck -> return t     
             Left err   -> throwError err
     
-    -- | Evaluate a term.
+    -- | Evaluate an input program.
+    -- This function returns either a runtime error or a value. 
     evaluate :: Term -> Either RuntimeError Term
     evaluate t = 
         let (res, t') = GlobalS.runBEval $ evaluateToValue t StoreEnv.empty

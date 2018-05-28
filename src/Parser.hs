@@ -18,7 +18,7 @@ module Parser
     notProjection :: Parser ()
     notProjection = notFollowedBy dot
 
-    -- | Parse an if statement.
+    -- | Parse a conditional statement.
     conditional :: Parser Term
     conditional = do
         reserved "if"
@@ -48,15 +48,16 @@ module Parser
     -- | Parse a dereference.
     dereference :: Parser Term 
     dereference = do 
-        reservedOp "!" >> whiteSpace 
+        reservedOp "!"
         t <- expr
         return $ Deref t
 
-    -- | Parse a record.
+    -- | Parse a record enclosed in braces.
     record :: Parser Term 
     record = braces record'
 
-    -- | Concaternate all the entries into a record.
+    -- | Parse one or more record entries separated 
+    -- by a comma, and concaternate them into a record.
     record' :: Parser Term
     record' = do
         list <- sepBy1 entry comma
@@ -66,7 +67,7 @@ module Parser
     entry :: Parser [Entry]
     entry = do
         field <- identifier 
-        reservedOp "=" >> whiteSpace
+        reservedOp "="
         value <- expr
         return [(field, value)]
 
@@ -91,17 +92,19 @@ module Parser
     false = reserved "false" >> notProjection >> return Fls
     zero  = reserved "0" >> notProjection >> return Zero
 
-    -- | Apply two terms that are separated by a space.
+    -- | Parse one or more operations separated 
+    -- by a space and apply them from left to right.
     app :: Parser Term
     app = do
         terms <- sepBy1 expr' whiteSpace 
         return $ applyFromLeft terms
 
-    -- | Parse an application which consists a sequence of terms.
+    -- | At the top level, parse an expression as 
+    -- an application first.
     expr :: Parser Term
     expr = app 
 
-    -- | Prefix operators.
+    -- | Parse unary prefix and binary infix operators.
     operatorTable :: Ex.OperatorTable String () Identity Term
     operatorTable = 
         [ [ Ex.Prefix $ reserved "succ"   >> return Succ
@@ -112,18 +115,18 @@ module Parser
           ]
         ]
 
-    -- | Parse an arithmetic expression such as succ, pred, and iszero.
+    -- | Parse an operation.
     expr' :: Parser Term
     expr' = Ex.buildExpressionParser operatorTable expr''
 
-    -- | Parse term enclosed in parenthesis.
+    -- | Parse a term enclosed in parentheses.
     parenExpr :: Parser Term
     parenExpr = do 
         t <- parens expr
         notProjection
         return t
         
-    -- | Parse individual terms.
+    -- | Parse an atomic expression.
     expr'' :: Parser Term
     expr'' = parenExpr
           <|> true
@@ -136,6 +139,6 @@ module Parser
           <|> record
           <|> dereference
 
-    -- | Parse a string.
+    -- | Parse an input program into its AST.
     parseExpr :: String -> Either ParseError Term
     parseExpr = parse (whiteSpace >> expr) "" 
