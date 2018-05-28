@@ -1,0 +1,64 @@
+The $\lambda ^? _{\rightarrow}$ syntax is essentially the same as 
+the simply-typed $\lambda$-calculus with references, except for the 
+addition of dynamic types ?.
+\begin{alignat*}{3}
+    &(\textit{expressions}) \qquad 
+    & e ::= \: & x \; | \;  
+          e \: e \; | \;
+          \lambda x \! : \! T . \: e \; | \;
+          k \\
+    &&    & \texttt{succ} \: e \; | \;
+          \texttt{pred} \: e \; | \;
+          \texttt{iszero} \: e \; | \;
+          \texttt{if} \: e \: \texttt{then} \: e \: \texttt{else} \: e \; | \; \\
+    &&    & \texttt{ref} \: e \; | \;
+          !e \; | \;
+          e := e \\
+    &(\textit{constants}) 
+    & k ::= \: & n \; | \; \texttt{true} \; | \; \texttt{false} \\
+    &(\textit{numbers}) 
+    & n ::= \: & 0 \; | \; \texttt{succ} \: n \\
+    &(\textit{types}) 
+    & T ::= \: & \texttt{Bool} \; | \;
+            \texttt{Nat} \; | \;
+            T \rightarrow T \; | \;
+            \texttt{Ref} \: T \; | \;
+            ?     
+\end{alignat*}
+
+Expressions include variables, abstractions, and applications, as well as 
+arithmethic, boolean, and conditional terms found in the untyped $\lambda$-calculus. 
+Reference expressions consist of allocation, dereference, and assignment.
+Types include the base types (\texttt{Bool} and \texttt{Nat}), function 
+types, reference types, and finally dynamic types. 
+Constants like \texttt{true} and \texttt{false} inherently  
+have \texttt{Bool} type, whereas numerical values are of type \texttt{Nat}. 
+Function parameters without type annotations automatically 
+assume dynamic types. 
+
+The type system of $\lambda ^? _{\rightarrow}$ is based on the 
+consistency relation between known and unknown types, given in 
+Figure 1. Note that the consistency relation is reflexive and 
+symmetric, but not transitive. Given $S \sim \: ?$ and $? \: \sim T$, it 
+is not always the case that $S \sim T$.  
+
+\input{figures/Consistency}
+
+Figure 2 presents the type system of $\lambda ^? _{\rightarrow}$. Rules 
+{\scriptsize{[T-VAR]}}, {\scriptsize{[T-CONST]}}, {\scriptsize{[T-FUN]}}, 
+and {\scriptsize{[T-REF]}}  
+are straightforward. The rules for function applications handle either 
+known or unknown function types. Given a specific function type, an 
+application only accepts an argument type that is consistent to the 
+parameter type. Otherwise, the argument can have any type, and the return 
+type of the application is unknown. Similarly, there are two assignment 
+rules for whether the left-hand side is dynamically-typed. 
+A dereference expression only has a specific type if its argument is a 
+reference. \input{figures/TypeSystem} We treat arithmetic 
+and boolean expressions ($\texttt{succ} \: e$, $\texttt{pred} \: e$, $\texttt{iszero} \: e$) 
+as constant functions that accept any type consistent to \texttt{Nat} and 
+return either a \texttt{Nat} or a \texttt{Bool}. Conditional expressions are more 
+complicated because we have to typecheck both the condition and the two 
+branches. The condition type must be consistent to 
+\texttt{Bool}. The types of two branches need to be consistent. If so, the 
+resulting type can derive from either branch type.

@@ -1,0 +1,28 @@
+\begin{figure}[ht]
+    \caption{Subtype Relations}
+    \hrule
+    \[
+        \begin{bprooftree}
+            \AxiomC{}
+            \UnaryInfC{$B <: B$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{}
+            \UnaryInfC{$? <: \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$S <: B$}
+            \UnaryInfC{$S <: \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$S <: \: ? \rightarrow \: ?$}
+            \UnaryInfC{$S <: \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$T_1 <: S_1$}
+            \AxiomC{$S_2 <: T_2$}
+            \BinaryInfC{$S_1 \rightarrow S_2 <: T_1 \rightarrow T_2$}
+      \end{bprooftree}
+    \]
+    \hrule
+\end{figure} 

@@ -1,0 +1,83 @@
+The argument for static versus dynamic typing underlines the fundamentatal 
+motivation behind programming language design and implementation. Static 
+typing enforces explicit type annotations on variables and function 
+declarations, thereby restricting their behaviors and interactions. 
+Such strict constraint of types helps eliminate runtime bugs caused 
+by type conflicts, thus improving code reliability and easing the 
+burden of debugging. Statically-typed languages such as Java 
+and C++ are known for their runtime performance since the overhead of 
+typechecking is done during compilation instead. Additionally, a large 
+and complex application benefits from early error detection and better 
+documentation found in static typing. On the other hand, dynamic typing 
+removes the necessity of type annotations in favor of programming 
+flexibility and rapid development. JavaScript and Python are two notable 
+examples of dynamically-typed languages suitable for quick prototyping 
+and adjustment to changing specifications. However, the lack of 
+annotations and static type checking could impair code quality and 
+reliability. The respective strengths and 
+weaknesses of both type systems motivate the endeavor to integrate them 
+together into a hybrid system called \textit{\textbf{gradual typing}}. 
+
+The term \textit{gradual typing} originally came up in Siek and 
+Taha's work [4] to describe the combination of static and dynamic typing 
+for functional languages. Gradual typing gives the programmer the ability 
+to control the extent of static checking through optional type annotations. 
+Function parameters with type annotations are typechecked during 
+compilation as usually, whereas those with omitted types are deferred until 
+runtime for typechecking. This approach benefits from the safety of static 
+typing and flexibility of dynamic typing, making it suitable for developing 
+software from quick prototyping to reliable code delivery. The formal 
+definition of gradual typing was first introduced using the 
+simply-typed lambda calculus with references, abbreviated as $\lambda ^? _{\rightarrow}$. 
+The runtime semantics of $\lambda ^? _{\rightarrow}$ requires the 
+translation of the source language to an intermediate one with explicit 
+cast insertion. The interpretation of $\lambda ^? _{\rightarrow}$ 
+is simply the evaluation of the resulting cast expressions to produce 
+either a final unboxed value or a cast error.
+
+There have been many studies on how to efficiently design the runtime 
+semantics of $\lambda ^? _{\rightarrow}$. Herman et al. [4] observe 
+the space inefficiency of gradual typing wherein a program repeatedly applies 
+the same cast to every method invocation, resulting in an unbounded space 
+consumption of duplicate wrappers. They present a space-efficient gradual 
+type system based on Henglein's \textit{\textbf{coercion calculus}} [3], 
+which allows the composition of adjacent casts and reduces space consumption 
+as a result. The coercion calculus also makes it possible for early error detection 
+since failure to combine inconsistent coercions gets propagated 
+immediately. Siek et al. [8] call this the \textit{\textbf{eager coercion calculus}} 
+to contrast with the traditional lazy cast checking, which only detects cast 
+errors during function application. Consider the following higher-order cast 
+expression: 
+\begin{equation}
+    \langle \texttt{Bool} \rightarrow \texttt{Nat} \Leftarrow  
+    \: ? \rightarrow \: ? \rangle 
+    \langle ? \rightarrow \: ? \Leftarrow 
+    \texttt{Nat} \rightarrow \texttt{Nat} \rangle
+    (\lambda x \! : \! \texttt{Nat} . \; x)
+\end{equation}
+The eager cast checking ensures that each cast is consistent with the prior 
+casts. Hence, even though the type $\texttt{Bool} \rightarrow \texttt{Nat}$ 
+is consistent with $ ? \rightarrow \: ? $, 
+it conflicts with the underlying type $\texttt{Nat} \rightarrow \texttt{Nat}$. 
+On the other hand, lazy type checking approves this cast expression until 
+it is applied to a boolean argument.
+
+Another design choice for gradual typing is the addition of \textit{\textbf{blame assignment}} 
+to identify the culprit coercion. It is clear in the expression (1) that the cast 
+$\langle \texttt{Bool} \rightarrow \texttt{Nat} \Leftarrow 
+\: ? \rightarrow \: ? \rangle$ is to blame because any cast from a 
+dynamic type to a specific type is always unsafe. In a more complicated program 
+when there can be multiple downcasts from ?, it is helpful to inform 
+the programmer of the expressions responsible for coercion failures. Siek et al. [8] 
+discuss the two blame assignment strategies: (1) UD shares the blame between 
+upcasts and downcasts, whereas (2) D places the blame on downcasts only. UD and D 
+differ by how a function type is coerced to ?, which will be discussed 
+further in later sections.
+
+In this paper, we present an interpretation of $\lambda ^? _{\rightarrow}$ 
+using the eager coercion calculus with UD blame assignment. We first review the syntax 
+and type system of $\lambda ^? _{\rightarrow}$ in the next section. 
+Section 3 discusses the UD blame tracking strategy, and Section 4 integrates this 
+feature into the formal definition of the coercion calculus. We then describe the 
+implementation of our interpreter for $\lambda ^? _{\rightarrow}$ using Haskell. 
+The last two sections put our work into context.

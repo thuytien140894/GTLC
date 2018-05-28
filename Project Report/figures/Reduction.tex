@@ -1,0 +1,44 @@
+\begin{figure}[ht]
+    \caption{Coercion Normalization}
+    \hrule
+    \vspace{4mm}
+    \qquad \text{\underline{N}ormal Coercions:}
+    \begin{alignat*}{3}
+        &(\textit{normal coercions}) \qquad 
+        & \tilde{c} ::= \: & I \; | \;  
+              B?^l \; | \;
+              B! \; | \; 
+              \hat{c};B! \; | \; 
+              B?^l;\hat{c} \; | \; 
+              B?^l; \texttt{Fail}^l \; | \; \\
+        &&    & \texttt{Fun} \: \hat{c} \: \hat{d} \; | \;
+              \hat{c};\texttt{Fun}! \; | \; 
+              \texttt{Fun}?^l;\hat{c} \; | \; 
+              \texttt{Fun} \: \hat{c} \: \hat{d}; \texttt{Fail}^l \; | \; \\
+        &&    & \texttt{Ref} \: \hat{c} \: \hat{d} \; | \; 
+              \texttt{Ref} \: \hat{c} \: \hat{d}; \texttt{Fail}^l \; | \;
+              \hat{c};\texttt{Ref}! \; | \;
+              \texttt{Ref}?^l;\hat{c} \\
+        &(\textit{regular coercions}) \qquad
+        & \hat{c} ::= \: & \tilde{c} \: \: \text{where} \: \: \tilde{c} \neq I
+    \end{alignat*}
+    \qquad \text{\underline{C}ore Reduction:}
+    \begin{alignat*}{3} 
+        I;c & = c \hspace{1cm} & \texttt{Fun} \: I \: I & = I \\
+        c;I & = c \hspace{1cm} & \texttt{Ref} \: I \: I & = I \\
+        D!;D?^l & = I \hspace{1cm} & c_1;(\tilde{c_2;c_3}) & = (c_1;c_2);c_3 \\
+        D!;\texttt{Fail}^l & = \texttt{Fail}^l \hspace{1cm} & (\tilde{c_1;c_2});c_3 & = c_1;(c_2;c_3) \\
+        \texttt{Fail}^l;c & = \texttt{Fail}^l \hspace{1cm} & (\texttt{Fun} \: \tilde{c_1} \: \tilde{c_2});(\texttt{Fun} \: \tilde{d_1} \: \tilde{d_2}) & = 
+        \texttt{Fun} \: (\tilde{d_1};\tilde{c_1}) \: (\tilde{c_2};\tilde{d_2}) \\
+        D!;D'?^l & = \texttt{Fail}^l \hspace{1cm} & (\texttt{Ref} \: \tilde{c_1} \: \tilde{c_2});(\texttt{Ref} \: \tilde{d_1} \: \tilde{d_2}) & = 
+        \texttt{Ref} \: (\tilde{d_1};\tilde{c_1}) \: (\tilde{c_2};\tilde{d_2})
+    \end{alignat*}
+    \qquad \text{\underline{E}ager Reduction:}
+    \begin{alignat*}{3} 
+        \texttt{Fun} \: \texttt{Fail}^l \: d & = \texttt{Fail}^l \hspace{1cm} & 
+        \texttt{Ref} \: \texttt{Fail}^l \: d & = \texttt{Fail}^l \\
+        \texttt{Fun} \: \tilde{c} \: \texttt{Fail}^l & = \texttt{Fail}^l \hspace{1cm} & 
+        \texttt{Ref} \: \tilde{c} \: \texttt{Fail}^l & = \texttt{Fail}^l 
+    \end{alignat*}
+    \hrule
+\end{figure} 

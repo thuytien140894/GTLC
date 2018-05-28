@@ -1,0 +1,37 @@
+\begin{figure}[h]
+    \caption{Type Consistency}
+    \hrule
+    \vspace{4mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-REFL]}}}
+            \UnaryInfC{$T \sim T$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-DYNR]}}}
+            \UnaryInfC{$T \sim \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-DYNL]}}}
+            \UnaryInfC{$? \: \sim T$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$S_1 \sim T_1$}
+            \AxiomC{$S_2 \sim T_2$}
+            \RightLabel{\scriptsize{\text{[C-FUN]}}}
+            \BinaryInfC{$(S_1 \rightarrow S_2) \sim (T_1 \rightarrow  T_2)$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$S \sim T$}
+            \RightLabel{\scriptsize{\text{[C-REF]}}}
+            \UnaryInfC{$\texttt{Ref} \: S \sim \texttt{Ref} \: T$}
+        \end{bprooftree}
+    \]
+    \hrule
+\end{figure} 

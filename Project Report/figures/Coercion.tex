@@ -1,0 +1,85 @@
+\begin{figure}[htb]
+    \caption{Syntax and Type System for the Coercion Calculus}
+    \hrule
+    \vspace{4mm}
+    \qquad \text{\underline{S}yntax:}
+    \begin{alignat*}{3}
+        &(\textit{coercions}) \qquad 
+        & c ::= \: & I \; | \;  
+            D! \; | \;
+            D?^l \; | \; 
+            \texttt{Fail}^l \; | \; \texttt{Fun} \: c \: c \; | \;
+            \texttt{Ref} \: c \: c \; | \; c;c \\
+        &(\textit{dynamic tags}) \qquad
+        & D ::= \: & B \; | \; \texttt{Fun} \; | \; \texttt{Ref} \\
+        &(\textit{base types}) \qquad
+        & B ::= \: & \texttt{Bool} \; | \; \texttt{Nat} \\
+        &(\textit{labels}) \qquad
+        & l \in \mathbb{N}^+
+    \end{alignat*}
+    \qquad \text{\underline{T}ype System:}
+    \[
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-ID]}}}
+            \UnaryInfC{$\vdash I : T \rightsquigarrow T$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-B!]}}}
+            \UnaryInfC{$\vdash B! : B \rightsquigarrow \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-B?]}}}
+            \UnaryInfC{$\vdash B?^l : \: ? \rightsquigarrow B$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-FUN!]}}}
+            \UnaryInfC{$\vdash \texttt{Fun}! : (? \rightarrow \: ?) \rightsquigarrow \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-FUN?]}}}
+            \UnaryInfC{$\vdash \texttt{Fun}?^l : \: ? \rightsquigarrow (? \rightarrow \: ?)$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\vdash c : T_1 \rightsquigarrow S_1$}
+            \AxiomC{$\vdash d : S_2 \rightsquigarrow T_2$}
+            \RightLabel{\scriptsize{\text{[C-FUN]}}}
+            \BinaryInfC{$\vdash \texttt{Fun} \: c \: d : (S_1 \rightarrow S_2) 
+            \rightsquigarrow (T_1 \rightarrow T_2)$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-REF!]}}}
+            \UnaryInfC{$\vdash \texttt{Ref}! : \texttt{Ref} \: ? \rightsquigarrow \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{}
+            \RightLabel{\scriptsize{\text{[C-REF?]}}}
+            \UnaryInfC{$\vdash \texttt{Ref}?^l : \: ? \rightsquigarrow \texttt{Ref} \: ?$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\vdash c : T \rightsquigarrow S$}
+            \AxiomC{$\vdash d : S \rightsquigarrow T$}
+            \RightLabel{\scriptsize{\text{[C-REF]}}}
+            \BinaryInfC{$\vdash \texttt{Ref} \: c \: d : \texttt{Ref} \: S 
+            \rightsquigarrow \texttt{Ref} \: T$}
+        \end{bprooftree}
+    \]
+    \hrule
+\end{figure} 

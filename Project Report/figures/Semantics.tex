@@ -1,0 +1,48 @@
+\begin{figure}[ht!]
+    \caption{Operational Semantics}
+    \hrule
+    \vspace{4mm}
+    \qquad \text{\underline{S}yntax:}
+    \begin{alignat*}{3}
+        &(\textit{expressions}) \qquad 
+        & e ::= \: & x \; | \;  
+          e \: e \; | \;
+          \lambda x \! : \! T . \: e \; | \;
+          k \; | \; \langle c \rangle e\\
+    &&    & \texttt{succ} \: e \; | \;
+          \texttt{pred} \: e \; | \;
+          \texttt{iszero} \: e \; | \; \\
+    &&    & \texttt{if} \: e \: \texttt{then} \: e \: \texttt{else} \: e \; | \; \\
+    &&    & \texttt{ref} \: e \; | \;
+          !e \; | \;
+          e := e \\
+        &(\textit{uncoerced values}) \qquad
+        & u ::= \: & k \; | \; a \; | \; \lambda x \! : \! T. \:e  \\
+        &(\textit{values}) \qquad
+        & v ::= \: & u \; | \; \langle \hat{c} \rangle u \\
+        &(\textit{store locations}) \qquad
+        & a \in \: & \{0 \texttt{x} m \: | \: m \in \mathbb{N}^+\}
+    \end{alignat*}
+    \begin{alignat*}{3}
+        \qquad & \text{\underline{E}valuation Rules:} \\ \\
+        & {\scriptsize{\text{[E-PREDZERO]}}} \qquad & \texttt{pred} \: 0 & \longrightarrow 0\\ 
+        & {\scriptsize{\text{[E-PREDZERO]}}} \qquad & \texttt{pred} \: (\texttt{succ} \: n) & \longrightarrow n&\\
+        & {\scriptsize{\text{[E-ISZEROZERO]}}} \qquad &\texttt{iszero} \: 0 & \longrightarrow \texttt{true} \\
+        & {\scriptsize{\text{[E-ISZEROSUCC]}}} \qquad & \texttt{iszero} \: (\texttt{succ} \: n) & \longrightarrow \texttt{false} \\
+        & {\scriptsize{\text{[E-IFTRUE]}}} \qquad & \texttt{if} \: \texttt{true} \: \texttt{then} \: t_2 \: \texttt{else} \: t_3 & \longrightarrow t_2 \\
+        & {\scriptsize{\text{[E-IFFALSE]}}} \qquad & \texttt{if} \: \texttt{false} \: \texttt{then} \: t_2 \: \texttt{else} \: t_3 & \longrightarrow t_3 \\
+        & {\scriptsize{\text{[E-REF]}}} \qquad & \texttt{ref} \: v & \longrightarrow a, \sigma[a := v] \hspace{1cm} & a \not \in dom(\sigma) \\
+        & {\scriptsize{\text{[E-DEREF]}}} \qquad & !a & \longrightarrow \sigma(a) \\
+        & {\scriptsize{\text{[E-ASSIGN]}}} \qquad & a := v & \longrightarrow v, \sigma[a := v] \\
+        & {\scriptsize{\text{[E-APP]}}} \qquad & (\lambda x \! : \! T. \:e) \: v & \longrightarrow e[x \mapsto v] \\
+        & {\scriptsize{\text{[E-ID]}}} \qquad & \langle I \rangle u & \longrightarrow u \\
+        & {\scriptsize{\text{[E-COMP]}}} \qquad & \langle c \rangle \langle \hat{d} \rangle u & \longrightarrow \langle \hat{d};c \rangle u \\
+        & {\scriptsize{\text{[E-FAIL]}}} \qquad & \langle \texttt{Fail}^l \rangle u & \longrightarrow \texttt{blame} \: l \\ 
+        & {\scriptsize{\text{[E-GROUND]}}} \qquad & \langle \hat{c} \rangle u & \longrightarrow u \\
+        & {\scriptsize{\text{[E-CSTEP]}}} \qquad & \langle c \rangle u & \longrightarrow \langle c' \rangle u \hspace{1cm} & c \longmapsto _X c' \\
+        & {\scriptsize{\text{[E-CDEREF]}}} \qquad & !(\langle \texttt{Ref} \: c \: d \rangle a) & \longrightarrow \langle d \rangle !a \\
+        & {\scriptsize{\text{[E-CASSIGN]}}} \qquad & \langle \texttt{Ref} \: c \: d \rangle a := v & \longrightarrow \langle d \rangle (a := \langle c \rangle v) \\
+        & {\scriptsize{\text{[E-CAPP]}}} \qquad & (\langle \texttt{Fun} \: c \: d \rangle u) \: v & \longrightarrow \langle d \rangle (u \: \langle c \rangle v)
+    \end{alignat*}
+    \hrule
+\end{figure} 
