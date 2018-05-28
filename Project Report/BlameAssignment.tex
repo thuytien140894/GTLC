@@ -1,0 +1,68 @@
+Casts can be illegal, safe or unsafe. Casts are immediately rejected 
+when the source and target types are inconsistent. A safe cast 
+$\langle T \Leftarrow S \rangle$ respects 
+the subtype relation $S <: T$, and therefore should not be blamed. 
+On the other hand, any downcast from a supertype is considered unsafe. 
+Our gradual type system keeps track of unsafe casts and identifies the 
+one that is responsible for a cast error. 
+
+As briefly mentioned in the \textit{Introduction}, there are two blame 
+tracking strategies depending on the way that a function type is coerced 
+to ?. The coercion calculus presented in Herman et al. [4] 
+incorporates the function dynamic type $ ? \rightarrow \: ? $ 
+to describe more specifically a function type with dynamic argument and return 
+types. Accordingly, any coercion from a precise function type $S \rightarrow T$ 
+to a general dynamic type ? has to check first if type ? 
+is a function type. Consider the following evaluation for an expression 
+with labeled casts:
+\begin{align*}
+    & (\langle ? \rightarrow \texttt{Nat} \Leftarrow 
+    \: ? \rangle ^{l_1}
+    \langle ? \Leftarrow 
+    \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}
+    (\lambda x \! : \! \texttt{Nat} . \; x)) 
+    \langle ? \Leftarrow \texttt{Bool} \rangle ^{l_3} \texttt{true} \\
+    \longrightarrow \:
+    & (\langle ? \rightarrow \texttt{Nat} \Leftarrow 
+    \: ? \rightarrow \: ? \rangle ^{l_1}
+    \langle ? \rightarrow \: ? \Leftarrow 
+    \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}
+    (\lambda x \! : \! \texttt{Nat} . \; x)) 
+    \langle ? \Leftarrow \texttt{Bool} \rangle ^{l_3} \texttt{true} \\
+    \longrightarrow \:
+    & \langle \texttt{Nat} \Leftarrow \: ? \rangle ^{l_1} 
+    (\langle ? \rightarrow \: ? \Leftarrow 
+    \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}
+    (\lambda x \! : \! \texttt{Nat} . \; x))
+    \langle ? \Leftarrow \: ? \rangle ^{l_1} 
+    \langle ? \Leftarrow \texttt{Bool} \rangle ^{l_3} \texttt{true} \\
+    \longrightarrow \:
+    & \langle \texttt{Nat} \Leftarrow \: ? \rangle ^{l_1} 
+    (\langle ? \rightarrow \: ? \Leftarrow 
+    \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}
+    (\lambda x \! : \! \texttt{Nat} . \; x)) 
+    \langle ? \Leftarrow \texttt{Bool} \rangle ^{l_3} \texttt{true} \\
+    \longrightarrow \: 
+    & \langle \texttt{Nat} \Leftarrow \: ? \rangle ^{l_1} 
+    \langle ? \Leftarrow \texttt{Nat} \rangle ^{l_2} 
+    ((\lambda x \! : \! \texttt{Nat} . \; x) 
+    \highlight{\langle \texttt{Nat} \Leftarrow \: ? \rangle ^{l_2}}
+    \langle ? \Leftarrow \texttt{Bool} \rangle ^{l_3} \texttt{true}) \\
+    \longrightarrow \:
+    & \textbf{blame} \: l_2
+\end{align*}
+The blame is shared between the downcast from ? to \texttt{Nat} in the argument type 
+and the upcast from \texttt{Nat} to ? in the return type for $\lambda x \! : \! \texttt{Nat} . \; x$. 
+This type of blame assignment is called UD. 
+However, the cast $\langle ? \Leftarrow \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}$ 
+is considered a safe cast based on the traditional subtype relation where 
+? is the top element. The intermediate step of converting type ? to 
+the dynamic function type $ ? \rightarrow \: ?$ changes $\langle ? \Leftarrow \texttt{Nat} 
+\rightarrow \texttt{Nat} \rangle ^{l_2}$ to
+$\langle ? \rightarrow \: ? \Leftarrow \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}$. 
+$\texttt{Nat} \rightarrow \texttt{Nat} <: \: ?$ is true, but    
+$\texttt{Nat} \rightarrow \texttt{Nat} <: \: ? \rightarrow \: ?$ is not. Siek et al. [4] 
+present a modified subtype relation (defined in Figure 3) to prove the soundness of the UD 
+blame assignment. In this way, ? is no longer the top element, and a function type $S \rightarrow T$ 
+is only a subtype of ? if it is a subtype of $ ? \rightarrow \: ?$. 
+\input{figures/Subtype}

@@ -1,0 +1,61 @@
+\begin{lstlisting}
+    evaluate' :: Term -> SEvalState Term
+    evaluate' t = case t of
+        -- | Arithmetic
+        Pred Zero                       -> return Zero                         
+        Pred (Succ nv) 
+            | isNumeric nv              -> return nv                       
+        Pred t'                         -> Pred <$> evaluate' t'
+        IsZero Zero                     -> return Tru                        
+        IsZero (Succ nv) 
+            | isNumeric nv              -> return Fls                     
+        IsZero t'                       -> IsZero <$> evaluate' t'
+        Succ t'                         -> Succ <$> evaluate' t'
+
+        -- | Conditional
+        If Tru t2 t3                    -> return t2                        
+        If Fls t2 t3                    -> return t3                         
+        If t1 t2 t3                     -> (\t1' -> If t1' t2 t3) <$> evaluate' t1
+
+        -- | Cast
+        Cast c t' 
+            | not (isVal t')            -> Cast c <$> evaluate' t'
+        Cast c (Cast d u)               -> return $ Seq d c `Cast` u            
+        Cast (Iden _) u                 -> return u                        
+        Cast (Fail s1 s2 l) u           -> throwError $ Blame s1 s2 l                 
+        Cast c u 
+            | isNormalized c            -> unbox t                              
+        Cast c u                        -> return $ reduceCoercion c `Cast` u
+        Deref (Cast (CRef c d) (Loc l)) -> return $ Cast d $ Deref (Loc l)      
+        Assign (Cast (CRef c d) (Loc l)) v                                                
+            | isVal v                   -> return $ Cast d $ Loc l `Assign` Cast c v 
+        App (Cast (Func c d) u) v 
+            | isUncoercedVal u 
+              && isVal v                -> return $ Cast d $ u `App` Cast c v                        
+
+        -- | Reference
+        Ref v     
+            | isVal v                   -> GlobalS.allocate v                             
+        Ref t'                          -> Ref <$> evaluate' t'
+        Deref (Loc l)                   -> GlobalS.peek l
+
+        -- | Dereference
+        Deref t'                        -> Deref <$> evaluate' t'
+                                            
+        -- | Assignment
+        Assign (Loc l) v
+            | isVal v                   -> GlobalS.update l v                       
+        Assign v1 t2 
+            | isVal v1                  -> Assign v1 <$> evaluate' t2
+        Assign t1 t2                    -> (`Assign` t2) <$> evaluate' t1
+
+        -- | Application
+        App (Lambda _ t1 _) v2 
+            | isVal v2                  -> return $ subsFromTop v2 t1          
+        App v1 t2 
+            | isVal v1                  -> App v1 <$> evaluate' t2
+        App t1 t2                       -> (`App` t2) <$> evaluate' t1                        
+                        
+        -- | No rules applied
+        _                               -> throwError Stuck              
+\end{lstlisting}

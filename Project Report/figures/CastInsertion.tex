@@ -1,0 +1,171 @@
+\begin{figure}[hp]
+    \caption{Cast Insertion Rules}
+    \hrule
+    \[
+        \begin{bprooftree}
+            \AxiomC{$(x\!:\!T) \in \Gamma$}
+            \RightLabel{\scriptsize{\text{[C-VAR]}}}
+            \UnaryInfC{$\Gamma \vdash x \hookrightarrow x : T$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Delta k = T$}
+            \RightLabel{\scriptsize{\text{[C-CONST]}}}
+            \UnaryInfC{$\Gamma \vdash k \hookrightarrow k : T$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma,x\!:\!S \vdash e \hookrightarrow t : T$}
+            \RightLabel{\scriptsize{\text{[C-FUN]}}}
+            \UnaryInfC{$\Gamma \vdash (\lambda x\!:\!S. \: e) 
+            \hookrightarrow (\lambda x\!:\!S. \: t) : (S \rightarrow T)$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \texttt{Nat}$}
+            \RightLabel{\scriptsize{\text{[C-SUCC1]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{succ} \: e \hookrightarrow \texttt{succ} \: t_2 : \texttt{Nat}$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \texttt{Nat}$}
+            \RightLabel{\scriptsize{\text{[C-PRED1]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{pred} \: e \hookrightarrow \texttt{pred} \: t : \texttt{Nat}$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \texttt{Nat}$}
+            \RightLabel{\scriptsize{\text{[C-ISZERO1]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{iszero} \: e \hookrightarrow \texttt{iszero} \: t : \texttt{Bool}$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \: ?$}
+            \RightLabel{\scriptsize{\text{[C-SUCC2]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{succ} \: e 
+            \hookrightarrow \texttt{succ} \: \langle \texttt{Nat}?^l \rangle t: \texttt{Nat}$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \: ?$}
+            \RightLabel{\scriptsize{\text{[C-PRED2]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{succ} \: e 
+            \hookrightarrow \texttt{pred} \: \langle \texttt{Nat}?^l \rangle t: \texttt{Nat}$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \: ?$}
+            \RightLabel{\scriptsize{\text{[C-ISZERO2]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{iszero} \: e 
+            \hookrightarrow \texttt{iszero} \: \langle \texttt{Nat}?^l \rangle t: \texttt{Bool}$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 \hookrightarrow t_1 : \texttt{Bool}$}
+            \AxiomC{$\Gamma \vdash e_2 \hookrightarrow t_2 : S$}
+            \AxiomC{$\Gamma \vdash e_3 \hookrightarrow t_3 : T$}
+            \AxiomC{$c = \langle T \rightsquigarrow S \rangle$}
+            \RightLabel{\scriptsize{\text{[C-IF1]}}}
+            \QuaternaryInfC{$\Gamma \vdash \texttt{if} \: e_1 \: \texttt{then} \: e_2 \: 
+            \texttt{else} \: e_3  
+            \hookrightarrow \texttt{if} \: t_1 \: \texttt{then} \: t_2 \: 
+            \texttt{else} \: \langle c \rangle t_3: \texttt{S}$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 \hookrightarrow t_1 : \: ?$}
+            \AxiomC{$\Gamma \vdash e_2 \hookrightarrow t_2 : S$}
+            \AxiomC{$\Gamma \vdash e_3 \hookrightarrow t_3 : T$}
+            \AxiomC{$c = \langle T \rightsquigarrow S \rangle$}
+            \RightLabel{\scriptsize{\text{[C-IF2]}}}
+            \QuaternaryInfC{$\Gamma \vdash \texttt{if} \: e_1 \: \texttt{then} \: e_2 \: 
+            \texttt{else} \: e_3  
+            \hookrightarrow \texttt{if} \: \langle \texttt{Bool}?^l \rangle t_1 \: 
+            \texttt{then} \: t_2 \: 
+            \texttt{else} \: \langle c \rangle t_3: \texttt{S}$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 \hookrightarrow t_1 : S \rightarrow T$}
+            \AxiomC{$\Gamma \vdash e_2 \hookrightarrow t_2 : S'$}
+            \AxiomC{$c = \langle S' \rightsquigarrow S \rangle$}
+            \RightLabel{\scriptsize{\text{[C-APP1]}}}
+            \TrinaryInfC{$\Gamma \vdash e_1 \: e_2  
+            \hookrightarrow t_1 \: \langle c \rangle t_2 : T$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 \hookrightarrow t_1 : \: ?$}
+            \AxiomC{$\Gamma \vdash e_2 \hookrightarrow t_2 : S$}
+            \RightLabel{\scriptsize{\text{[C-APP2]}}}
+            \BinaryInfC{$\Gamma \vdash e_1 \: e_2  
+            \hookrightarrow \langle \texttt{Fun}?^l \rangle t_1 \: 
+            \langle S! \rangle t_2 : ?$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : T$}
+            \RightLabel{\scriptsize{\text{[C-REF]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{ref} \: e  
+            \hookrightarrow \texttt{ref} \: t : \texttt{Ref} \: T$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \texttt{Ref} \: T$}
+            \RightLabel{\scriptsize{\text{[C-DEREF1]}}}
+            \UnaryInfC{$\Gamma \vdash \: !e  
+            \hookrightarrow \: !t : T$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e \hookrightarrow t : \: ?$}
+            \RightLabel{\scriptsize{\text{[C-DEREF2]}}}
+            \UnaryInfC{$\Gamma \vdash \: !e  
+            \hookrightarrow \: !(\langle \texttt{Ref}?^l \rangle t) : \: ?$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 \hookrightarrow t_1 : \texttt{Ref} \: S$}
+            \AxiomC{$\Gamma \vdash e_2 \hookrightarrow t_2 : T$}
+            \AxiomC{$c = \langle T \rightsquigarrow S \rangle$}
+            \RightLabel{\scriptsize{\text{[C-ASSIGN1]}}}
+            \TrinaryInfC{$\Gamma \vdash (e_1 := e_2)  
+            \hookrightarrow (t_1 := \langle c \rangle t_2) : S$}
+        \end{bprooftree}
+    \]
+    \vspace{0.5mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 \hookrightarrow t_1 : \: ?$}
+            \AxiomC{$\Gamma \vdash e_2 \hookrightarrow t_2 : T$}
+            \RightLabel{\scriptsize{\text{[C-ASSIGN2]}}}
+            \BinaryInfC{$\Gamma \vdash (e_1 := e_2)  
+            \hookrightarrow (\langle \texttt{Ref}?^l \rangle t_1 := 
+            \langle T! \rangle t_2) : \: ?$}
+        \end{bprooftree}
+    \]
+    \hrule
+\end{figure} 

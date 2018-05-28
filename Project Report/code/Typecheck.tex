@@ -1,0 +1,110 @@
+\begin{lstlisting}
+    typeCheck' :: Term -> TCheckState (Term, Type)
+    -- | Constants
+    typeCheck' e = case e of                              
+        Tru  -> return (e, Boolean)                                    
+        Fls  -> return (e, Boolean)                                   
+        Zero -> return (e, Nat)     
+    -- | Arithmetic                              
+    typeCheck' (Succ e') -> 
+        do (t', ty) <- typeCheck' e'
+            case ty of  
+                Dyn -> do c <- coerce ty Nat
+                           return (Succ $ Cast c t', Nat)
+                Nat -> return (Succ t', Nat)
+                _   -> throwError $ NotNat ty
+    typeCheck' (Pred e') -> 
+        do (t', ty) <- typeCheck' e'
+            case ty of
+                Dyn -> do c <- coerce ty Nat
+                           return (Pred $ Cast c t', Nat)
+                Nat -> return (Pred t', Nat)
+                _   -> throwError $ NotNat ty
+    typeCheck' (IsZero e') -> 
+        do (t', ty) <- typeCheck' e' 
+            case ty of 
+                Dyn -> do c <- coerce ty Nat
+                           return (IsZero $ Cast c t', Boolean)
+                Nat -> return (IsZero t', Boolean)
+                _   -> throwError $ NotNat ty
+    -- | Conditional
+    typeCheck' (If e1 e2 e3) = 
+        do (t1, cond) <- typeCheck' e1 
+           (t2, fst)  <- typeCheck' e2 
+           (t3, snd)  <- typeCheck' e3
+           case cond of 
+               Dyn 
+                   | fst == snd -> do c1 <- coerce cond Boolean
+                                       let t1' = Cast c1 t1
+                                       return (If t1' t2 t3, fst)  
+                   | fst `isConsistent` snd -> 
+                       do c1 <- coerce cond Boolean
+                          c2 <- coerce fst snd
+                          c3 <- coerce snd fst 
+                          let (t1', t2', t3') = (Cast c1 t1, Cast c2 t2, Cast c3 t3)
+                          return (If t1' t2' t3', Dyn)   
+                   | otherwise -> throwError $ Difference fst snd
+               Boolean 
+                   | fst == snd -> return (If t1 t2 t3, fst) 
+                   | fst `isConsistent` snd -> 
+                       do c2 <- coerce fst snd 
+                          c3 <- coerce snd fst
+                          let (t2', t3') = (Cast c2 t2, Cast c3 t3)
+                          return (If t1 t2' t3', Dyn) 
+                   | otherwise -> throwError $ Difference fst snd
+               _ -> throwError $ NotBoolean cond      
+    -- | Reference
+    typeCheck' (Ref e') -> 
+        do (t', ty) <- typeCheck' e'   
+           return (Ref t', TRef ty)  
+    -- | Dereference                           
+    typeCheck' (Deref e') -> 
+        do (t', ty) <- typeCheck' e' 
+           case ty of 
+               Dyn    -> do l <- GlobalS.newLabel
+                            return (Deref $ Cast (RefProj l) t', Dyn)
+               TRef s -> return (Deref t', s)
+               _      -> throwError $ IllegalDeref e' 
+    -- | Assignment
+    typeCheck' (Assign e1 e2) -> 
+        do (t1, s1)  <- typeCheck' e1 
+           (t2, s2) <- typeCheck' e2 
+           case s1 of 
+               TRef s 
+                   | s2 == s -> return (t1 `Assign` t2, s)
+                   | s2 `isConsistent` s -> 
+                       do c <- coerce s2 s
+                          return (t1 `Assign` Cast c t2, s)
+                   | otherwise -> 
+                       throwError $ AssignMismatch s2 s (Assign e1 e2)
+               Dyn -> 
+                   do l  <- GlobalS.newLabel
+                      c2 <- coerce s2 Dyn 
+                      return (Cast (RefProj l) t1 `Assign` Cast c2 t2, Dyn)
+               _ -> throwError $ IllegalAssign e1
+    -- | Variable 
+    typeCheck' (Var _ ty _) = case ty of                                            
+        TUnit -> throwError $ NotBound e   
+        _     -> return (e, ty) 
+    -- | Abstraction
+    typeCheck' (Lambda ty e' ctx) -> 
+        do (t', retTy) <- typeCheck' e'            
+            return (Lambda ty t' ctx, Arr ty retTy)  
+    -- | Application
+    typeCheck' (App e1 e2) -> 
+        do (t1, funcTy) <- typeCheck' e1   
+           (t2, argTy) <- typeCheck' e2
+           case funcTy of 
+               Dyn -> 
+                   do l  <- GlobalS.newLabel 
+                      c2 <- coerce argTy Dyn   
+                      return (Cast (FuncProj l) t1 `App` Cast c2 t2, Dyn)
+               Arr paramTy retTy 
+                   | argTy == paramTy -> return (App t1 t2, retTy)
+                   | argTy `isConsistent` paramTy -> 
+                       do c <- coerce argTy paramTy  
+                          return (App t1 $ Cast c t2, retTy)
+                   | otherwise -> 
+                       throwError $ FunMismatch argTy paramTy (App e1 e2)
+               _ -> throwError $ NotFunction e1   
+\end{lstlisting}

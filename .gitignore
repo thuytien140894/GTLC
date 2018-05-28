@@ -1,5 +1,21 @@
+## Haskell 
 .stack-work/
 .DS_Store
 .vscode/
 GTLC.cabal
 *~
+
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.toc
+*.fls
+*.fdb*
+*.pdf
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync

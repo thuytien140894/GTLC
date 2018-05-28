@@ -1,0 +1,191 @@
+\section{Lexer}
+The library \texttt{Parsec} is used to implement the lexer and parser. 
+We first create a language definition specifying how individual character are tokenized, as follows:
+\begin{lstlisting}
+    langDef :: Tok.LanguageDef ()
+    langDef = Tok.LanguageDef
+        { Tok.commentStart    = ""  
+        , Tok.commentEnd      = ""
+        , Tok.commentLine     = "//"
+        , Tok.nestedComments  = False
+        , Tok.identStart      = letter 
+        , Tok.identLetter     = alphaNum 
+        , Tok.opStart         = oneOf ":!#$%&*+./<=>?@\\^|-~"
+        , Tok.opLetter        = oneOf ":!#$%&*+./<=>?@\\^|-~"
+        , Tok.reservedNames   = [ "true"
+                                , "false"
+                                , "ref"
+                                , "if"
+                                , "then"
+                                , "else"
+                                , "succ"
+                                , "pred"
+                                , "iszero"
+                                , "zero"
+                                , "Bool"
+                                , "Nat"
+                                , "Dyn"
+                                , "Top"
+                                , "Ref" 
+                                ]
+        , Tok.reservedOpNames = [ "succ"
+                                  , "pred"
+                                  , "iszero" 
+                                  ]
+        , Tok.caseSensitive   = True
+        }
+\end{lstlisting}
+and then initialize a lexer using this language definition.
+\begin{lstlisting}
+    lexer :: Tok.TokenParser ()
+    lexer = Tok.makeTokenParser langDef
+\end{lstlisting}
+
+Our $\lambda$-calculus does not support block comments or nested comments, requires that identifiers start with a 
+letter and end with alphanumeric characters. We also reserve some keywords that cannot be used for identifiers. 
+The lexer then defines a number of lexical parsers for identifiers, parenthesized expressions, 
+and reserved operations such as assignment ($:=$) and lambda ($\lambda$). 
+
+\section{Parser}
+Given the tokens provided by the lexer, the parser uses the syntax defined in Section 5 to construct a valid abstract 
+syntax tree for the input program. We first define separate parsers for each expression type. Parsing constants, 
+variables, and dereference is straightforward. Note that variables are initially parsed as free with type \lstinline{TUnit}.
+\begin{lstlisting}
+    -- | Parse a dereference.
+    dereference :: Parser Term 
+    dereference = do 
+        reservedOp "!" >> whiteSpace 
+        t <- expr
+        return $ Deref t
+    
+    -- | Parse a variable.
+    var :: Parser Term
+    var = do
+        id <- identifier
+        return $ Var (-1) TUnit id 
+
+    -- | Parse constants.
+    true, false, zero :: Parser Term
+    true  = reserved "true" >> return Tru
+    false = reserved "false" >> return Fls
+    zero  = reserved "0" >> return Zero
+\end{lstlisting}
+We parse arithmetic operators (\texttt{succ}, \texttt{pred}, \texttt{iszero}), and reference (\texttt{ref}) as unary 
+prefix operators, and assignment ($:=$) as a binary infix operator.
+\begin{lstlisting}
+    operatorTable :: Ex.OperatorTable String () Identity Term
+    operatorTable = 
+        [ [ Ex.Prefix $ reserved "succ"   >> return Succ
+          , Ex.Prefix $ reserved "pred"   >> return Pred
+          , Ex.Prefix $ reserved "iszero" >> return IsZero
+          , Ex.Prefix $ reserved "ref"    >> return Ref
+          , Ex.Infix (reservedOp ":=" >> return Assign) Ex.AssocLeft
+          ]
+        ]
+\end{lstlisting}
+The most complicated expressions to parse are $\lambda$-abstractions. 
+We first reserve \textbackslash \:  as a symbol for $\lambda$. We give the programmer the option to omit 
+type annotations. The \lstinline{option} function checks if there is a type to parse; if not, 
+the type is automatically set to ?. We then renumber free and bound variables, and update the type 
+of the variable for the current binder. 
+\begin{lstlisting}
+    -- | Parse an abstraction.
+    lambda :: Parser Term
+    lambda = do
+        reservedOp "\\" 
+        arg <- identifier
+        ty <- option Dyn $ try colon >> types  
+        dot 
+        body <- expr
+        let t = fixBinding body arg 0
+        let t' = updateVarType t arg ty
+        let boundVars = arg : getBoundVar body
+        let freeVars = getFreeVar body boundVars
+        let t'' = fixFreeBinding t' freeVars boundVars
+        return $ Lambda ty t'' boundVars
+\end{lstlisting}
+At the top level, the parser parses an expression as an application by first parsing one or 
+more expressions separated by a space and then applying them from left to right.
+\begin{lstlisting}
+    app :: Parser Term
+    app = do
+        terms <- sepBy1 expr' whiteSpace 
+        return $ applyFromLeft terms
+\end{lstlisting}
+The parsing for types is more simple. We also give the option to express a dynamically-typed 
+expression by annotating it as \lstinline{Dyn}.
+\begin{lstlisting}
+    -- | Parse base types.
+    boolean, nat, top, dynamic :: Parser Type
+    boolean = reserved "Bool" >> return Bool
+    nat     = reserved "Nat" >> return Nat
+    dynamic = reserved "Dyn" >> return Dyn
+    
+    -- | Parse reference types. 
+    ref :: Parser Type 
+    ref = do 
+        reserved "Ref"
+        ty <- types 
+        return $ TRef ty
+\end{lstlisting}
+Unlike applications, types associate to the right. Hence, we parse a function type by applying one 
+or more nested types separated by $\rightarrow$ from right to left.
+\begin{lstlisting}
+    types :: Parser Type
+    types = do
+        list <- sepBy1 types' arrowSep
+        return $ arrowFromRight list
+\end{lstlisting}
+
+\section{Pretty Printer}
+The library \texttt{PrettyPrint} is used to implement a printer, which converts expressions from their AST representations to 
+user-readable formats. We create separate printers for expressions, types, coercions, and errors, all derived from 
+the typeclass \lstinline{Pretty}. 
+\begin{lstlisting}
+    class Pretty a where 
+        output :: a -> Doc
+        
+        printMsg :: a -> IO ()
+        printMsg = PP.putDoc . output
+\end{lstlisting}
+The \lstinline{output} function converts a type $a$ to a 
+\texttt{Doc}, which is a set of layouts. This function is left as abstract because each \texttt{Pretty} instance  
+requires different formatting styles depending on its type. \texttt{printMsg} has a default implementation of 
+piping the result of \texttt{output} to \texttt{PP.putDoc} in order to print type $a$ to the standard output. 
+This function is shared by all the \texttt{Pretty} instances. 
+
+\section{Shifting and Substitution [6]} 
+Using de Bruijn indices to identify variables, the substitution operation requires a subroutine to renumber the indices of free variables 
+in a term. For example, suppose we have a substitution $[x\rightarrow s](\lambda z. \: x)$, 
+which is namelessly represented as $[0\rightarrow s](\lambda . \: 1)$, where all the x occurences in $\lambda z . \: x$ 
+are replaced with $s$. For every binder that a variable is nested, its index is incremented by 1. Therefore, index 1 under the 
+$\lambda$-abstraction and index 0 in the outer context refer to the same variable, that is $x$. When replacing $x$ with $s$, all the free variables 
+in $s$ would have to be incremented by 1 as well because they are now under the $\lambda$-abstraction. However, this shifting 
+operation is only applied to free variables. If $s$ contains a binder, as in $s = (\lambda y . \: y) \: h$, then 
+the index for $h$ is shifted up by 1, but not the index for $y$ because it is bound. 
+
+To limit the scope of shifting, we maintain a threshold parameter $c$ to distinguish free variables from bound variables. We initialize $c$ to 
+0 and then increment it every time it passes a binder. When a term $t$ is to be shifted, $c$ indicates the number of binders within which $t$  
+is nested. Therefore, any variable with an index $k < c$ is obviously bound to one of the binders; on the other hand, 
+variables with indices $k \geq c$ are free and therefore should be shifted. The definition for shifting is defined as follows:
+\begin{alignat*}{4}
+&\uparrow _c^d(k) &= &  
+    \begin{cases}   
+        k & \text{if $k<c$} \\
+        k + d & \text{if $k \geq c$} 
+    \end{cases} \\
+&\uparrow _c^d(\lambda . \: t_1) \: & = \: &\lambda . \: \uparrow _{c+1}^d (t_1) & \\
+&\uparrow _c^d(t_1 \: t_2) \: & = \: & \uparrow _c^d(t_1) \: \uparrow _c^d(t_2)
+\end{alignat*} 
+where $c$ is the threshold number, $d$ is the shifting offset, and $k$ is the variable index. As a result, the substitution 
+procedure $[j \rightarrow s]t$ is defined as:
+\begin{alignat*}{3}
+    &[j \rightarrow s]k &=& \:  
+        \begin{cases}   
+            s & \text{if $k=j$} \\
+            k & \text{otherwise} 
+        \end{cases} \\
+    &[j \rightarrow s](\lambda . \: t_1) & \: \: = \: & \lambda . \: [j + 1 \rightarrow \uparrow^1 (s)]t_1 \\
+    &[j \rightarrow s](t_1 \: t_2) & \: \: = \: & [j \rightarrow s]t_1 \: [j \rightarrow s]t_2
+\end{alignat*} 
+where $s$ is the term to substitute for the variable with index $j$.

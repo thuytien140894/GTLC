@@ -1,0 +1,147 @@
+\documentclass[11pt]{article}
+\usepackage{afterpage}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bussproofs}
+\usepackage{caption}
+\usepackage[margin=4cm]{geometry}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{setspace}
+\usepackage[hyphens]{url}
+\usepackage{xcolor}
+
+\allowdisplaybreaks
+
+\newcommand\blankpage{
+    \null
+    \thispagestyle{empty}
+    \addtocounter{page}{-1}
+    \newpage}
+
+\makeatletter
+\newenvironment{shiftedflalign}{
+  \start@align\tw@\st@rredfalse\m@ne
+  \hskip\parindent
+}{
+  \endalign
+}
+\newenvironment{shiftedflalign*}{
+  \start@align\tw@\st@rredtrue\m@ne
+  \hskip\parindent
+}{
+  \endalign
+}
+\makeatother
+
+\lstset{basicstyle=\small\sffamily,
+        breaklines=true,
+        language=Haskell,
+        columns=flexible,
+        keepspaces=true,
+        tabsize=4,
+        commentstyle=\color{gray},
+        morekeywords={throwError},
+        literate= {<-}{$\leftarrow$}{1}{->}{$\rightarrow$}{1},
+        deletekeywords={fst,snd}
+      }
+
+\newenvironment{bprooftree}
+  {\leavevmode\hbox\bgroup}
+  {\DisplayProof\egroup}
+
+\newcommand{\highlight}[1]{
+  \colorbox{gray!15}{$\displaystyle#1$}}
+
+\captionsetup{labelfont=bf,font=bf,skip=0pt}
+
+\title{\bf Interpretation of the Gradually-Typed Lambda Calculus}
+\author{Tien Thuy Ho}
+
+\begin{document}
+
+% Title page
+\input{TitlePage}
+
+% Table of contents
+\setcounter{page}{3}
+\tableofcontents
+\listoffigures
+
+\maketitle
+\pagenumbering{arabic}
+
+\begin{abstract}
+Gradual typing offers both type safety and programming flexibility by integrating static and dynamic type checking 
+together within the same language. The runtime semantics of a gradually-typed system involves the translation of the 
+source language to an intermediate one with explicit casts. Space comsumption of gradual typing can be improved by using 
+the coercion calculus to collapse a sequence of adjacent casts into a single cast [4]. This paper details an efficient 
+interpretation of the gradually-typed lambda calculus based on coercions with eager error detection, as described formally 
+by Herman et al. [4]. We also augment the system with UD blame assignment [8] to pinpoint the particular expressions 
+responsible for coercion failures.
+\end{abstract}
+
+\section{Introduction} \input{Introduction}
+\section{Gradually-Typed Lambda Calculus $\lambda ^? _{\rightarrow}$} \input{GTLC}
+\section{The UD Blame Assignment} \input{BlameAssignment}
+\section{The Eager Coercion Calculus} \input{Coercion}
+\section{Interpreter for $\lambda ^? _{\rightarrow}$} \input{Interpreter}
+\section{Related Work} \input{RelatedWork}
+\section{Conclusion} \input{Conclusion}
+
+\appendix
+\input{Appendix}
+
+\begin{thebibliography}{9}
+    \bibitem{diehl} 
+    S. Diehl:  Parsing, \\
+    \url{http://dev.stephendiehl.com/fun/002\char`_parsers.html}
+
+    \bibitem{parsec-tutorial} 
+    Haskell: Parsing a Simple Imperative Language, \\
+    \url{https://wiki.haskell.org/Parsing\char`_a\char`_simple\char`_imperative\char`_language}
+
+    \bibitem{henglein} 
+    F. Henglein.
+    Dynamic typing: Syntax and proof theory. 
+    \textit{Sci. Comput. Program.},
+    22(3):197-230, 1994.
+
+    \bibitem{flanagan} 
+    D. Herman, A. Tomb, and C. Flanagan. 
+    Space-efficient gradual typing. 
+    In \textit{Trends in Functional Prog.}, (TFP),
+    pages XXVIII, April 2007.
+
+    \bibitem{hutton} 
+    Graham Hutton. 
+    \textit{Programming in Haskell}. 
+    University Press, Cambridge, 2007.
+
+    \bibitem{pierce} 
+    Benjamin C. Pierce. 
+    \textit{Types and Programming Languages}. 
+    The MIT Press, Cambridge, 2002.
+
+    \bibitem{garcia} 
+    J. G. Siek and R. Garcia. 
+    Interpretations of the gradually-typed lambda calculus. 
+    In \textit{Scheme and Functional Programming Workshop}, 
+    pages 68-80, September 2012.
+
+    \bibitem{taha} 
+    J. G. Siek, R. Garcia, and W. Taha. 
+    Exploring the design space of higher-order casts. 
+    In \textit{European Symposium on Programming}, ESOP,
+    pages 365-376, January 2010.
+
+    \bibitem{siek} 
+    J. G. Siek and W. Taha. 
+    Gradual typing for functional languages. 
+    In \textit{Scheme and Functional Programming Workshop}, pages 81-92, September 2006.
+
+    \bibitem{source} 
+    Source code, \\
+    \url{https://github.com/thuytien140894/GTLC}
+\end{thebibliography}
+\end{document}

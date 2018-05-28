@@ -1,0 +1,115 @@
+\begin{figure}[ht]
+    \caption{$\lambda ^? _{\rightarrow}$ Type System}
+    \hrule
+    \[
+        \begin{bprooftree}
+            \AxiomC{$(x\!:\!T) \in \Gamma$}
+            \RightLabel{\scriptsize{\text{[T-VAR]}}}
+            \UnaryInfC{$\Gamma \vdash x : T$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Delta k = T$}
+            \RightLabel{\scriptsize{\text{[T-CONST]}}}
+            \UnaryInfC{$\Gamma \vdash k : T$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Gamma,x\!:\!S \vdash e : T$}
+            \RightLabel{\scriptsize{\text{[T-FUN]}}}
+            \UnaryInfC{$\Gamma \vdash \lambda x\!:\!S. \: e : S \rightarrow T$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+                \AxiomC{$\Gamma \vdash e : S$}
+                \AxiomC{$S \sim \texttt{Nat}$}
+                \RightLabel{\scriptsize{\text{[T-SUCC]}}}
+                \BinaryInfC{$\Gamma \vdash \texttt{succ} \: e : \texttt{Nat}$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e : S$}
+            \AxiomC{$S \sim \texttt{Nat}$}
+            \RightLabel{\scriptsize{\text{[T-PRED]}}}
+            \BinaryInfC{$\Gamma \vdash \texttt{pred} \: e : \texttt{Nat}$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e : S$}
+            \AxiomC{$S \sim \texttt{Nat}$}
+            \RightLabel{\scriptsize{\text{[T-ISZERO]}}}
+            \BinaryInfC{$\Gamma \vdash \texttt{iszero} \: e : \texttt{Bool}$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+                \AxiomC{$\Gamma \vdash e_1 : B$}
+                \AxiomC{$B \sim \texttt{Bool}$}
+                \AxiomC{$\Gamma \vdash e_2 : S$}
+                \AxiomC{$\Gamma \vdash e_3 : T$}
+                \AxiomC{$S \sim T$}
+                \RightLabel{\scriptsize{\text{[T-IF]}}}
+                \QuinaryInfC{$\Gamma \vdash \texttt{if} \: e_1 \: \texttt{then} \: e_2 \: 
+                \texttt{else} \: e_3 : \: S$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 : S \rightarrow T$}
+            \AxiomC{$\Gamma \vdash e_2 : S'$}
+            \AxiomC{$S' \sim S$}
+            \RightLabel{\scriptsize{\text{[T-APP1]}}}
+            \TrinaryInfC{$\Gamma \vdash e_1 \: e_2 : T$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 : \: ?$}
+            \AxiomC{$\Gamma \vdash e_2 : S$}
+            \RightLabel{\scriptsize{\text{[T-APP2]}}}
+            \BinaryInfC{$\Gamma \vdash e_1 \: e_2 : \: ?$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e : T$}
+            \RightLabel{\scriptsize{\text{[T-REF]}}}
+            \UnaryInfC{$\Gamma \vdash \texttt{ref} \: e : \texttt{Ref} \: T$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e : \texttt{Ref} \: T$}
+            \RightLabel{\scriptsize{\text{[T-DEREF1]}}}
+            \UnaryInfC{$\Gamma \vdash \: !e : T$}
+        \end{bprooftree}
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e : \: ?$}
+            \RightLabel{\scriptsize{\text{[T-DEREF2]}}}
+            \UnaryInfC{$\Gamma \vdash \: !e : \: ?$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 : \texttt{Ref} \: T$}
+            \AxiomC{$\Gamma \vdash e_2 : S$}
+            \AxiomC{$S \sim T$}
+            \RightLabel{\scriptsize{\text{[T-ASSIGN1]}}}
+            \TrinaryInfC{$\Gamma \vdash e_1 := e_2 : S$}
+        \end{bprooftree}
+    \]
+    \vspace{1mm}
+    \[
+        \begin{bprooftree}
+            \AxiomC{$\Gamma \vdash e_1 : \: ?$}
+            \AxiomC{$\Gamma \vdash e_2 : T$}
+            \RightLabel{\scriptsize{\text{[T-ASSIGN2]}}}
+            \BinaryInfC{$\Gamma \vdash e_1 := e_2 : \: ?$}
+        \end{bprooftree}
+    \]
+    \hrule
+    \end{figure}  

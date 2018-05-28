@@ -1,0 +1,104 @@
+\subsection{Coercions}
+Herman et al. [4] represent casts as combinable coercions to reduce 
+space comsumption of gradual typing while preserving its semantics. 
+\input{figures/Coercion}
+The syntax and type system for the coercion calculus are defined in 
+Figure 4 [4]. Note that we add blame labels to certain coercions to 
+enable blame tracking in our gradual type system. The judgment $\vdash c: S 
+\rightsquigarrow T$ indicates that coercion $c$ casts a value of type 
+$S$ to type $T$. The identity $I$ is a coercion of any type to itself. 
+$D!$ injects a type into ? while $D?^l$ projects ? into a precise type. 
+Since an injection is always safe, we do not need to blame-track it. 
+A coercion of two inconsistent types results in $\texttt{Fail}^l$. 
+
+As discussed in the previous section, UD blame assignment arises  
+from the coercion calculus because a coercion 
+between a function type and ? always goes through the 
+dynamic function type $? \rightarrow \: ?$. Thus,
+the coercion $? \rightsquigarrow (S \rightarrow T)$ is an 
+abstraction of two coercions: $? \rightsquigarrow 
+(? \rightarrow \: ?)$ first to make sure ? is a function type 
+and then $(? \rightarrow \: ?) \rightsquigarrow 
+(S \rightarrow T)$. Similarly, the coercion $(S \rightarrow T) \rightsquigarrow \: ?$ 
+performs the coercion $(S \rightarrow T) \rightsquigarrow (? \rightarrow \: ?)$ 
+followed by $(? \rightarrow \: ?) \rightsquigarrow \: ?$ to 
+generalize a function dynamic type.  
+The coercion calculus uses the indirection $\texttt{Fun}?^l$ and $\texttt{Fun}!$ 
+to represent the injection $(? \rightarrow \: ?) \rightsquigarrow \: ?$ and 
+projection $? \rightsquigarrow (? \rightarrow \: ?)$. The same concept is 
+applied to reference coercions. The injection $\texttt{Ref}!$ and 
+projection $\texttt{Ref}?^l$ are auxiliary to the coercions $\texttt{Ref} \: T 
+\rightsquigarrow \: ?$ and $? \rightsquigarrow \texttt{Ref} \: T$.
+
+Multiple coercions can behave as one. The function coercion $\texttt{Fun} \: c \: d$ 
+applies coercion $c$ to the argument and $d$ to the result. Coercing 
+two function types $(S_1 \rightarrow S_2) \rightsquigarrow (T_1 \rightarrow T_2)$ 
+coerces $T_1$ to $S_1$ and $S_2$ to $T_2$. Likewise, the reference coercion 
+$\texttt{Ref} \: S \rightsquigarrow \texttt{Ref} \: T$ results in 
+$\texttt{Ref} \: c \: d$, where $c$ coerces all writes from 
+$T$ to $S$ and $d$ coerces all reads from $S$ to $T$. Finally, the coercion 
+composition $c;d$ applies each coercion from left to right.
+
+\subsection{Reduction Rules}
+The bounded space consumption of coercions derives from their reducibility. 
+The core set of normalization rules is given in Figure 5. These rules model 
+after those of Herman et al. [4] with some additions from Siek and Garcia [5]. 
+The added rules are needed for blame assignment and its confluence. First, 
+we omit the rule 
+\begin{equation*}
+    c;\texttt{Fail}^l = \texttt{Fail}^l
+\end{equation*}
+to ensure that blame should always come from the closest coercion to an 
+expression, unless it is an injection. For instance, $\langle \texttt{Nat}?^{l_1};\texttt{Fail}^{l_2} 
+\rangle \langle \texttt{Bool}! \rangle \texttt{true} \longrightarrow 
+\langle \texttt{Bool}!;\texttt{Nat}?^{l_1};\texttt{Fail}^{l_2} \rangle \texttt{true}
+\longrightarrow \langle \texttt{Fail}^{l_1};\texttt{Fail}^{l_2} \rangle \texttt{true}
+\longrightarrow \texttt{Fail}^{l_1}$. Here the blame is assigned to the 
+most inner coercion $l_1$, instead of $l_2$ 
+if $\texttt{Fail}^{l_2}$ is allowed to propagate from the right. 
+
+Coercions can be reassociated to enable further reduction. A coercion $c$ that 
+cannot be further reduced is normalized, represented as $\tilde{c}$. Figure 
+5 shows a list of normal coercions. Note that a composition of normalized 
+coercion is only normal if neither is the identity $I$. Also, we omit 
+the normalized coercion $\texttt{Fail}^l$, which is handled separately 
+during evaluation. 
+
+\input{figures/Reduction}
+
+\subsection{Eager Error Detection}
+Let us revisit the expression described in the \textit{Introduction}:
+\begin{equation*}
+    \langle \texttt{Bool} \rightarrow \texttt{Nat} \Leftarrow  
+    \: ? \rightarrow \: ? \rangle ^l 
+    \langle ? \rightarrow \: ? \Leftarrow 
+    \texttt{Nat} \rightarrow \texttt{Nat} \rangle
+    (\lambda x \! : \! \texttt{Nat} . \; x)
+\end{equation*}
+Observe that this cast would fail because type $\texttt{Bool} \rightarrow 
+\texttt{Nat}$ is inconsistent with type $\texttt{Nat} \rightarrow 
+\texttt{Nat}$. However, this error would not be detected in the traditional 
+cast checking system until $(\lambda x \! : \! \texttt{Nat} . \; x)$ is 
+applied to a boolean. On the other hand, our gradual type system would not 
+perform any function application on this expression until its coercions are 
+normalized. Using one of the core reduction rules, we obtain:
+\begin{equation*}
+    \langle \texttt{Fun} \: \texttt{Fail}^l \: I \rangle
+    (\lambda x \! : \! \texttt{Nat} . \; x)
+\end{equation*}
+where $\texttt{Fail}^l$ results from the attempt to coerce $\texttt{Nat} \rightarrow 
+\texttt{Nat}$ to $\texttt{Bool} \rightarrow \texttt{Nat}$. As a result, 
+the evaluation process should effectively terminate to a cast error before 
+performing any more unnecessary operations. In order to achieve this 
+early error detection, we extend the coercion normalization rules with 
+four eager patterns (see Figure 5) to propagate cast errors. These added rules are similar to 
+those given by Herman et al. [4] but require the coercion in the argument 
+position to be normalized when $\texttt{Fail}^l$ is in the result [8]. 
+This restriction makes sure that a failed argument coercion takes the blame when 
+the result coercion fails too. Failed reference coercions follow an 
+analogous pattern: blame only goes to a failed ``read'' coercion if 
+the ``write'' coercion is normal and not a failure.
+
+We have covered the design specifications for gradual typing based on coercions 
+with UD blame assignment. In the next section, we will apply this design choice 
+to implement a $\lambda ^? _{\rightarrow}$ interpreter in Haskell. 

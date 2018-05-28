@@ -1,0 +1,147 @@
+Consider the following expression.
+\begin{shiftedflalign*}
+    & (\lambda x . \: \texttt{succ} \: x) \: \texttt{true} & 
+\end{shiftedflalign*}
+The typechecking process results in the following modified expression 
+with additional coercions.
+\begin{shiftedflalign*}
+    & (\lambda x \! : ?. \: \texttt{succ} \: (\langle \texttt{Nat}? ^{l_1} \rangle x)) \: 
+    \langle \texttt{Bool}! \rangle \texttt{true} &
+\end{shiftedflalign*}  
+The first step of evaluation gives
+\begin{shiftedflalign*}
+    & \texttt{succ} \: (\langle \texttt{Nat}? ^{l_1} \rangle 
+    \langle \texttt{Bool}! \rangle \texttt{true}) & 
+\end{shiftedflalign*}
+Rule {\scriptsize{[E-CSTEP]}} combines the adjacent coercions 
+$\langle \texttt{Nat}? ^{l_1} \rangle$ and $\langle \texttt{Bool}! \rangle$,
+which evaluates to $\texttt{Fail}^{l_1}$. The result is a cast error.
+\begin{shiftedflalign*}
+    & \texttt{blame} \: l_1 & 
+\end{shiftedflalign*}
+Next, we review another example that involves higher-order coercions. 
+\begin{shiftedflalign*}
+    & (\lambda m . \: (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: m) \: (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y)& 
+\end{shiftedflalign*}
+The cast insertion judgment produces the following expression. To keep it short and 
+intuitive, we abbreviate 
+$\texttt{Fun} \: c \: d$ as $\langle c \! \rightarrow \! d \rangle$. 
+\begin{shiftedflalign*}
+    & (\lambda m\!:? . \: (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: (\langle \texttt{Nat}! \! \rightarrow \! \texttt{Nat}? ^{l_1} \rangle \langle \texttt{Fun}? ^{l_2} \rangle m)) & \\ 
+    & \hspace{6.2cm} \: \langle \texttt{Fun}! \rangle \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle 
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) & 
+\end{shiftedflalign*}
+$m$ is dynamically-typed and coerced to the argument type $\texttt{Nat} \! \rightarrow \! \texttt{Nat}$. 
+The function check $\langle \texttt{Fun}? ^{l_2} \rangle$ is inserted to ensure that $m$ first evaluates 
+to a function. The value $\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y$ is coerced to type ? to 
+be consistent with $m$. The tag $\langle \texttt{Fun}! \rangle$ upcasts a function type to ?.
+The following are the steps of evaluation.
+\begin{align*}
+    & (\lambda m \! :? . \: (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: (\langle \texttt{Nat}! \! \rightarrow \! \texttt{Nat}? ^{l_1} \rangle \langle \texttt{Fun}? ^{l_2} \rangle m)) & \\
+    & \hspace{6.1cm} \: \langle \texttt{Fun}! \rangle \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle 
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 1 }} \:
+    &  (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) & \\ 
+    & \hspace{2.2cm} \: \langle \texttt{Nat}! \! \rightarrow \! \texttt{Nat}? ^{l_1} \rangle \langle \texttt{Fun}? ^{l_2} \rangle 
+    \langle \texttt{Fun}! \rangle \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle 
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 2 }} \:    
+    & (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) & \\ 
+    & \hspace{1.4cm} \: \langle \texttt{Nat}! \! \rightarrow \! \texttt{Nat}? ^{l_1} \rangle (\highlight{(\langle \texttt{Fun}? ^{l_2} \rangle 
+    \langle \texttt{Fun}! \rangle)} \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle) 
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 3 }} \:
+    & (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: \langle \texttt{Nat}! \! \rightarrow \! \texttt{Nat}? ^{l_1} \rangle \highlight{(\langle I \rangle
+     \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle)} 
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 4 }} \:
+    & (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: \highlight{\langle \texttt{Nat}! \! \rightarrow \! \texttt{Nat}? ^{l_1} \rangle 
+     \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle}
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 5 }} \:
+    & (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: \langle \highlight{\langle \texttt{Nat}? ^{l_3} \rangle \langle \texttt{Nat}! \rangle} \! \rightarrow \! 
+    \highlight{\langle \texttt{Nat}? ^{l_1} \rangle \langle \texttt{Nat}! \rangle} \rangle
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 6 }} \:
+    & (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: \highlight{\langle I \! \rightarrow \! I \rangle}
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 7 }} \:
+    & (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: \highlight{\langle I \rangle
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y)} \\
+    \xrightarrow{\text{ 8 }} \:
+    & (\lambda x \! : \! \texttt{Nat} \! \rightarrow \! \texttt{Nat} . \: 
+    (x \: 0)) \: 
+    (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \\
+    \xrightarrow{\text{ 9 }} \:
+    & (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y) \: 0 \\
+    \xrightarrow{\text{ 10}} \:
+    & \texttt{succ} \: 0
+\end{align*}
+The first step applies the rule {\scriptsize{[E-APP]}} to substitute 
+$\langle \texttt{Fun}! \rangle \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle 
+(\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y)$ for $m$. The result gives 
+a sequence of adjacent coercions that need to be reduced. First, we reassociate the coercions 
+to find a pair that we can simplify, as in Step 2. The composition $\langle \texttt{Fun}? ^{l_2} \rangle 
+\langle \texttt{Fun}! \rangle$ reduces to the identity $I$. This step satisfies the requirement that 
+$m$ has to be a function. The next step is to check if $m$ has the expected function type of 
+$\texttt{Nat} \! \rightarrow \! \texttt{Nat}$. The two function coercions $\langle \texttt{Nat}! \! 
+\rightarrow \! \texttt{Nat}? ^{l_1} \rangle$ and $\langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle$ 
+are reduced into one by composing the argument coercions and the output coercions respectively. The 
+identity results from the compatibility of two coercions. We can then remove the cast from  
+$\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y$ and perform another function application 
+to get the final result. 
+Our final example uses reference coercions. 
+\begin{shiftedflalign*}
+    & (\lambda y. \: (\lambda x . \: x := y)) \: 0 \: (\texttt{ref} \: \texttt{false})&
+\end{shiftedflalign*}
+which results in the following cast expression.
+\begin{shiftedflalign*}
+    & (\lambda y \! : ?. \: (\lambda x \! : ?. \: \langle \texttt{Ref}? ^{l_1} \rangle x := y)) 
+    \: (\langle \texttt{Nat}! \rangle 0) \: (\langle \texttt{Ref}! \rangle
+    \langle \texttt{Ref} \: \texttt{Bool}? ^{l_2} \: \texttt{Bool}! \rangle (\texttt{ref} \: \texttt{false}))&
+\end{shiftedflalign*}
+Since $x$ is on the left-hand side of the assignment, it is expected to be a reference through 
+the reference check $\texttt{Ref}? ^{l_1}$. 0 is coerced to ? to match the dynamic type of $y$, 
+and the tag $\texttt{Ref}!$ coerces $\texttt{ref} \: \texttt{false}$ 
+to ? to be consistent with the dynamically-typed $x$. The steps of evaluation are as follows.
+\begin{align*}
+    & (\lambda y \! : ?. \: (\lambda x \! : ?. \: \langle \texttt{Ref}? ^{l_1} \rangle x := y)) 
+    \: (\langle \texttt{Nat}! \rangle 0) \: (\langle \texttt{Ref}! \rangle
+    \langle \texttt{Ref} \: \texttt{Bool}? ^{l_2} \: \texttt{Bool}! \rangle (\texttt{ref} \: \texttt{false})) \\
+    \xrightarrow{\text{ 1 }} \:
+    & (\lambda x \! : ?. \: \langle \texttt{Ref}? ^{l_1} \rangle x := \langle \texttt{Nat}! \rangle 0) 
+    \: (\langle \texttt{Ref}! \rangle
+    \langle \texttt{Ref} \: \texttt{Bool}? ^{l_2} \: \texttt{Bool}! \rangle (\texttt{ref} \: \texttt{false})) \\
+    \xrightarrow{\text{ 2 }} \:
+    & \highlight{(\langle \texttt{Ref}? ^{l_1} \rangle \langle \texttt{Ref}! \rangle)}
+    \langle \texttt{Ref} \: \texttt{Bool}? ^{l_2} \: \texttt{Bool}! \rangle (\texttt{ref} \: \texttt{false})
+    := \langle \texttt{Nat}! \rangle 0 \\
+    \xrightarrow{\text{ 3 }} \:
+    & \highlight{\langle I \rangle
+    \langle \texttt{Ref} \: \texttt{Bool}? ^{l_2} \: \texttt{Bool}! \rangle} (\texttt{ref} \: \texttt{false})
+    := \langle \texttt{Nat}! \rangle 0 \\
+    \xrightarrow{\text{ 4 }} \:
+    & \langle \texttt{Ref} \: \texttt{Bool}? ^{l_2} \: \texttt{Bool}! \rangle (\texttt{ref} \: \texttt{false})
+    := \langle \texttt{Nat}! \rangle 0 \\
+    \xrightarrow{\text{ 5 }} \:
+    & \langle \texttt{Bool}! \rangle (\texttt{ref} \: \texttt{false})
+    := \highlight{\langle \texttt{Bool}? ^{l_2} \rangle \langle \texttt{Nat}! \rangle} 0 \\
+    \xrightarrow{\text{ 6 }} \:
+    & \texttt{blame} \: l_2
+\end{align*}
+The first two steps substitute 0 for $y$ and 
+$\langle \texttt{Ref} \hspace{0.2em} \texttt{Bool}? ^{l_2} \hspace{0.2em} \texttt{Bool}! \rangle 
+(\texttt{ref} \hspace{0.2em} \texttt{false})$ 
+for $x$. The reference checking coercions $\texttt{Ref}? ^{l_1}$ and $\texttt{Ref}!$ are eliminated 
+since $x$ is a reference. We then apply rule {\scriptsize{[E-CASSIGN]}} 
+to cast the \texttt{Nat} value written to $x$ to \texttt{Bool}, which results in a cast error.

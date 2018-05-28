@@ -1,0 +1,269 @@
+The interpretation of $\lambda ^? _{\rightarrow}$ involves the following 
+six stages:
+\begin{gather*}
+    \texttt{standard I/O} \xrightarrow{\text{chars}}
+    \texttt{lexing} \xrightarrow{\text{tokens}} \texttt{parsing} \\
+    \lhook\joinrel\xrightarrow{\text{terms}} \texttt{typechecking} 
+    \xrightarrow{\text{cast terms}} \texttt{evaluation} 
+    \xrightarrow{\text{value}} \texttt{pretty-printing}
+\end{gather*}
+where a program as a sequence of characters is first read from the 
+standard input, tokenized by a lexical analyzer, and parsed into 
+an abstract syntax tree. The program is then typechecked and 
+modified with casts before being evaluated. The final 
+result is then printed in a readable format to the standard output.  We start by 
+defining the abstract syntax for the language.
+
+\begin{lstlisting}
+    data Term = Zero                       
+               | Tru                        
+               | Fls                        
+               | Var Int Type String        
+               | If Term Term Term          
+               | Succ Term                   
+               | Pred Term                  
+               | IsZero Term                
+               | Lambda Type Term [String]  
+               | App Term Term              
+               | Ref Term                   
+               | Deref Term                 
+               | Loc Int                    
+               | Assign Term Term          
+               | Cast Coercion Term   
+\end{lstlisting}
+
+Variables (\lstinline{Var Int Type String}) are represented as nameless terms using de Bruijn indices 
+in order to avert the problem of capturing free variables. Accordingly, each variable 
+is assigned a number to indicate the position of its binder. For example, 
+$\lambda x. \: \lambda y. \: x \: y$ is rewritten as $\lambda. \: \lambda. 
+\: 1 \: 0$. That is, $y$ is bound by the first binder, and $x$ the second. 
+Variables whose de Bruijn indices are greater than the total number of binders 
+are considered free. Also, instead of maintaining a global type environment 
+$\Gamma$, we have each variable remember its own bound type. We also 
+include the original name of a variable for later printing.
+
+Note that this syntax extends upon the one we have formalized in Section 2 
+with cast terms (\lstinline{Cast Coercion Term}) and  
+store locations (\lstinline{Loc Int}). These terms only arise as intermediate 
+results from typechecking and evaluation, and hence are not made available 
+to programmers. Likewise, the data types for types and coercions are transcribed 
+directly from their formal definitions, with one addition of type \lstinline{TUnit} 
+used for free variables.
+
+\begin{lstlisting}
+    data Type = TUnit         
+               | Dyn            
+               | Boolean          
+               | Nat            
+               | Arr Type Type 
+               | TRef Type      
+\end{lstlisting}
+
+\begin{lstlisting}
+    data Coercion = Iden Type              
+                  | Project Type Label     
+                  | Inject Type             
+                  | CRef Coercion Coercion  
+                  | Func Coercion Coercion  
+                  | Seq Coercion Coercion   
+                  | Fail Type Type Label
+\end{lstlisting}  
+
+Given the syntax definition, the rest of this section will mainly focus on 
+implementing the typechecker and 
+evaluator for $\lambda ^? _{\rightarrow}$. The details on the 
+lexer, parser, and pretty printer can be consulted in 
+Appendix A, B, and C.
+
+\subsection{Intermediate Language and Cast Insertion}
+The static analysis of $\lambda ^? _{\rightarrow}$ both 
+typechecks annotated terms and inserts coercions for 
+dynamically-typed terms to ensure type safety. The cast insertion 
+rules, shown in Figure 6 [8], resemble the typing rules in 
+Figure 2. 
+The rules for variables, constants, and 
+abstractions do not require any cast insertion. Rules {\scriptsize{[C-SUCC2]}}, 
+{\scriptsize{[C-PRED2]}}, and {\scriptsize{[C-ISZERO2]}} handle the 
+case when the argument type is dynamic by coercing it to \texttt{Nat}. 
+The rules for \texttt{if} expressions make sure that the condition 
+type is coerced to \texttt{Bool} if dynamic, and the two branch 
+types are consistent by coercing one to another. Rule 
+{\scriptsize{[C-APP1]}} coerces the argument type to the parameter 
+type given that the operator is a function. Otherwise, we need to 
+insert a function check $\langle \texttt{Fun}? \rangle$ to verify 
+that the operator resolves to a function at runtime. The rules for 
+assignment follow the same pattern, casting the right-hand side type 
+to the left-hand side and inserting a reference check 
+$\langle \texttt{Ref}? \rangle$ when the left-hand side type is 
+unknown. A reference check is also important when dereferencing a 
+dynamic term, as in rule {\scriptsize{[C-DEREF2]}}.
+\input{figures/CastInsertion}
+
+The cast insertion process is implemented as part of the typechecker. 
+We also need to incorporate blame tracking whenever an unsafe cast 
+is introduced to the original program. To keep it simple, we 
+represent a blame label as an integer. A new label is obtained 
+by simply incrementing the value of the last assigned label by 1. 
+Additionally, the typechecker should be able to report errors on 
+ill-typed expressions. In order to achieve both blame tracking 
+and exception handling, a new monad \lstinline{TCheckState} is defined 
+as follows:
+\begin{lstlisting} 
+    type TCheckState a = ExceptT TypeError (State Label) a
+\end{lstlisting}
+By combining the \lstinline{State} monad and the \lstinline{Except} monad, \lstinline{TCheckState} 
+helps maintain a global counter for labeling unsafe coercions 
+as well as return errors during typechecking. The data type 
+for type errors captures eight possible causes: (1) out-of-bound variables, 
+(2) type difference between the two conditional branches, (3) non-boolean condition, 
+(4) unexpected argument type for an arithmetic operator or (5) a function, 
+(6) assigning to a non-reference term, 
+(7) type mismatch between the two sides of an assignment, and (8) derefencing a 
+non-reference term. 
+
+\begin{lstlisting}
+    data TypeError = NotBound Term                 
+                   | Difference Type Type          
+                   | FunMismatch Type Type Term    
+                   | NotBool Type                  
+                   | NotNat Type                   
+                   | NotFunction Term               
+                   | IllegalAssign Term            
+                   | AssignMismatch Type Type Term  
+                   | IllegalDeref Term   
+\end{lstlisting}
+
+We transliterate the cast insertion rules in Figure 6 
+into the \lstinline{typeCheck'} function that takes in an expression as input 
+and returns either a tuple of a modified expression and its type, 
+or a type error.
+
+\input{code/Typecheck.tex}
+
+There are few slight changes to the formal type system. First is the 
+omission of the global type environment for bound variables. Instead, each 
+variable carries its own type, and those with \lstinline{TUnit} type are 
+out of bound. Secondly, the function always checks for type 
+consistency before performing coercions. \input{figures/Semantics}This sanity check allows the 
+typechecker to handle some errors directly instead of delegating them 
+to the evaluator through failure coercions. 
+Additionally, we add another rule for application when the 
+argument type is identical to the parameter type. As a result, no casts 
+are needed. In this way, we eliminate unnecessary coercions that make 
+no change to the semantics. The same pattern is applied for conditional 
+expressions and assignments by including type equivalence check before 
+type consistency. Finally, we call the subroutine \lstinline{GlobalS.newLabel} 
+to generate a new blame label for every unsafe cast inserted. 
+
+\subsection{Operational Semantics}
+Figure 7 formalizes the operational semantics for a typechecked 
+program with coercions. In addition to the standard rules for 
+the $\lambda$-calculus with references, the semantics also 
+defines rules for cast expressions. Rule  
+{\scriptsize{[E-ID]}} removes the identity coercion and 
+returns the inner value. 
+Rule {\scriptsize{[E-COMP]}} composes two 
+adjacent coercions given that the first coercion is normalized. 
+This restriction makes sure that coercions do not get accumulated 
+without being reduced. 
+The {\scriptsize{[E-GROUND]}} rule unwraps a cast value 
+when its coercion is normalized. Otherwise, we take a small 
+step of evaluation inside the coercion using the reduction rules 
+in Figure 5. The combination of {\scriptsize{[E-CSTEP]}} and 
+{\scriptsize{[E-COMP]}} helps maintain a bounded size on coercions. 
+Rule {\scriptsize{[E-CDEREF]}} casts the value read 
+from a cell, whereas {\scriptsize{[E-CASSIGN]}} also casts the value 
+written to it. Rule 
+{\scriptsize{[E-CAPP]}} splits the function coercion 
+into two separate coercions for the argument and the result. 
+Finally, we terminate evaluation and throw a cast error 
+immediately when the coercion $\texttt{Fail}^l$ is encountered, 
+as described in the {\scriptsize{[E-FAIL]}} rule. The blame 
+label consequently identifies the responsible coercion.
+
+Similar to the \lstinline{typeCheck'} procedure, we define a 
+monad \lstinline{SEvalState} to provide a global state for a set $\sigma$ of 
+store locations and also to signal runtime errors.
+\begin{lstlisting}
+    type SEvalState a = ExceptT RuntimeError (State StoreEnv) a
+\end{lstlisting}
+The following implementation describes a small-step evaluator 
+based on the established reduction rules in Figure 7.
+
+\input{code/Evaluator}
+
+For the evaluation of a cast expression (\lstinline{Cast c t'}), 
+we first check if the inner expression \lstinline{t'} is a value. If not, then 
+we take a small-step of evaluation for \lstinline{t'}. Otherwise, 
+we consider the next case where \lstinline{t'} is a cast value   
+\lstinline{Cast d u}, where \lstinline{d} is normalized. In this 
+case, we apply rule {\scriptsize{[E-COMP]}} to combine coercions \lstinline{c} 
+and \lstinline{d}. The subsequent cases handle cast expressions where 
+\lstinline{t'} is a simple value, and the coercion \lstinline{c} takes 
+different patterns. The 
+\lstinline{unbox} function unwraps a cast expression whose coercion is normalized 
+provided the target type matches the runtime type.    
+The subroutines \lstinline{GlobalS.allocate} and \lstinline{GlobalS.update} 
+modify the global store $\sigma$ by allocating a new cell and 
+updating an existing cell, respectively, while \lstinline{GlobalS.peek} 
+reads from a cell. The subroutine \lstinline{subsFromTop} 
+performs a substitution 
+operation $e[x \mapsto v]$ on nameless terms by renumbering 
+free variables. Appendix D discusses this process in more detail. 
+Runtime errors include cast errors and stuckness. Cast expressions 
+with a failure coercion gives a cast error. 
+A stuck evaluation results when a term has no transition states 
+because it is either a simple value or meaningless. Hence, a \lstinline{Stuck} 
+exception is simply an indication that an evaluation has 
+terminated. Otherwise, 
+we keep applying \lstinline{evaluate'} on non-stuck terms 
+to reach the final state. The following 
+function performs the big-step semantics. 
+
+\begin{lstlisting}
+    evaluate :: Term -> Either RuntimeError Term
+    evaluate t = 
+        let (res, t') = GlobalS.runBEval $ evaluateToValue t StoreEnv.empty
+        in case res of
+               Right t'' 
+                   | isUncoercedVal t'' -> Right t''
+                   | otherwise          -> Left Stuck 
+               Left (Blame s1 s2 l)     -> let cause = fromJust $ blame l t
+                                               bres = BlameRes cause t'
+                                           in Left $ CastError s1 s2 bres  
+               Left err                 -> Left err 
+\end{lstlisting}
+
+The subroutine \lstinline{GlobalS.runBEval} initializes a global state 
+for evaluation with an empty store. \lstinline{evaluateToValue} repeatedly 
+applies the small-step evaluator until a stuck term or an error is encountered. 
+A stuck term is only valid if it is an uncoerced value. Else, an actual error 
+of a stuck evaluation is returned. In the case of a cast error, we call the 
+\lstinline{blame} function with a label to search for the erroneous 
+coercion in the input expression. The data type \lstinline{BlameRes} 
+wraps this coercion along with the last evaluated term for the error message. 
+
+\subsection{Overview}
+Now that we have defined the typechecking and evaluation procedures, 
+our interpreter for $\lambda ^? _{\rightarrow}$ works as follows:
+\begin{lstlisting}
+    interpret :: String -> IO ()
+    interpret line = case parseExpr line of 
+        Right validExpr -> case typeCheck validExpr of 
+                               Right t  -> case evaluate t of 
+                                               Right res -> printMsg res
+                                               Left err  -> printMsg err
+                               Left err -> printMsg err
+        Left err        -> print err   
+\end{lstlisting}
+The interpreter first parses the input stream into an abstract syntax tree. 
+If parsing succeeds, then the parsed expression is typechecked; 
+otherwise, we output a parse error. A well-typed expression is subsequently 
+evaluated to a value, or a runtime error is thrown. Funtion \lstinline{printMsg} 
+prints the result in a readable format (see Appendix C).
+
+\subsection{Examples}
+\input{Example}
+
+
+
