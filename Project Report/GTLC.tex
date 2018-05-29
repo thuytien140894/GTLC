@@ -50,11 +50,12 @@ and {\scriptsize{[T-REF]}}
 are straightforward. The rules for function applications handle either 
 known or unknown function types. Given a specific function type, an 
 application only accepts an argument type that is consistent to the 
-parameter type. Otherwise, the argument can have any type, and the return 
+parameter type. \input{figures/TypeSystem} 
+Otherwise, the argument can have any type, and the return 
 type of the application is unknown. Similarly, there are two assignment 
 rules for whether the left-hand side is dynamically-typed. 
 A dereference expression only has a specific type if its argument is a 
-reference. \input{figures/TypeSystem} We treat arithmetic 
+reference. We treat arithmetic 
 and boolean expressions ($\texttt{succ} \: e$, $\texttt{pred} \: e$, $\texttt{iszero} \: e$) 
 as constant functions that accept any type consistent to \texttt{Nat} and 
 return either a \texttt{Nat} or a \texttt{Bool}. Conditional expressions are more 
