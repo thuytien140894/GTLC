@@ -1,7 +1,7 @@
+\input{figures/Coercion}
 \subsection{Coercions}
 Herman et al. [4] represent casts as combinable coercions to reduce 
 space comsumption of gradual typing while preserving its semantics. 
-\input{figures/Coercion}
 The syntax and type system for the coercion calculus are defined in 
 Figure 4 [4]. Note that we add blame labels to certain coercions to 
 enable blame tracking in our gradual type system. The judgment $\vdash c: S 
@@ -17,13 +17,13 @@ between a function type and ? always goes through the
 dynamic function type $? \rightarrow \: ?$. Thus,
 the coercion $? \rightsquigarrow (S \rightarrow T)$ is an 
 abstraction of two coercions: $? \rightsquigarrow 
-(? \rightarrow \: ?)$ first to make sure ? is a function type 
+(? \rightarrow \: ?)$ first to make sure that ? is a function type 
 and then $(? \rightarrow \: ?) \rightsquigarrow 
 (S \rightarrow T)$. Similarly, the coercion $(S \rightarrow T) \rightsquigarrow \: ?$ 
 performs the coercion $(S \rightarrow T) \rightsquigarrow (? \rightarrow \: ?)$ 
 followed by $(? \rightarrow \: ?) \rightsquigarrow \: ?$ to 
 generalize a function dynamic type.  
-The coercion calculus uses the indirection $\texttt{Fun}?^l$ and $\texttt{Fun}!$ 
+The coercion calculus uses the tags $\texttt{Fun}!$ and $\texttt{Fun}?^l$ 
 to represent the injection $(? \rightarrow \: ?) \rightsquigarrow \: ?$ and 
 projection $? \rightsquigarrow (? \rightarrow \: ?)$. The same concept is 
 applied to reference coercions. The injection $\texttt{Ref}!$ and 
@@ -42,7 +42,7 @@ composition $c;d$ applies each coercion from left to right.
 \subsection{Reduction Rules}
 The bounded space consumption of coercions derives from their reducibility. 
 The core set of normalization rules is given in Figure 5. These rules model 
-after those of Herman et al. [4] with some additions from Siek and Garcia [5]. 
+after those found in Herman et al. [4] with some additions from Siek and Garcia [7]. 
 The added rules are needed for blame assignment and its confluence. First, 
 we omit the rule 
 \begin{equation*}
@@ -59,15 +59,15 @@ if $\texttt{Fail}^{l_2}$ is allowed to propagate from the right.
 
 Coercions can be reassociated to enable further reduction. A coercion $c$ that 
 cannot be further reduced is normalized, represented as $\tilde{c}$. Figure 
-5 shows a list of normal coercions. Note that a composition of normalized 
-coercion is only normal if neither is the identity $I$. Also, we omit 
+5 shows a list of normal coercions [7]. Note that a composition of normalized 
+coercions is only normal if none of them are the identity $I$. Also, we omit 
 the normalized coercion $\texttt{Fail}^l$, which is handled separately 
 during evaluation. 
 
 \input{figures/Reduction}
 
 \subsection{Eager Error Detection}
-Let us revisit the expression described in the \textit{Introduction}:
+Let us revisit expression (1) with added labels for casts:
 \begin{equation*}
     \langle \texttt{Bool} \rightarrow \texttt{Nat} \Leftarrow  
     \: ? \rightarrow \: ? \rangle ^l 
@@ -86,16 +86,17 @@ normalized. Using one of the core reduction rules, we obtain:
     \langle \texttt{Fun} \: \texttt{Fail}^l \: I \rangle
     (\lambda x \! : \! \texttt{Nat} . \; x)
 \end{equation*}
-where $\texttt{Fail}^l$ results from the attempt to coerce $\texttt{Nat} \rightarrow 
-\texttt{Nat}$ to $\texttt{Bool} \rightarrow \texttt{Nat}$. As a result, 
+where $\texttt{Fail}^l$ results from the attempt to coerce the argument type 
+from \texttt{Nat} to \texttt{Bool}. As a result, 
 the evaluation process should effectively terminate to a cast error before 
 performing any more unnecessary operations. In order to achieve this 
 early error detection, we extend the coercion normalization rules with 
 four eager patterns (see Figure 5) to propagate cast errors. These added rules are similar to 
-those given by Herman et al. [4] but require the coercion in the argument 
-position to be normalized when $\texttt{Fail}^l$ is in the result [8]. 
+those given in Herman et al. [4] but require the coercion in the argument 
+position to be normalized when the output coercion evaluates to $\texttt{Fail}^l$ 
+in a function coercion [8]. 
 This restriction makes sure that a failed argument coercion takes the blame when 
-the result coercion fails too. Failed reference coercions follow an 
+the output coercion fails too. Failed reference coercions follow an 
 analogous pattern: blame only goes to a failed ``read'' coercion if 
 the ``write'' coercion is normal and not a failure.
 

@@ -10,7 +10,7 @@ early error detection whenever coercions fail to combine.
 We also add blame tracking to the gradual system  
 to inform the programmer of the origin of a cast error. 
 We focus the interpretation of $\lambda ^? _{\rightarrow}$ on its 
-typechecking and evaluation procedures. The typechecker 
+type checking and evaluation procedures. The typechecker 
 uses the consistency rules to insert necessary casts for 
 dynamically-typed parts of a program. The evaluator is then 
 responsible for reducing the modified program to a value 
@@ -24,5 +24,5 @@ failed expression. Another possible improvement would be to
 explore how to incorporate subtyping 
 into the gradual type system through the addition of records. 
 The subtype relation in Figure 3 only 
-serves to verify the soundness of the UD blame assignment. It 
+serves to verify the soundness of UD blame assignment. It 
 it not actually part of the implementation. 

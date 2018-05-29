@@ -26,7 +26,7 @@
     \begin{alignat*}{3}
         \qquad & \text{\underline{E}valuation Rules:} \\ \\
         & {\scriptsize{\text{[E-PREDZERO]}}} \qquad & \texttt{pred} \: 0 & \longrightarrow 0\\ 
-        & {\scriptsize{\text{[E-PREDZERO]}}} \qquad & \texttt{pred} \: (\texttt{succ} \: n) & \longrightarrow n&\\
+        & {\scriptsize{\text{[E-PREDSUCC]}}} \qquad & \texttt{pred} \: (\texttt{succ} \: n) & \longrightarrow n&\\
         & {\scriptsize{\text{[E-ISZEROZERO]}}} \qquad &\texttt{iszero} \: 0 & \longrightarrow \texttt{true} \\
         & {\scriptsize{\text{[E-ISZEROSUCC]}}} \qquad & \texttt{iszero} \: (\texttt{succ} \: n) & \longrightarrow \texttt{false} \\
         & {\scriptsize{\text{[E-IFTRUE]}}} \qquad & \texttt{if} \: \texttt{true} \: \texttt{then} \: t_2 \: \texttt{else} \: t_3 & \longrightarrow t_2 \\

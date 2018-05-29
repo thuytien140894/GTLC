@@ -5,7 +5,7 @@ six stages:
     \texttt{lexing} \xrightarrow{\text{tokens}} \texttt{parsing} \\
     \lhook\joinrel\xrightarrow{\text{terms}} \texttt{typechecking} 
     \xrightarrow{\text{cast terms}} \texttt{evaluation} 
-    \xrightarrow{\text{value}} \texttt{pretty-printing}
+    \xrightarrow{\text{value}/\text{error}} \texttt{pretty-printing}
 \end{gather*}
 where a program as a sequence of characters is first read from the 
 standard input, tokenized by a lexical analyzer, and parsed into 
@@ -36,7 +36,7 @@ Variables (\lstinline{Var Int Type String}) are represented as nameless terms us
 in order to avert the problem of capturing free variables. Accordingly, each variable 
 is assigned a number to indicate the position of its binder. For example, 
 $\lambda x. \: \lambda y. \: x \: y$ is rewritten as $\lambda. \: \lambda. 
-\: 1 \: 0$. That is, $y$ is bound by the first binder, and $x$ the second. 
+\: 1 \: 0$. That is, $y$ is bound to the first binder, and $x$ to the second. 
 Variables whose de Bruijn indices are greater than the total number of binders 
 are considered free. Also, instead of maintaining a global type environment 
 $\Gamma$, we have each variable remember its own bound type. We also 
@@ -45,7 +45,7 @@ include the original name of a variable for later printing.
 Note that this syntax extends upon the one we have formalized in Section 2 
 with cast terms (\lstinline{Cast Coercion Term}) and  
 store locations (\lstinline{Loc Int}). These terms only arise as intermediate 
-results from typechecking and evaluation, and hence are not made available 
+results from type checking and evaluation, and hence are not made available 
 to programmers. Likewise, the data types for types and coercions are transcribed 
 directly from their formal definitions, with one addition of type \lstinline{TUnit} 
 used for free variables.
@@ -78,7 +78,7 @@ Appendix A, B, and C.
 \subsection{Intermediate Language and Cast Insertion}
 The static analysis of $\lambda ^? _{\rightarrow}$ both 
 typechecks annotated terms and inserts coercions for 
-dynamically-typed terms to ensure type safety. The cast insertion 
+dynamically-typed terms to ensure type soundness. The cast insertion 
 rules, shown in Figure 6 [8], resemble the typing rules in 
 Figure 2. 
 The rules for variables, constants, and 
@@ -90,11 +90,11 @@ type is coerced to \texttt{Bool} if dynamic, and the two branch
 types are consistent by coercing one to another. Rule 
 {\scriptsize{[C-APP1]}} coerces the argument type to the parameter 
 type given that the operator is a function. Otherwise, we need to 
-insert a function check $\langle \texttt{Fun}? \rangle$ to verify 
+insert a function check $\langle \texttt{Fun}? ^l \rangle$ to verify 
 that the operator resolves to a function at runtime. The rules for 
 assignment follow the same pattern, casting the right-hand side type 
-to the left-hand side and inserting a reference check 
-$\langle \texttt{Ref}? \rangle$ when the left-hand side type is 
+to the left-hand side type and inserting a reference check 
+$\langle \texttt{Ref}? ^l \rangle$ when the left-hand side type is 
 unknown. A reference check is also important when dereferencing a 
 dynamic term, as in rule {\scriptsize{[C-DEREF2]}}.
 \input{figures/CastInsertion}
@@ -113,7 +113,7 @@ as follows:
 \end{lstlisting}
 By combining the \lstinline{State} monad and the \lstinline{Except} monad, \lstinline{TCheckState} 
 helps maintain a global counter for labeling unsafe coercions 
-as well as return errors during typechecking. The data type 
+as well as return errors during type checking. The data type 
 for type errors captures eight possible causes: (1) out-of-bound variables, 
 (2) type difference between the two conditional branches, (3) non-boolean condition, 
 (4) unexpected argument type for an arithmetic operator or (5) a function, 
@@ -123,10 +123,10 @@ non-reference term.
 
 \begin{lstlisting}
     data TypeError = NotBound Term                 
-                   | Difference Type Type          
-                   | FunMismatch Type Type Term    
+                   | Difference Type Type           
                    | NotBool Type                  
-                   | NotNat Type                   
+                   | NotNat Type    
+                   | FunMismatch Type Type Term                  
                    | NotFunction Term               
                    | IllegalAssign Term            
                    | AssignMismatch Type Type Term  
@@ -150,8 +150,8 @@ to the evaluator through failure coercions.
 Additionally, we add another rule for application when the 
 argument type is identical to the parameter type. As a result, no casts 
 are needed. In this way, we eliminate unnecessary coercions that make 
-no change to the semantics. The same pattern is applied for conditional 
-expressions and assignments by including type equivalence check before 
+no changes to the semantics. The same pattern is applied for conditional 
+expressions and assignments by including a check for type equivalence before 
 type consistency. Finally, we call the subroutine \lstinline{GlobalS.newLabel} 
 to generate a new blame label for every unsafe cast inserted. 
 
@@ -176,7 +176,7 @@ from a cell, whereas {\scriptsize{[E-CASSIGN]}} also casts the value
 written to it. Rule 
 {\scriptsize{[E-CAPP]}} splits the function coercion 
 into two separate coercions for the argument and the result. 
-Finally, we terminate evaluation and throw a cast error 
+Finally, we terminate the evaluation and throw a cast error 
 immediately when the coercion $\texttt{Fail}^l$ is encountered, 
 as described in the {\scriptsize{[E-FAIL]}} rule. The blame 
 label consequently identifies the responsible coercion.
@@ -200,23 +200,23 @@ we consider the next case where \lstinline{t'} is a cast value
 case, we apply rule {\scriptsize{[E-COMP]}} to combine coercions \lstinline{c} 
 and \lstinline{d}. The subsequent cases handle cast expressions where 
 \lstinline{t'} is a simple value, and the coercion \lstinline{c} takes 
-different patterns. The 
+on different patterns. The 
 \lstinline{unbox} function unwraps a cast expression whose coercion is normalized 
-provided the target type matches the runtime type.    
+provided that the target type matches the runtime type.    
 The subroutines \lstinline{GlobalS.allocate} and \lstinline{GlobalS.update} 
 modify the global store $\sigma$ by allocating a new cell and 
 updating an existing cell, respectively, while \lstinline{GlobalS.peek} 
-reads from a cell. The subroutine \lstinline{subsFromTop} 
+reads from a cell. Function \lstinline{subsFromTop} 
 performs a substitution 
 operation $e[x \mapsto v]$ on nameless terms by renumbering 
 free variables. Appendix D discusses this process in more detail. 
 Runtime errors include cast errors and stuckness. Cast expressions 
-with a failure coercion gives a cast error. 
+with a failure coercion give a cast error. 
 A stuck evaluation results when a term has no transition states 
 because it is either a simple value or meaningless. Hence, a \lstinline{Stuck} 
 exception is simply an indication that an evaluation has 
 terminated. Otherwise, 
-we keep applying \lstinline{evaluate'} on non-stuck terms 
+we keep applying the small-step \lstinline{evaluate'} on non-stuck terms 
 to reach the final state. The following 
 function performs the big-step semantics. 
 
@@ -244,7 +244,7 @@ coercion in the input expression. The data type \lstinline{BlameRes}
 wraps this coercion along with the last evaluated term for the error message. 
 
 \subsection{Overview}
-Now that we have defined the typechecking and evaluation procedures, 
+Now that we have defined the type checking and evaluation procedures, 
 our interpreter for $\lambda ^? _{\rightarrow}$ works as follows:
 \begin{lstlisting}
     interpret :: String -> IO ()
@@ -259,7 +259,7 @@ our interpreter for $\lambda ^? _{\rightarrow}$ works as follows:
 The interpreter first parses the input stream into an abstract syntax tree. 
 If parsing succeeds, then the parsed expression is typechecked; 
 otherwise, we output a parse error. A well-typed expression is subsequently 
-evaluated to a value, or a runtime error is thrown. Funtion \lstinline{printMsg} 
+evaluated to a value, or a runtime error is thrown. Function \lstinline{printMsg} 
 prints the result in a readable format (see Appendix C).
 
 \subsection{Examples}

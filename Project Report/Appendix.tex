@@ -41,8 +41,8 @@ and then initialize a lexer using this language definition.
     lexer = Tok.makeTokenParser langDef
 \end{lstlisting}
 
-Our $\lambda$-calculus does not support block comments or nested comments, requires that identifiers start with a 
-letter and end with alphanumeric characters. We also reserve some keywords that cannot be used for identifiers. 
+Our $\lambda$-calculus does not support block comments or nested comments, requires that an identifier starts with a 
+letter and ends with an alphanumeric character. We also reserve some keywords that cannot be used for identifiers. 
 The lexer then defines a number of lexical parsers for identifiers, parenthesized expressions, 
 and reserved operations such as assignment ($:=$) and lambda ($\lambda$). 
 
@@ -154,7 +154,7 @@ requires different formatting styles depending on its type. \texttt{printMsg} ha
 piping the result of \texttt{output} to \texttt{PP.putDoc} in order to print type $a$ to the standard output. 
 This function is shared by all the \texttt{Pretty} instances. 
 
-\section{Shifting and Substitution [6]} 
+\section{Shifting and Substitution} 
 Using de Bruijn indices to identify variables, the substitution operation requires a subroutine to renumber the indices of free variables 
 in a term. For example, suppose we have a substitution $[x\rightarrow s](\lambda z. \: x)$, 
 which is namelessly represented as $[0\rightarrow s](\lambda . \: 1)$, where all the x occurences in $\lambda z . \: x$ 
@@ -188,4 +188,4 @@ procedure $[j \rightarrow s]t$ is defined as:
     &[j \rightarrow s](\lambda . \: t_1) & \: \: = \: & \lambda . \: [j + 1 \rightarrow \uparrow^1 (s)]t_1 \\
     &[j \rightarrow s](t_1 \: t_2) & \: \: = \: & [j \rightarrow s]t_1 \: [j \rightarrow s]t_2
 \end{alignat*} 
-where $s$ is the term to substitute for the variable with index $j$.
+where $s$ is the term to substitute for the variable with index $j$ [6].
