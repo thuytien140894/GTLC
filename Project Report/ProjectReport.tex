@@ -77,16 +77,16 @@
 
 \begin{abstract}
 Gradual typing offers both type safety and programming flexibility by integrating static and dynamic type checking 
-together within the same language. The runtime semantics of a gradually-typed system involves the translation of the 
+together in the same language. The runtime semantics of a gradually-typed system involves the translation of the 
 source language to an intermediate one with explicit casts. Space comsumption of gradual typing can be improved by using 
-the coercion calculus to collapse a sequence of adjacent casts into a single cast [4]. This paper details an efficient 
-interpretation of the gradually-typed lambda calculus based on coercions with eager error detection, as described formally 
-by Herman et al. [4]. We also augment the system with UD blame assignment [8] to pinpoint the particular expressions 
+the coercion calculus to collapse a sequence of adjacent casts into a single cast [4]. This paper details an 
+interpretation of the gradually-typed lambda calculus based on coercions with eager error detection, as formalized  
+in Herman et al. [4]. We also augment the system with UD blame assignment [8] to pinpoint the particular expressions 
 responsible for coercion failures.
 \end{abstract}
 
 \section{Introduction} \input{Introduction}
-\section{Gradually-Typed Lambda Calculus $\lambda ^? _{\rightarrow}$} \input{GTLC}
+\section{Gradually-Typed Lambda Calculus} \input{GTLC}
 \section{The UD Blame Assignment} \input{BlameAssignment}
 \section{The Eager Coercion Calculus} \input{Coercion}
 \section{Interpreter for $\lambda ^? _{\rightarrow}$} \input{Interpreter}
@@ -99,11 +99,11 @@ responsible for coercion failures.
 \begin{thebibliography}{9}
     \bibitem{diehl} 
     S. Diehl:  Parsing, \\
-    \url{http://dev.stephendiehl.com/fun/002\char`_parsers.html}
+    \url{http://dev.stephendiehl.com/fun/002_parsers.html}
 
     \bibitem{parsec-tutorial} 
     Haskell: Parsing a Simple Imperative Language, \\
-    \url{https://wiki.haskell.org/Parsing\char`_a\char`_simple\char`_imperative\char`_language}
+    \url{https://wiki.haskell.org/Parsing_a_simple_imperative_language}
 
     \bibitem{henglein} 
     F. Henglein.

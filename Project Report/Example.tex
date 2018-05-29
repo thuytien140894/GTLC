@@ -1,8 +1,8 @@
-Consider the following expression.
+Consider the following expression:
 \begin{shiftedflalign*}
     & (\lambda x . \: \texttt{succ} \: x) \: \texttt{true} & 
 \end{shiftedflalign*}
-The typechecking process results in the following modified expression 
+The type checking process results in the following modified expression 
 with additional coercions.
 \begin{shiftedflalign*}
     & (\lambda x \! : ?. \: \texttt{succ} \: (\langle \texttt{Nat}? ^{l_1} \rangle x)) \: 
@@ -13,7 +13,7 @@ The first step of evaluation gives
     & \texttt{succ} \: (\langle \texttt{Nat}? ^{l_1} \rangle 
     \langle \texttt{Bool}! \rangle \texttt{true}) & 
 \end{shiftedflalign*}
-Rule {\scriptsize{[E-CSTEP]}} combines the adjacent coercions 
+Rule {\scriptsize{[E-COMP]}} combines the adjacent coercions 
 $\langle \texttt{Nat}? ^{l_1} \rangle$ and $\langle \texttt{Bool}! \rangle$,
 which evaluates to $\texttt{Fail}^{l_1}$. The result is a cast error.
 \begin{shiftedflalign*}
@@ -35,7 +35,7 @@ $\texttt{Fun} \: c \: d$ as $\langle c \! \rightarrow \! d \rangle$.
 \end{shiftedflalign*}
 $m$ is dynamically-typed and coerced to the argument type $\texttt{Nat} \! \rightarrow \! \texttt{Nat}$. 
 The function check $\langle \texttt{Fun}? ^{l_2} \rangle$ is inserted to ensure that $m$ first evaluates 
-to a function. The value $\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y$ is coerced to type ? to 
+to a function. The value $(\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y)$ is coerced to type ? to 
 be consistent with $m$. The tag $\langle \texttt{Fun}! \rangle$ upcasts a function type to ?.
 The following are the steps of evaluation.
 \begin{align*}
@@ -90,7 +90,7 @@ The following are the steps of evaluation.
 The first step applies the rule {\scriptsize{[E-APP]}} to substitute 
 $\langle \texttt{Fun}! \rangle \langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle 
 (\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y)$ for $m$. The result gives 
-a sequence of adjacent coercions that need to be reduced. First, we reassociate the coercions 
+a sequence of adjacent coercions that needs to be reduced. First, we reassociate the coercions 
 to find a pair that we can simplify, as in Step 2. The composition $\langle \texttt{Fun}? ^{l_2} \rangle 
 \langle \texttt{Fun}! \rangle$ reduces to the identity $I$. This step satisfies the requirement that 
 $m$ has to be a function. The next step is to check if $m$ has the expected function type of 
@@ -98,13 +98,13 @@ $\texttt{Nat} \! \rightarrow \! \texttt{Nat}$. The two function coercions $\lang
 \rightarrow \! \texttt{Nat}? ^{l_1} \rangle$ and $\langle \texttt{Nat}? ^{l_3} \! \rightarrow \! \texttt{Nat}! \rangle$ 
 are reduced into one by composing the argument coercions and the output coercions respectively. The 
 identity results from the compatibility of two coercions. We can then remove the cast from  
-$\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y$ and perform another function application 
+$(\lambda y \! : \! \texttt{Nat} . \: \texttt{succ} \: y)$ and perform another function application 
 to get the final result. 
 Our final example uses reference coercions. 
 \begin{shiftedflalign*}
     & (\lambda y. \: (\lambda x . \: x := y)) \: 0 \: (\texttt{ref} \: \texttt{false})&
 \end{shiftedflalign*}
-which results in the following cast expression.
+which results in the following cast expression:
 \begin{shiftedflalign*}
     & (\lambda y \! : ?. \: (\lambda x \! : ?. \: \langle \texttt{Ref}? ^{l_1} \rangle x := y)) 
     \: (\langle \texttt{Nat}! \rangle 0) \: (\langle \texttt{Ref}! \rangle
@@ -139,8 +139,8 @@ to ? to be consistent with the dynamically-typed $x$. The steps of evaluation ar
     \xrightarrow{\text{ 6 }} \:
     & \texttt{blame} \: l_2
 \end{align*}
-The first two steps substitute 0 for $y$ and 
-$\langle \texttt{Ref} \hspace{0.2em} \texttt{Bool}? ^{l_2} \hspace{0.2em} \texttt{Bool}! \rangle 
+The first two steps substitute $\langle \texttt{Nat}! \rangle 0$ for $y$ and 
+$\langle \texttt{Ref}! \rangle \langle \texttt{Ref} \hspace{0.2em} \texttt{Bool}? ^{l_2} \hspace{0.2em} \texttt{Bool}! \rangle 
 (\texttt{ref} \hspace{0.2em} \texttt{false})$ 
 for $x$. The reference checking coercions $\texttt{Ref}? ^{l_1}$ and $\texttt{Ref}!$ are eliminated 
 since $x$ is a reference. We then apply rule {\scriptsize{[E-CASSIGN]}} 

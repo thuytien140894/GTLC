@@ -6,9 +6,9 @@ Such strict constraint of types helps eliminate runtime bugs caused
 by type conflicts, thus improving code reliability and easing the 
 burden of debugging. Statically-typed languages such as Java 
 and C++ are known for their runtime performance since the overhead of 
-typechecking is done during compilation instead. Additionally, a large 
+type checking is done during compilation instead. Additionally, a large 
 and complex application benefits from early error detection and better 
-documentation found in static typing. On the other hand, dynamic typing 
+documentation found in a static type system. On the other hand, dynamic typing 
 removes the necessity of type annotations in favor of programming 
 flexibility and rapid development. JavaScript and Python are two notable 
 examples of dynamically-typed languages suitable for quick prototyping 
@@ -19,19 +19,19 @@ weaknesses of both type systems motivate the endeavor to integrate them
 together into a hybrid system called \textit{\textbf{gradual typing}}. 
 
 The term \textit{gradual typing} originally came up in Siek and 
-Taha's work [4] to describe the combination of static and dynamic typing 
+Taha's work [9] to describe the combination of static and dynamic typing 
 for functional languages. Gradual typing gives the programmer the ability 
 to control the extent of static checking through optional type annotations. 
 Function parameters with type annotations are typechecked during 
-compilation as usually, whereas those with omitted types are deferred until 
-runtime for typechecking. This approach benefits from the safety of static 
+compilation as usually, whereas those without types are deferred until 
+runtime for type checking. This approach benefits from the safety of static 
 typing and flexibility of dynamic typing, making it suitable for developing 
 software from quick prototyping to reliable code delivery. The formal 
 definition of gradual typing was first introduced using the 
 simply-typed lambda calculus with references, abbreviated as $\lambda ^? _{\rightarrow}$. 
 The runtime semantics of $\lambda ^? _{\rightarrow}$ requires the 
 translation of the source language to an intermediate one with explicit 
-cast insertion. The interpretation of $\lambda ^? _{\rightarrow}$ 
+casts. The interpretation of $\lambda ^? _{\rightarrow}$ 
 is simply the evaluation of the resulting cast expressions to produce 
 either a final unboxed value or a cast error.
 

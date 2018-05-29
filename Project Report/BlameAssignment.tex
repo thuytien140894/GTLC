@@ -7,7 +7,7 @@ Our gradual type system keeps track of unsafe casts and identifies the
 one that is responsible for a cast error. 
 
 As briefly mentioned in the \textit{Introduction}, there are two blame 
-tracking strategies depending on the way that a function type is coerced 
+tracking strategies depending on how a function type is coerced 
 to ?. The coercion calculus presented in Herman et al. [4] 
 incorporates the function dynamic type $ ? \rightarrow \: ? $ 
 to describe more specifically a function type with dynamic argument and return 
@@ -59,10 +59,10 @@ is considered a safe cast based on the traditional subtype relation where
 ? is the top element. The intermediate step of converting type ? to 
 the dynamic function type $ ? \rightarrow \: ?$ changes $\langle ? \Leftarrow \texttt{Nat} 
 \rightarrow \texttt{Nat} \rangle ^{l_2}$ to
-$\langle ? \rightarrow \: ? \Leftarrow \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}$. 
-$\texttt{Nat} \rightarrow \texttt{Nat} <: \: ?$ is true, but    
-$\texttt{Nat} \rightarrow \texttt{Nat} <: \: ? \rightarrow \: ?$ is not. Siek et al. [4] 
-present a modified subtype relation (defined in Figure 3) to prove the soundness of the UD 
+$\langle ? \rightarrow \: ? \Leftarrow \texttt{Nat} \rightarrow \texttt{Nat} \rangle ^{l_2}$. While  
+$(\texttt{Nat} \rightarrow \texttt{Nat}) <: \: ?$ is true,    
+$(\texttt{Nat} \rightarrow \texttt{Nat}) <: \: (? \rightarrow \: ?)$ is not. Siek et al. [4] 
+present a modified subtype relation (defined in Figure 3) to prove the soundness of UD 
 blame assignment. In this way, ? is no longer the top element, and a function type $S \rightarrow T$ 
 is only a subtype of ? if it is a subtype of $ ? \rightarrow \: ?$. 
 \input{figures/Subtype}
